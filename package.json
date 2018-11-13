@@ -5,7 +5,7 @@
     "arg": "^2.0.0",
     "builtins": "^2.0.0",
     "rollup": "0.67.1",
-    "rollup-plugin-commonjs": "9.2.0",
+    "rollup-plugin-commonjs": "git+ssh://git@github.com/zeit/rollup-plugin-commonjs#merges",
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-node-resolve": "3.4.0",
     "rollup-plugin-terser": "^3.0.0"
