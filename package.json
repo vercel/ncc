@@ -4,11 +4,14 @@
   "dependencies": {
     "arg": "^2.0.0",
     "builtins": "^2.0.0",
+    "estree-walker": "^0.5.2",
+    "magic-string": "^0.25.1",
     "rollup": "0.67.1",
     "rollup-plugin-commonjs": "git+ssh://git@github.com/zeit/rollup-plugin-commonjs#merges",
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-node-resolve": "3.4.0",
-    "rollup-plugin-terser": "^3.0.0"
+    "rollup-plugin-terser": "^3.0.0",
+    "rollup-pluginutils": "^2.3.3"
   },
   "license": "MIT",
   "main": "index.js",
@@ -18,5 +21,9 @@
   "scripts": {
     "test": "node test",
     "prepublish": "npm test"
+  },
+  "devDependencies": {
+    "axios": "^0.18.0",
+    "fontkit": "^1.7.7"
   }
 }

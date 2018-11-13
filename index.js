@@ -4,6 +4,7 @@ const commonjs = require("rollup-plugin-commonjs");
 const json = require("rollup-plugin-json");
 const { terser } = require("rollup-plugin-terser");
 const builtins = require("builtins")();
+const fsInliner = require("./fs-inliner.js");
 
 module.exports = async (input, { minify = true } = {}) => {
   const resolve = nodeResolve({
@@ -28,7 +29,8 @@ module.exports = async (input, { minify = true } = {}) => {
         }
       }),
       json(),
-      ...(minify ? [terser()] : null)
+      fsInliner,
+      ...(minify ? [terser()] : [])
     ],
     external: builtins
   });
