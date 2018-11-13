@@ -1,14 +1,35 @@
 const rollup = require("rollup");
-const resolve = require("rollup-plugin-node-resolve");
+const nodeResolve = require("rollup-plugin-node-resolve");
 const commonjs = require("rollup-plugin-commonjs");
 const json = require("rollup-plugin-json");
 const { terser } = require("rollup-plugin-terser");
 const builtins = require("builtins")();
 
 module.exports = async (input, { minify = true } = {}) => {
+  const resolve = nodeResolve({
+    module: false,
+    jsnext: false,
+    browser: false,
+    preferBuiltins: true,
+  });
   const bundle = await rollup.rollup({
     input,
-    plugins: [resolve(), commonjs(), json(), ...(minify ? [terser()] : null)],
+    plugins: [
+      resolve,
+      commonjs({
+        // simple optional dependencies detection
+        async isMissing (id, parentId) {
+          try {
+            if (builtins[id] || await resolve.resolveId(id, parentId))
+              return false;
+          }
+          catch {}
+          return true;
+        }
+      }),
+      json(),
+      ...(minify ? [terser()] : null)
+    ],
     external: builtins
   });
 
