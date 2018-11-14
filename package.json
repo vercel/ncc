@@ -1,6 +1,6 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "dependencies": {
     "arg": "^2.0.0",
     "builtins": "^2.0.0",
