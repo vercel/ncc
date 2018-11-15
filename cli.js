@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const { resolve } = require("path");
 const args = require("arg")({
   "--help": Boolean,
   "-h": "--help",
@@ -24,11 +25,11 @@ if (args._.length !== 1) {
   process.exit(1);
 }
 
-const ncc = require("./")(args._[0], {
+const ncc = require("./")(resolve(args._[0]), {
   minify: !args["--no-minify"]
 });
 
-ncc.then(({ code }) => {
+ncc.then(code => {
   if (args["--out"]) {
     require("fs").writeFileSync(args["--out"], code);
   } else {

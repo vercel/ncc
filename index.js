@@ -1,41 +1,33 @@
-const rollup = require("rollup");
-const nodeResolve = require("rollup-plugin-node-resolve");
-const commonjs = require("rollup-plugin-commonjs");
-const json = require("rollup-plugin-json");
-const { terser } = require("rollup-plugin-terser");
-const builtins = require("builtins")();
-const fsInliner = require("./fs-inliner.js");
+const path = require("path");
+const fs = require("fs");
+const webpack = require("./webpack");
+const MemoryFS = require("memory-fs");
 
-module.exports = async (input, { minify = true } = {}) => {
-  const resolve = nodeResolve({
-    module: false,
-    jsnext: false,
-    browser: false,
-    preferBuiltins: true,
+module.exports = async (entry, { minify = true } = {}) => {
+  const mfs = new MemoryFS();
+  const compiler = webpack({
+    entry,
+    optimization: {
+      minimize: false
+    },
+    mode: "production",
+    target: "node",
+    output: {
+      path: "/",
+      filename: "out.js",
+      libraryTarget: "commonjs2"
+    }
   });
-  const bundle = await rollup.rollup({
-    input,
-    plugins: [
-      resolve,
-      commonjs({
-        // simple optional dependencies detection
-        async isMissing (id, parentId) {
-          try {
-            if (builtins[id] || await resolve.resolveId(id, parentId))
-              return false;
-          }
-          catch {}
-          return true;
-        }
-      }),
-      json(),
-      fsInliner,
-      ...(minify ? [terser()] : [])
-    ],
-    external: builtins
-  });
-
-  return await bundle.generate({
-    format: "cjs"
+  compiler.inputFileSystem = fs;
+  compiler.outputFileSystem = mfs;
+  compiler.resolvers.normal.fileSystem = mfs;
+  return new Promise((resolve, reject) => {
+    compiler.run((err, stats) => {
+      if (err) return reject(err);
+      if (stats.hasErrors()) {
+        return reject(new Error(stats.toString()));
+      }
+      resolve(mfs.readFileSync("/out.js", "utf8"));
+    });
   });
 };
