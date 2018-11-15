@@ -144,7 +144,7 @@ class Stats {
 		const showPerformance = optionOrLocalFallback(options.performance, true);
 		const showHash = optionOrLocalFallback(options.hash, true);
 		const showEnv = optionOrLocalFallback(options.env, false);
-		const showVersion = optionOrLocalFallback(options.version, true);
+		const showVersion = false;
 		const showTimings = optionOrLocalFallback(options.timings, true);
 		const showBuiltAt = optionOrLocalFallback(options.builtAt, true);
 		const showAssets = optionOrLocalFallback(options.assets, true);

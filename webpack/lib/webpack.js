@@ -13,7 +13,7 @@ const validateSchema = require("./validateSchema");
 const WebpackOptionsValidationError = require("./WebpackOptionsValidationError");
 const webpackOptionsSchema = require("../schemas/WebpackOptions.json");
 const RemovedPluginError = require("./RemovedPluginError");
-const version = require("../package.json").version;
+const version = "x.y.z";
 
 /** @typedef {import("../declarations/WebpackOptions").WebpackOptions} WebpackOptions */
 
