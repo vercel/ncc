@@ -1,9 +1,8 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.1.0-webpack",
+  "version": "0.1.1-webpack",
   "dependencies": {
-    "arg": "^2.0.0",
-    "webpack": "^4.25.1"
+    "arg": "^2.0.0"
   },
   "license": "MIT",
   "main": "index.js",

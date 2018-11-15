@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
-const webpack = require("webpack");
-const MemoryFS = require("memory-fs");
+const webpack = require("./webpack");
+const MemoryFS = require("./webpack/node_modules/memory-fs");
 
 module.exports = async (entry, { minify = true } = {}) => {
   const mfs = new MemoryFS();
