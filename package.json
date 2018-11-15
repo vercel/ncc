@@ -1,6 +1,6 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.1.2-webpack",
+  "version": "0.1.3-webpack",
   "dependencies": {
     "arg": "^2.0.0",
     "@webassemblyjs/ast": "1.7.11",
