@@ -23,6 +23,11 @@ Change in `webpack/lib/dependencies/CommonJsPlugin.js`:
 +                                       //});
 ```
 
+Known issues
+- Side-effects from above change are unknown
+- Minification breaks
+- FS inlining is not implemented
+
 ## Motivation
 
 `ncc` allows for using and testing rollup quickly, without
