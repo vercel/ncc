@@ -48,7 +48,7 @@ const ncc = require('../');
       let locStr = '';
       if (locMatch) {
         const line = parseInt(locMatch[1]);
-        locStr = '\n' + code.split(/\r\n|\r|\n/).slice(line - 2, line + 1).join('\n') + '\n';
+        locStr = '\n' + code.split(/\r\n|\r|\n/).slice(line - 4, line + 3).join('\n') + '\n';
       }
       console.error(`Integration test "${test}" execution failed${locStr}`, err);
       return;
