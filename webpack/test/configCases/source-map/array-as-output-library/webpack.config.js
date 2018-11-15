@@ -1,6 +1,0 @@
-module.exports = {
-	devtool: "source-map",
-	output: {
-		library: ["Foo", "[name]"]
-	}
-};
