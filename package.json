@@ -1,6 +1,6 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.0.4",
+  "version": "0.1.0-webpack",
   "dependencies": {
     "arg": "^2.0.0",
     "webpack": "^4.25.1"
