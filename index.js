@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const webpack = require("./webpack");
+const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 
 module.exports = async (entry, { minify = true } = {}) => {
@@ -16,7 +16,30 @@ module.exports = async (entry, { minify = true } = {}) => {
       path: "/",
       filename: "out.js",
       libraryTarget: "commonjs2"
-    }
+    },
+    plugins: [
+      {
+        apply(compiler) {
+          compiler.hooks.normalModuleFactory.tap('ncc', (NormalModuleFactory) => {
+            function handler(parser) {
+              parser.hooks.assign.for("require").intercept({
+                register: (tapInfo) => {
+                  if(tapInfo.name !== 'CommonJsPlugin') {
+                    return tapInfo
+                  }
+                  tapInfo.fn = () => {}
+                  return tapInfo
+                }
+              })
+            }
+            NormalModuleFactory.hooks.parser.for('javascript/auto').tap('ncc', handler)
+            NormalModuleFactory.hooks.parser.for('javascript/dynamic').tap('ncc', handler)
+            
+            return NormalModuleFactory
+          })
+        }
+      }
+    ]
   });
   compiler.inputFileSystem = fs;
   compiler.outputFileSystem = mfs;
