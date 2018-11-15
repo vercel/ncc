@@ -1,6 +1,20 @@
 const assert = require('assert');
 const fs = require('fs');
+const sourceMapSupport = require('source-map-support');
 const ncc = require('../');
+
+const sourceMapSources = {};
+sourceMapSupport.install({
+  retrieveSourceMap (source) {
+    if (!sourceMapSources[source])
+      return null;
+
+    return {
+      url: source,
+      map: sourceMapSources[source]
+    };
+  }
+});
 
 (async () => {
   // unit
@@ -31,11 +45,13 @@ const ncc = require('../');
   cnt = 0;
   for (const test of fs.readdirSync(__dirname + "/integration")) {
     cnt ++;
-    const { code } = await ncc(__dirname + "/integration/" + test, { minify: false });
+    const { code, map } = await ncc(__dirname + "/integration/" + test, { minify: false, sourcemap: true });
     try {
       let exports = {};
       let module = { exports };
-      eval(code);
+      const id = test;
+      sourceMapSources[id] = map;
+      eval(code + '\n//# sourceURL=' + id);
       if ("function" !== typeof module.exports) {
         console.error(
           `Integration test "${test}" evaluation failed. It does not export a "run" function`
@@ -44,13 +60,7 @@ const ncc = require('../');
       }
       await module.exports();
     } catch (err) {
-      const locMatch = err.stack.toString().match(/\<anonymous\>:(\d+):(\d+)/);
-      let locStr = '';
-      if (locMatch) {
-        const line = parseInt(locMatch[1]);
-        locStr = '\n' + code.split(/\r\n|\r|\n/).slice(line - 4, line + 3).join('\n') + '\n';
-      }
-      console.error(`Integration test "${test}" execution failed${locStr}`, err);
+      console.error(`Integration test "${test}" execution failed`, err);
       return;
     }
   }

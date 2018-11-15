@@ -6,7 +6,7 @@ const { terser } = require("rollup-plugin-terser");
 const builtins = require("builtins")();
 const fsInliner = require("./fs-inliner.js");
 
-module.exports = async (input, { minify = true } = {}) => {
+module.exports = async (input, { minify = true, sourcemap = false } = {}) => {
   const resolve = nodeResolve({
     module: false,
     jsnext: false,
@@ -36,6 +36,7 @@ module.exports = async (input, { minify = true } = {}) => {
   });
 
   return await bundle.generate({
+    sourcemap,
     format: "cjs"
   });
 };
