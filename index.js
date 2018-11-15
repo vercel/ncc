@@ -20,23 +20,27 @@ module.exports = async (entry, { minify = true } = {}) => {
     plugins: [
       {
         apply(compiler) {
-          compiler.hooks.normalModuleFactory.tap('ncc', (NormalModuleFactory) => {
+          compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
             function handler(parser) {
               parser.hooks.assign.for("require").intercept({
-                register: (tapInfo) => {
-                  if(tapInfo.name !== 'CommonJsPlugin') {
-                    return tapInfo
+                register: tapInfo => {
+                  if (tapInfo.name !== "CommonJsPlugin") {
+                    return tapInfo;
                   }
-                  tapInfo.fn = () => {}
-                  return tapInfo
+                  tapInfo.fn = () => {};
+                  return tapInfo;
                 }
-              })
+              });
             }
-            NormalModuleFactory.hooks.parser.for('javascript/auto').tap('ncc', handler)
-            NormalModuleFactory.hooks.parser.for('javascript/dynamic').tap('ncc', handler)
-            
-            return NormalModuleFactory
-          })
+            NormalModuleFactory.hooks.parser
+              .for("javascript/auto")
+              .tap("ncc", handler);
+            NormalModuleFactory.hooks.parser
+              .for("javascript/dynamic")
+              .tap("ncc", handler);
+
+            return NormalModuleFactory;
+          });
         }
       }
     ]
