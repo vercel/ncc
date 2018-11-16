@@ -20,7 +20,7 @@ module.exports = async (entry, { minify = true } = {}) => {
     externals: (context, request, callback) => {
       resolve(request, { basedir: context, preserveSymlinks: true }, (err) => {
         if (err) {
-          console.error(`ERROR RESOLVING MODULE ${request} ADDING AS EXTERNAL`, err)
+          console.error(`ERROR RESOLVING MODULE ${request}, ADDING AS EXTERNAL`, err)
           return callback(null, `commonjs ${request}`)
         }
 
