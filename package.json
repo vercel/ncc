@@ -1,6 +1,6 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.1.3-webpack",
+  "version": "0.1.4-webpack",
   "dependencies": {
     "@webassemblyjs/ast": "1.7.11",
     "@webassemblyjs/helper-module-context": "1.7.11",
