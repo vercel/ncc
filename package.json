@@ -33,7 +33,7 @@
     "ncc": "./cli.js"
   },
   "scripts": {
-    "test": "node test",
+    "test": "jest",
     "prepublish": "npm test"
   },
   "devDependencies": {
@@ -48,6 +48,7 @@
     "fontkit": "^1.7.7",
     "graphql": "^14.0.2",
     "ioredis": "^4.2.0",
+    "jest": "^23.6.0",
     "mongoose": "^5.3.12",
     "mysql": "^2.16.0",
     "pg": "^7.6.1",
