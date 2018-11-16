@@ -2,6 +2,8 @@ const assert = require("assert");
 const fs = require("fs");
 const ncc = require("../");
 
+let errored = false;
+
 (async () => {
   // unit
   //for (const unit of fs.readdirSync(__dirname + "/unit")) {
@@ -32,6 +34,7 @@ const ncc = require("../");
       module.exports = null;
       eval(code);
       if ("function" !== typeof module.exports) {
+        errored = true;
         console.error(
           `Integration test "${test}" evaluation failed. It does not export a function`
         );
@@ -39,7 +42,14 @@ const ncc = require("../");
       }
       await module.exports();
     } catch (err) {
+      errored = true;
       console.error(`Integration test "${test}" execution failed`, err);
     }
   }
-})();
+})().then(() => {
+  if (errored) process.exit(1);
+});
+
+process.on("unhandledRejection", err => {
+  throw err;
+});
