@@ -13,5 +13,5 @@ jobs:
       #     name: Linting
       #     command: yarn lint
       - run:
-          name: Tests
+          name: Integration tests
           command: yarn test
