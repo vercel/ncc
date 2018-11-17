@@ -20,7 +20,7 @@ module.exports = async (entry, { minify = true } = {}) => {
     externals: (context, request, callback) => {
       resolve(request, { basedir: context, preserveSymlinks: true }, (err) => {
         if (err) {
-          console.log(`Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`)
+          console.error(`Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`)
           return callback(null, `commonjs ${request}`)
         }
 
