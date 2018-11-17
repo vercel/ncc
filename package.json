@@ -62,6 +62,7 @@
     "request": "^2.88.0",
     "rxjs": "^6.3.3",
     "saslprep": "^1.0.2",
+    "stripe": "^6.15.0",
     "the-answer": "^1.0.0",
     "twilio": "^3.23.2"
   },
