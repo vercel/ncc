@@ -53,6 +53,7 @@
     "jimp": "^0.5.6",
     "koa": "^2.6.2",
     "mailgun": "^0.5.0",
+    "mariadb": "^2.0.1-beta",
     "memcached": "^2.2.2",
     "mongoose": "^5.3.12",
     "mysql": "^2.16.0",
