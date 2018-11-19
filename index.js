@@ -3,6 +3,23 @@ const fs = require("fs");
 const webpack = require("./webpack/lib/webpack");
 const MemoryFS = require("memory-fs");
 
+function resolveModule (context, request, callback) {
+  const resolveOptions = {
+    basedir: context,
+    preserveSymlinks: true,
+    extensions: ['.js', '.json']
+  }
+
+  resolve(request, resolveOptions, (err) => {
+    if (err) {
+      console.error(`Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`)
+      return callback(null, `commonjs ${request}`)
+    }
+
+    callback()
+  })
+}
+
 module.exports = async (entry, { minify = true } = {}) => {
   const mfs = new MemoryFS();
   const compiler = webpack({
@@ -17,16 +34,7 @@ module.exports = async (entry, { minify = true } = {}) => {
       filename: "out.js",
       libraryTarget: "commonjs2"
     },
-    externals: (context, request, callback) => {
-      resolve(request, { basedir: context, preserveSymlinks: true }, (err) => {
-        if (err) {
-          console.error(`Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`)
-          return callback(null, `commonjs ${request}`)
-        }
-
-        callback()
-      })
-    },
+    externals: resolveModule,
     plugins: [
       {
         apply(compiler) {
