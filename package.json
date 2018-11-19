@@ -38,6 +38,7 @@
     "prepublish": "npm test"
   },
   "devDependencies": {
+    "@google-cloud/datastore": "^2.0.0",
     "@sentry/node": "^4.3.0",
     "apollo-server-express": "^2.2.2",
     "auth0": "^2.14.0",
