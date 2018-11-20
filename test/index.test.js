@@ -1,4 +1,3 @@
-const assert = require('assert');
 const fs = require("fs");
 const sourceMapSupport = require('source-map-support');
 const ncc = require("../");
@@ -24,7 +23,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         .replace(/\r/g, '');
     await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false }).then(async t => {
       const actual = t.code.trim();
-      assert.strictEqual(actual, expected);
+      expect(actual).toBe(expected);
     });
   });
 }
@@ -32,7 +31,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 jest.setTimeout(10000);
 
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
-  it(`should evaluate ${integrationTest} without errors`, async () => {
+  it.skip(`should evaluate ${integrationTest} without errors`, async () => {
     const { code, map } = await ncc(`${__dirname}/integration/${integrationTest}`, { minify: false, sourcemap: true });
     sourceMapSources[integrationTest] = map;
     module.exports = null;
@@ -41,5 +40,5 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
       throw new Error(`Integration test "${integrationTest}" evaluation failed. It does not export a function`)
     }
     await module.exports();
-  })
+  });
 }

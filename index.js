@@ -15,6 +15,9 @@ module.exports = async (input, { minify = true, sourcemap = false } = {}) => {
   });
   const bundle = await rollup.rollup({
     input,
+    treeshake: {
+      pureExternalModules: ['fs', 'path']
+    },
     plugins: [
       resolve,
       commonjs({
