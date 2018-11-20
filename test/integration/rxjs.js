@@ -7,5 +7,5 @@ module.exports = () => {
       filter(x => x % 2 === 1),
       map(x => x + x)
     )
-    .subscribe(x => console.log(x));
+    .subscribe(x => x);
 };
