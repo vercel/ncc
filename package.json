@@ -25,6 +25,7 @@
   "devDependencies": {
     "axios": "^0.18.0",
     "fontkit": "^1.7.7",
+    "jest": "^23.6.0",
     "source-map-support": "^0.5.9"
   }
 }

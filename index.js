@@ -24,7 +24,7 @@ module.exports = async (input, { minify = true, sourcemap = false } = {}) => {
             if (builtins[id] || await resolve.resolveId(id, parentId))
               return false;
           }
-          catch {}
+          catch (e) {}
           return true;
         }
       }),
