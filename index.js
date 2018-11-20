@@ -8,6 +8,7 @@ module.exports = async (entry, { minify = true } = {}) => {
   const compiler = webpack({
     entry,
     optimization: {
+      nodeEnv: false,
       minimize: false
     },
     mode: "production",
