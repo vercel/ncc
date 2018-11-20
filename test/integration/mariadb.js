@@ -1,0 +1,3 @@
+require('mariadb')
+module.exports = () => {
+}
