@@ -19,7 +19,7 @@
     "ncc": "./cli.js"
   },
   "scripts": {
-    "test": "node test",
+    "test": "jest",
     "prepublish": "npm test"
   },
   "devDependencies": {
