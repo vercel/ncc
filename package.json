@@ -38,6 +38,7 @@
     "prepublish": "npm test"
   },
   "devDependencies": {
+    "@google-cloud/datastore": "^2.0.0",
     "@sentry/node": "^4.3.0",
     "apollo-server-express": "^2.2.2",
     "auth0": "^2.14.0",
@@ -53,6 +54,7 @@
     "jimp": "^0.5.6",
     "koa": "^2.6.2",
     "mailgun": "^0.5.0",
+    "mariadb": "^2.0.1-beta",
     "memcached": "^2.2.2",
     "mongoose": "^5.3.12",
     "mysql": "^2.16.0",
