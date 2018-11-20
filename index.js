@@ -3,11 +3,13 @@ const fs = require("fs");
 const webpack = require("./webpack/lib/webpack");
 const MemoryFS = require("memory-fs");
 
+const SUPPORTED_EXTENSIONS = ['.js', '.json']
+
 function resolveModule (context, request, callback) {
   const resolveOptions = {
     basedir: context,
     preserveSymlinks: true,
-    extensions: ['.js', '.json']
+    extensions: SUPPORTED_EXTENSIONS
   }
 
   resolve(request, resolveOptions, (err) => {
@@ -33,6 +35,9 @@ module.exports = async (entry, { minify = true } = {}) => {
       path: "/",
       filename: "out.js",
       libraryTarget: "commonjs2"
+    },
+    resolve: {
+      extensions: SUPPORTED_EXTENSIONS
     },
     externals: resolveModule,
     plugins: [
