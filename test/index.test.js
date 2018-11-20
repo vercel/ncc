@@ -31,7 +31,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 jest.setTimeout(10000);
 
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
-  it.skip(`should evaluate ${integrationTest} without errors`, async () => {
+  it(`should evaluate ${integrationTest} without errors`, async () => {
     const { code, map } = await ncc(`${__dirname}/integration/${integrationTest}`, { minify: false, sourcemap: true });
     sourceMapSources[integrationTest] = map;
     module.exports = null;

@@ -84,7 +84,7 @@ exports.transform = function (code, id) {
           vars[pathFn] = path[pathImportIds[pathFn]];
       }
     }
-    
+
     // evaluate returns undefined for non-statically-analyzable
     const assetPath = evaluate(expr, vars);
     if (assetPath) {
@@ -108,7 +108,7 @@ exports.transform = function (code, id) {
     enter (node, parent) {
       if (node.scope) {
         scope = node.scope;
-        for (const id of node.scope.declarations) {
+        for (const id in node.scope.declarations) {
           if (id in shadowDepths)
             shadowDepths[id]++;
         }
@@ -120,6 +120,7 @@ exports.transform = function (code, id) {
         for (const decl of node.declarations) {
           // var { join } = path;
           if (decl.id.type === 'ObjectPattern' &&
+              decl.init &&
               decl.init.type === 'Identifier' &&
               decl.init.name === pathId &&
               shadowDepths[pathId] === 0) {
@@ -134,6 +135,7 @@ exports.transform = function (code, id) {
           }
           // var join = path.join;
           if (decl.id.type === 'Identifier' &&
+              decl.init &&
               decl.init.type === 'MemberExpression' &&
               decl.init.object.type === 'Identifier' &&
               decl.init.object.name === pathId &&
@@ -151,7 +153,7 @@ exports.transform = function (code, id) {
             parent.callee === node &&
             (parent.arguments.length === 1 || parent.arguments.length === 2) &&
             node.object.type === 'Identifier' &&
-            node.object.name === fsId &&
+            (node.object.name === 'fs' || (node.object.name === fsId && shadowDepths[fsId] === 0)) &&
             !scope.contains(fsId) &&
             node.property.type === 'Identifier' &&
             node.property.name === 'readFileSync') {
@@ -165,7 +167,7 @@ exports.transform = function (code, id) {
         }
       }
 
-      else if (node.type === 'Identifier' &&
+      else if (parent && node.type === 'Identifier' &&
                isReference(node, parent) &&
                node.name === readFileSyncId &&
                !scope.contains(readFileSyncId) &&
@@ -182,7 +184,7 @@ exports.transform = function (code, id) {
     leave (node) {
       if (node.scope) {
         scope = scope.parent;
-        for (const id of node.scope.declarations) {
+        for (const id in node.scope.declarations) {
           if (id in shadowDepths)
             shadowDepths[id]--;
         }
