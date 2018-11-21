@@ -29,7 +29,7 @@ async function main() {
 
   for (const file of await glob(__dirname + "/../dist/**/*.js")) {
     console.log(
-      `✓ ${relative(__dirname + "/../dist", file)} (${bytes(
+      `✓ ${relative(__dirname + "/../", file)} (${bytes(
         statSync(file).size
       )})`
     );
