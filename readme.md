@@ -3,35 +3,13 @@
 Simple CLI for compiling a Node.js module into a single file,
 together with all its dependencies, gcc-style.
 
-## webpack changes
-
-Fixed a bug where webpack was setting `require` to `undefined`
-if a program tries to override `require` with an `if` statement:
-
-https://github.com/felixge/node-formidable/issues/337
-
-Change in `webpack/lib/dependencies/CommonJsPlugin.js`:
-
-```
-+                                       //parser.hooks.assign.for("require").tap("CommonJsPlugin", expr => {
-+                                       //// to not leak to global "require", we need to define a local require here.
-+                                       //const dep = new ConstDependency("var require;", 0);
-+                                       //dep.loc = expr.loc;
-+                                       //parser.state.current.addDependency(dep);
-+                                       //parser.scope.definitions.add("require");
-+                                       //return true;
-+                                       //});
-```
-
-Known issues
-- Side-effects from above change are unknown
-- Minification breaks
-- FS inlining is not implemented
-
 ## Motivation
 
-`ncc` allows for using and testing rollup quickly, without
-special configuration.
+- Publish minimal packages to npm
+- Only ship relevant app code to serverless environments
+- Don't waste time configuring bundlers
+- Generally faster bootup time and less I/O overhead
+- Compiled language-like experience (e.g.: `go`)
 
 ## Usage
 
@@ -51,3 +29,9 @@ require('@zeit/ncc')('/path/to/input', {
   console.log(bundle.code)
 })
 ```
+
+## Known issues
+
+- [ ] Minification is creating problems
+- [ ] FS inlining is not implemented
+- [ ] Native modules are not supported
