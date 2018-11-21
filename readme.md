@@ -24,9 +24,8 @@ $ ncc input.js -o bundle.js
 ```js
 require('@zeit/ncc')('/path/to/input', {
   minify: true  // default
-}).then(bundle => {
-  // result of rollup `bundle.generate()` call
-  console.log(bundle.code)
+}).then(code => {
+  console.log(code)
 })
 ```
 
