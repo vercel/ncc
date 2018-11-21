@@ -51,7 +51,3 @@ require('@zeit/ncc')('/path/to/input', {
   console.log(bundle.code)
 })
 ```
-
-## TODO
-
-- [ ] Make self-hosting

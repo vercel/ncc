@@ -1,1 +1,9 @@
-node_modules
+*
+!scripts
+!src
+!test
+!package.json
+!yarn.lock
+!.circleci
+!.*ignore
+!readme.md
