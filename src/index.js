@@ -51,7 +51,7 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
       nodeEnv: false,
       minimize: false
     },
-    devtool: "cheap-source-map",
+    devtool: sourceMap ? "cheap-source-map" : false,
     mode: "production",
     target: "node",
     output: {
