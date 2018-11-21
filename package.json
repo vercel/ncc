@@ -51,6 +51,7 @@
     "resolve": "^1.8.1",
     "rxjs": "^6.3.3",
     "saslprep": "^1.0.2",
+    "source-map-support": "^0.5.9",
     "stripe": "^6.15.0",
     "the-answer": "^1.0.0",
     "twilio": "^3.23.2",
