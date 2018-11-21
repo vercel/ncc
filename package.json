@@ -1,6 +1,6 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.1.5-webpack",
+  "version": "0.1.6",
   "license": "MIT",
   "main": "./dist/ncc/index.js",
   "bin": {
