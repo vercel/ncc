@@ -1,5 +1,3 @@
 *
-!index.js
-!cli.js
-!webpack
-!webpack/node_modules
+!scripts/cli.js
+!dist/**/*.js
