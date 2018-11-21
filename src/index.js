@@ -3,7 +3,7 @@ const fs = require("fs");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 
-const SUPPORTED_EXTENSIONS = [".js", ".json"];
+const SUPPORTED_EXTENSIONS = [".mjs", ".js", ".json"];
 
 function resolveModule(context, request, callback, forcedExternals = []) {
   const resolveOptions = {
