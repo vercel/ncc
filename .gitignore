@@ -1,7 +1,9 @@
 *
+dist/*.js
 !scripts
 !src
 !test
+!dist
 !package.json
 !yarn.lock
 !.circleci
