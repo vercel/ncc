@@ -43,7 +43,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
   });
 }
 
-module.exports = async (entry, { externals = [], minify = true } = {}) => {
+module.exports = async (entry, { externals = [], minify = true, sourceMap = false } = {}) => {
   const mfs = new MemoryFS();
   const compiler = webpack({
     entry,
@@ -51,6 +51,7 @@ module.exports = async (entry, { externals = [], minify = true } = {}) => {
       nodeEnv: false,
       minimize: false
     },
+    devtool: "cheap-source-map",
     mode: "production",
     target: "node",
     output: {
@@ -107,10 +108,13 @@ module.exports = async (entry, { externals = [], minify = true } = {}) => {
       if (stats.hasErrors()) {
         return reject(new Error(stats.toString()));
       }
+      const code = mfs.readFileSync("/out.js", "utf8");
+      const map = sourceMap ? mfs.readFileSync("/out.js.map", "utf8") : null;
       resolve({
-        code: mfs.readFileSync("/out.js", "utf8"),
+        code,
+        map,
         assets
-      });
+      })
     });
   });
 };
