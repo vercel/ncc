@@ -1,5 +1,9 @@
 const ncc = require("../src/index.js");
-const { writeFileSync } = require("fs");
+const { statSync, writeFileSync } = require("fs");
+const { promisify } = require("util");
+const { relative } = require("path");
+const copy = promisify(require("copy"));
+const glob = promisify(require("glob"));
 const bytes = require("bytes");
 
 async function main() {
@@ -14,11 +18,22 @@ async function main() {
     externals: ["chokidar"]
   });
 
-  writeFileSync(__dirname + "/../dist/cli.js", cli);
-  writeFileSync(__dirname + "/../dist/index.js", index);
+  writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
+  writeFileSync(__dirname + "/../dist/ncc/index.js", index);
 
-  console.log(`✓ dist/cli.js (${bytes(Buffer.byteLength(cli))})`);
-  console.log(`✓ dist/index.js (${bytes(Buffer.byteLength(index))})`);
+  // copy webpack buildin
+  await copy(
+    __dirname + "/../node_modules/webpack/buildin/*.js",
+    __dirname + "/../dist/buildin/"
+  );
+
+  for (const file of await glob(__dirname + "/../dist/**/*.js")) {
+    console.log(
+      `✓ ${relative(__dirname + "/../dist", file)} (${bytes(
+        statSync(file).size
+      )})`
+    );
+  }
 }
 
 // remove me when node.js makes this the default behavior

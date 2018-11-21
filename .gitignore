@@ -1,9 +1,11 @@
 *
-dist/*.js
+dist/**/*.js
 !scripts
 !src
 !test
-!dist
+!dist/
+!dist/ncc/
+!dist/buildin/
 !package.json
 !yarn.lock
 !.circleci

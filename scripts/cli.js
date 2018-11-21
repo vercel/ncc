@@ -3,4 +3,4 @@
 // against a pure-js file without the shebang. in the future,
 // ncc should support taking in an input with a shebang,
 // and preserving it in the output
-require('../dist/cli');
+require('../dist/ncc/cli');

@@ -47,6 +47,8 @@ module.exports = async (entry, { externals = [], minify = true } = {}) => {
     resolve: {
       extensions: SUPPORTED_EXTENSIONS
     },
+    // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
+    node: false,
     externals: (...args) => resolveModule(...[...args, externals]),
     plugins: [
       {
