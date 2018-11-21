@@ -11,6 +11,12 @@ together with all its dependencies, gcc-style.
 - Generally faster bootup time and less I/O overhead
 - Compiled language-like experience (e.g.: `go`)
 
+## Design goals
+
+- Zero configuration
+- Only support Node.js (soon, optionally with TypeScript) codebases
+- Make it work with as many npm modules as we can
+
 ## Usage
 
 ### CLI
