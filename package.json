@@ -49,6 +49,8 @@
     "stripe": "^6.15.0",
     "the-answer": "^1.0.0",
     "twilio": "^3.23.2",
+    "vue": "^2.5.17",
+    "vue-server-renderer": "^2.5.17",
     "webpack": "^4.26.0"
   }
 }
