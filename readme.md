@@ -15,7 +15,7 @@ together with all its dependencies, gcc-style.
 
 - Zero configuration
 - Only support Node.js (soon, optionally with TypeScript) codebases
-- Make it work with as many npm modules as we can
+- Make it work as well as possible with the entire Node.js / npm ecosystem
 
 ## Usage
 
