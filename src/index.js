@@ -45,7 +45,10 @@ module.exports = async (entry, { externals = [], minify = true } = {}) => {
       libraryTarget: "commonjs2"
     },
     resolve: {
-      extensions: SUPPORTED_EXTENSIONS
+      extensions: SUPPORTED_EXTENSIONS,
+      // webpack defaults to `module` and `main`, but that's
+      // not really what node.js supports, so we reset it
+      mainFields: ["main"]
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,

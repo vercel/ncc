@@ -1,4 +1,4 @@
-const { say } = require("cowsay");
+const { say } = require("cowsay/build/cowsay.umd.js");
 module.exports = () => {
   const nate = say({ text: "nate" });
   if (!(nate.indexOf("nate") > 0)) {
