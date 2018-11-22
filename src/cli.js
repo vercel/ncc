@@ -35,7 +35,7 @@ switch (args._[0]) {
       process.exit(1);
     }
 
-    const ncc = require("./index.js")(require.resolve(resolve(args._[1] || ".")), {
+    const ncc = require("./index.js")(resolve(args._[1] || "."), {
       minify: !args["--no-minify"],
       externals: args["--external"]
     });
