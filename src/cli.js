@@ -35,13 +35,13 @@ switch (args._[0]) {
       process.exit(1);
     }
 
-    const ncc = require("./index.js")(require.resolve(args._[1] || "."), {
+    const ncc = require("./index.js")(require.resolve(resolve(args._[1] || ".")), {
       minify: !args["--no-minify"],
       externals: args["--external"]
     });
     
     ncc.then(({ code, assets }) => {
-      const outDir = args["--out"] || resolve(dist);
+      const outDir = args["--out"] || resolve("dist");
       const fs = require("fs");
       const mkdirp = require("mkdirp");
       mkdirp.sync(outDir);
