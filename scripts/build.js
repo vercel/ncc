@@ -7,16 +7,20 @@ const glob = promisify(require("glob"));
 const bytes = require("bytes");
 
 async function main() {
-  const cli = await ncc(__dirname + "/../src/cli", {
+  const { code: cli, assets: cliAssets } = await ncc(__dirname + "/../src/cli", {
     externals: ["./index.js"]
   });
-  const index = await ncc(__dirname + "/../src/index", {
+  const { code: index, assets: indexAssets } = await ncc(__dirname + "/../src/index", {
     // we dont care about watching, so we don't want
     // to bundle it. even if we did want watching and a bigger
     // bundle, webpack (and therefore ncc) cannot currently bundle
     // chokidar, which is quite convenient
     externals: ["chokidar"]
   });
+
+  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length) {
+    console.error('Assets emitted by core build, these need to be written into the dist directory');
+  }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);

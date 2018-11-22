@@ -10,32 +10,50 @@ const args = require("arg")({
   M: "--no-minify"
 });
 
+const usage = `ncc build <input-file> [opts]
+Options:
+  -M, --no-minify       Skip output minification
+  -e, --external [mod]  Skip bundling 'mod'. Can be used many times
+  -o, --out [file]      Output directory (defaults to dist)
+  -h, --help            Show help
+`;
+
 if (args["--help"]) {
-  console.error(`ncc <input-file> [opts]
-  Options:
-    -M, --no-minify       Skip output minification
-    -e, --external [mod]  Skip bundling 'mod'. Can be used many times
-    -o, --out [file]      Output file (defaults to stdout)
-    -h, --help            Show help
-`);
+  console.error(usage);
   process.exit(2);
 }
 
-if (args._.length !== 1) {
-  console.error(`Error: invalid arguments number (${args._.length})`);
-  console.error("Usage: ncc <input-file> [opts]");
+if (args._.length === 0) {
+  console.error(`Error: No command specified\n${usage}`);
   process.exit(1);
 }
 
-const ncc = require("./index.js")(resolve(args._[0]), {
-  minify: !args["--no-minify"],
-  externals: args["--external"]
-});
+switch (args._[0]) {
+  case "build":
+    if (args._.length > 2) {
+      console.error(`Error: Too many build arguments provided\n${usage}`);
+      process.exit(1);
+    }
 
-ncc.then(code => {
-  if (args["--out"]) {
-    require("fs").writeFileSync(args["--out"], code);
-  } else {
-    process.stdout.write(code);
-  }
-});
+    const ncc = require("./index.js")(require.resolve(args._[1] || "."), {
+      minify: !args["--no-minify"],
+      externals: args["--external"]
+    });
+    
+    ncc.then(({ code, assets }) => {
+      const outDir = args["--out"] || resolve(dist);
+      const fs = require("fs");
+      const mkdirp = require("mkdirp");
+      mkdirp.sync(outDir);
+      fs.writeFileSync(outDir + "/index.js", code);
+      Object.keys(assets).forEach(asset => {
+        mkdirp.sync(path.dirname(asset));
+        fs.writeFileSync(outDir + "/" + asset, assets[asset]);
+      });
+    });
+  break;
+
+  default:
+    console.error(`Error: Invalid command "${args._[0]}"\n${usage}`);
+    process.exit(1);
+}
