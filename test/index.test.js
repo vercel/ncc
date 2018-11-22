@@ -8,7 +8,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!integrationTest.endsWith(".js")) continue;
   it(`should evaluate ${integrationTest} without errors`, async () => {
-    const code = await ncc(__dirname + "/integration/" + integrationTest);
+    const { code, assets } = await ncc(__dirname + "/integration/" + integrationTest);
     module.exports = null;
     eval(code);
     if ("function" !== typeof module.exports) {

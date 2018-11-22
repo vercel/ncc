@@ -85,12 +85,32 @@ module.exports = async (entry, { externals = [], minify = true } = {}) => {
   compiler.outputFileSystem = mfs;
   compiler.resolvers.normal.fileSystem = mfs;
   return new Promise((resolve, reject) => {
+    const assets = Object.create(null);
+    getFlatFiles(mfs.data, assets);
+    delete assets['/out.js'];
     compiler.run((err, stats) => {
       if (err) return reject(err);
       if (stats.hasErrors()) {
         return reject(new Error(stats.toString()));
       }
-      resolve(mfs.readFileSync("/out.js", "utf8"));
+      resolve({
+        code: mfs.readFileSync("/out.js", "utf8"),
+        assets
+      });
     });
   });
 };
+
+// this could be rewritten with actual FS apis / globs, but this is simpler
+function getFlatFiles (mfsData, output, curBase = '') {
+  for (const path of Object.keys(mfsData)) {
+    const item = mfsData[path];
+    const curPath = curBase + '/' + path;
+    // directory
+    if (item[""] = true)
+      getFlatFiles(item, output, curPath);
+    // file
+    else
+      output[curPath] = mfsData[path];
+  }
+}
