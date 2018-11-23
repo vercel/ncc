@@ -22,23 +22,29 @@ function isReference(node, parent) {
 	return true;
 }
 
-const assetRegEx = /__dirname|__filename/;
+const assetRegEx = /_\_dirname|_\_filename/;
 module.exports = function (code) {
-  if (!code.match(assetRegEx))
+  const id = this.resourcePath;
+
+  if (id.endsWith('.json') || !code.match(assetRegEx))
     return this.callback(null, code);
 
   const assetNames = Object.create(null);
   const emitAsset = (assetPath) => {
+    // JS assets to support require(assetPath) and not fs-based handling
+    // NB package.json is ambiguous here...
+    if (assetPath.endsWith('.js') || assetPath.endsWith('.mjs'))
+      return;
+
     // console.log('Emitting ' + assetPath + ' for module ' + id);
     const basename = path.basename(assetPath);
     let name = basename, i = 0;
     while (assetNames[name])
       name = basename + ++i;
-    this.emitFile('assets/' + name, fs.readFileSync(assetPath));
-    return "__dirname + '/assets/" + name + "'";
-  };
 
-  const id = this.resourcePath;
+    this.emitFile('assets/' + name, fs.readFileSync(assetPath));
+    return "__dirname + '/assets/" + JSON.stringify(name).slice(1, -1) + "'";
+  };
 
   const magicString = new MagicString(code);
 
@@ -232,8 +238,11 @@ module.exports = function (code) {
           catch (e) {}
         }
         if (isFile) {
-          didRelocate = true;
-          magicString.overwrite(staticChildNode.start, staticChildNode.end, emitAsset(path.resolve(staticChildValue)));
+          const replacement = emitAsset(path.resolve(staticChildValue));
+          if (replacement) {
+            didRelocate = true;
+            magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
+          }
           staticChildNode = staticChildValue = undefined;
         }
       }

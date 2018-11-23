@@ -72,7 +72,7 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
     module: {
       rules: [{
         test: /\.(js|mjs)/,
-        use: [{ loader: path.join(__dirname, "asset-relocator.js") }]
+        use: [{ loader: __dirname + "/asset-relocator.js" }]
       }]
     },
     plugins: [

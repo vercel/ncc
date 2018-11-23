@@ -1,6 +1,6 @@
 const fs = require("fs");
 const sourceMapSupport = require('source-map-support');
-const ncc = require("../");
+const ncc = require("../src/index.js");
 const mkdirp = require("mkdirp");
 const rimraf = require("rimraf");
 const { dirname } = require("path");
