@@ -2,6 +2,20 @@ const resolve = require("resolve");
 const fs = require("fs");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
+const WebpackParser = require('webpack/lib/Parser');
+const webpackParse = WebpackParser.parse
+
+// overload the webpack parser so that we can make
+// acorn work with the node.js / commonjs semantics
+// of being able to `return` in the top level of a
+// requireable module
+// https://github.com/zeit/ncc/issues/40
+WebpackParser.parse = function (source, opts = {}) {
+  return webpackParse.call(this, source, {
+    ...opts,
+    allowReturnOutsideFunction: true
+  });
+}
 
 const SUPPORTED_EXTENSIONS = [".mjs", ".js", ".json"];
 
