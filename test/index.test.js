@@ -1,6 +1,6 @@
 const fs = require("fs");
 const sourceMapSupport = require('source-map-support');
-const ncc = require("../src/index.js");
+const ncc = require("../");
 const mkdirp = require("mkdirp");
 const rimraf = require("rimraf");
 const { dirname } = require("path");
@@ -91,3 +91,8 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     await module.exports();
   });
 }
+
+// remove me when node.js makes this the default behavior
+process.on("unhandledRejection", e => {
+  throw e;
+});

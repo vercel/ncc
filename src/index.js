@@ -78,6 +78,18 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
     plugins: [
       {
         apply(compiler) {
+          // override "not found" context to try built require first
+          compiler.hooks.compilation.tap("ncc", compilation => {
+            compilation.moduleTemplates.javascript.hooks.render.tap("ncc", (moduleSourcePostModule, module, options, dependencyTemplates) => {
+              if (module._contextDependencies &&
+                  moduleSourcePostModule._value.match(/webpackEmptyAsyncContext|webpackEmptyContext/)) {
+                return moduleSourcePostModule._value.replace('var e = new Error',
+                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` + 
+                    `\nvar e = new Error`);
+              }
+            });
+          });
+
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
             function handler(parser) {
               parser.hooks.assign.for("require").intercept({
