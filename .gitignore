@@ -3,6 +3,8 @@ dist/**/*.js
 !scripts
 !src
 !test
+!test/integration
+!test/integration/*.js
 !dist/
 !dist/ncc/
 !dist/buildin/
