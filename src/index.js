@@ -1,5 +1,6 @@
 const resolve = require("resolve");
 const fs = require("fs");
+const path = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const WebpackParser = require('webpack/lib/Parser');
@@ -68,9 +69,27 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
     externals: (...args) => resolveModule(...[...args, externals]),
+    module: {
+      rules: [{
+        test: /\.(js|mjs)/,
+        use: [{ loader: __dirname + "/asset-relocator.js" }]
+      }]
+    },
     plugins: [
       {
         apply(compiler) {
+          // override "not found" context to try built require first
+          compiler.hooks.compilation.tap("ncc", compilation => {
+            compilation.moduleTemplates.javascript.hooks.render.tap("ncc", (moduleSourcePostModule, module, options, dependencyTemplates) => {
+              if (module._contextDependencies &&
+                  moduleSourcePostModule._value.match(/webpackEmptyAsyncContext|webpackEmptyContext/)) {
+                return moduleSourcePostModule._value.replace('var e = new Error',
+                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` + 
+                    `\nvar e = new Error`);
+              }
+            });
+          });
+
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
             function handler(parser) {
               parser.hooks.assign.for("require").intercept({
@@ -100,21 +119,22 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
   compiler.outputFileSystem = mfs;
   compiler.resolvers.normal.fileSystem = mfs;
   return new Promise((resolve, reject) => {
-    const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets);
-    delete assets['/out.js'];
     compiler.run((err, stats) => {
       if (err) return reject(err);
       if (stats.hasErrors()) {
         return reject(new Error(stats.toString()));
       }
+      const assets = Object.create(null);
+      getFlatFiles(mfs.data, assets);
+      delete assets["out.js"];
+      delete assets["out.js.map"];
       const code = mfs.readFileSync("/out.js", "utf8");
       const map = sourceMap ? mfs.readFileSync("/out.js.map", "utf8") : null;
       resolve({
         code,
         map,
         assets
-      })
+      });
     });
   });
 };
@@ -125,10 +145,10 @@ function getFlatFiles (mfsData, output, curBase = '') {
     const item = mfsData[path];
     const curPath = curBase + '/' + path;
     // directory
-    if (item[""] = true)
+    if (item[""] === true)
       getFlatFiles(item, output, curPath);
     // file
-    else
-      output[curPath] = mfsData[path];
+    else if (!curPath.endsWith("/"))
+      output[curPath.substr(1)] = mfsData[path];
   }
 }

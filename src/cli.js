@@ -46,10 +46,10 @@ switch (args._[0]) {
       const mkdirp = require("mkdirp");
       mkdirp.sync(outDir);
       fs.writeFileSync(outDir + "/index.js", code);
-      Object.keys(assets).forEach(asset => {
+      for (const asset of Object.keys(asset)) {
         mkdirp.sync(path.dirname(asset));
         fs.writeFileSync(outDir + "/" + asset, assets[asset]);
-      });
+      }
     });
   break;
 

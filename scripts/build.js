@@ -15,15 +15,18 @@ async function main() {
     // to bundle it. even if we did want watching and a bigger
     // bundle, webpack (and therefore ncc) cannot currently bundle
     // chokidar, which is quite convenient
-    externals: ["chokidar"]
+    externals: ["chokidar", "./asset-relocator.js"]
   });
 
-  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length) {
+  const { code: assetRelocator, assets: assetRelocatorAssets } = await ncc(__dirname + "/../src/asset-relocator");
+
+  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length || Object.keys(assetRelocatorAssets).length) {
     console.error('Assets emitted by core build, these need to be written into the dist directory');
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
+  writeFileSync(__dirname + "/../dist/ncc/asset-relocator.js", assetRelocator);
 
   // copy webpack buildin
   await copy(
