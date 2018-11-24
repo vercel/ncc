@@ -38,9 +38,10 @@ module.exports = function (code) {
 
     // console.log('Emitting ' + assetPath + ' for module ' + id);
     const basename = path.basename(assetPath);
+    const ext = path.extname(basename);
     let name = basename, i = 0;
     while (assetNames[name])
-      name = basename + ++i;
+      name = basename.substr(0, basename.length - ext.length) + ++i + ext;
 
     this.emitFile('assets/' + name, fs.readFileSync(assetPath));
     return "__dirname + '/assets/" + JSON.stringify(name).slice(1, -1) + "'";
