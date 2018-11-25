@@ -28,7 +28,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false }).then(async ({ code, assets }) => {
       // very simple asset validation in unit tests
       if (unitTest.startsWith('asset-')) {
-        expect(Object.keys(assets).length).toBe(1);
+        expect(Object.keys(assets).length).toBeGreaterThan(0);
         expect(assets[Object.keys(assets)[0]] instanceof Buffer);
       }
       const actual = code.trim()
