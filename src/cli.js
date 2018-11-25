@@ -27,20 +27,36 @@ if (args._.length === 0) {
   process.exit(1);
 }
 
+let run = false;
+let outDir = args["--out"];
+
 switch (args._[0]) {
+  case "run":
+    if (args._.length > 2) {
+      console.error(`Error: Too many run arguments provided\n${usage}`);
+      process.exit(1);
+    }
+    if (args["--out"]) {
+      console.error(`Error: --out flag is not compatible with ncc run\n${usage}`);
+      process.exit(1);
+    }
+    outDir = resolve(require("os").tmpdir(), Math.random().toString(16).substr(2));
+    run = true;
+
+    // fallthrough
   case "build":
     if (args._.length > 2) {
       console.error(`Error: Too many build arguments provided\n${usage}`);
       process.exit(1);
     }
 
-    const ncc = require("./index.js")(resolve(args._[1] || "."), {
+    const ncc = require("./index.js")(eval("require.resolve")(resolve(args._[1] || ".")), {
       minify: !args["--no-minify"],
       externals: args["--external"]
     });
     
     ncc.then(({ code, assets }) => {
-      const outDir = args["--out"] || resolve("dist");
+      outDir = outDir || resolve("dist");
       const fs = require("fs");
       const mkdirp = require("mkdirp");
       mkdirp.sync(outDir);
@@ -48,6 +64,11 @@ switch (args._[0]) {
       for (const asset of Object.keys(assets)) {
         mkdirp.sync(path.dirname(asset));
         fs.writeFileSync(outDir + "/" + asset, assets[asset]);
+      }
+
+      if (run) {
+        const ps = require("child_process").fork(outDir + "/index.js");
+        ps.on("close", () => require("rimraf").sync(outDir));
       }
     });
   break;
