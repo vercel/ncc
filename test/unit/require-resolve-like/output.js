@@ -89,14 +89,8 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const fs = __webpack_require__(1);
-console.log(fs.readFileSync(__dirname + '/asset.txt'));
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
+// this should be a self-require not an asset!
+__webpack_require__(0)
 
 /***/ })
 /******/ ]);

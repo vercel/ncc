@@ -89,14 +89,16 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const fs = __webpack_require__(1);
-console.log(fs.readFileSync(__dirname + '/asset.txt'));
+const path = __webpack_require__(1);
+
+var binding_path =
+    binary.find(__dirname + '/package.json');
 
 /***/ }),
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = require("fs");
+module.exports = require("path");
 
 /***/ })
 /******/ ]);

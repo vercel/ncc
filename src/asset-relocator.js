@@ -40,11 +40,12 @@ module.exports = function (code) {
     const basename = path.basename(assetPath);
     const ext = path.extname(basename);
     let name = basename, i = 0;
-    while (assetNames[name])
+    while (name in assetNames && assetNames[name] !== assetPath)
       name = basename.substr(0, basename.length - ext.length) + ++i + ext;
+    assetNames[name] = assetPath;
 
-    this.emitFile('assets/' + name, fs.readFileSync(assetPath));
-    return "__dirname + '/assets/" + JSON.stringify(name).slice(1, -1) + "'";
+    this.emitFile(name, fs.readFileSync(assetPath));
+    return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
 
   const magicString = new MagicString(code);
@@ -62,7 +63,6 @@ module.exports = function (code) {
 
   let scope = attachScopes(ast, 'scope');
 
-  let fsId, readFileSyncId;
   let pathId, pathImportIds = {};
   const shadowDepths = Object.create(null);
   shadowDepths.__filename = 0;
@@ -73,31 +73,18 @@ module.exports = function (code) {
   else {
     for (const decl of ast.body) {
       // Detects:
-      // import * as fs from 'fs';
-      // import fs from 'fs';
-      // import { readFileSync } from 'fs';
       // import * as path from 'path';
       // import path from 'path';
       // import { join } from 'path';
       if (decl.type === 'ImportDeclaration') {
         const source = decl.source.value;
-        if (source === 'fs') {
-          for (const impt of decl.specifiers) {
-            if (impt.type === 'ImportNamespaceSpecifier' || impt.type === 'ImportDefaultSpecifier') {
-              fsId = impt.local.name;
-              shadowDepths[fsId] = 0;
-            } else if (impt.type === 'ImportSpecifier' && impt.imported.name === 'readFileSync') {
-              readFileSyncId = impt.local.name;
-              shadowDepths[readFileSyncId] = 0;
-            }
-          }
-        }
-        else if (source === 'path') {
+        if (source === 'path') {
           for (const impt of decl.specifiers) {
             if (impt.type === 'ImportNamespaceSpecifier' || impt.type === 'ImportDefaultSpecifier') {
               pathId = impt.local.name;
               shadowDepths[pathId] = 0;
-            } else if (impt.type === 'ImportSpecifier') {
+            }
+            else if (impt.type === 'ImportSpecifier') {
               pathImportIds[impt.local.name] = impt.imported.name;
               shadowDepths[impt.local.name] = 0;
             }
@@ -202,7 +189,7 @@ module.exports = function (code) {
               decl.init.type === 'MemberExpression' &&
               decl.init.object.type === 'Identifier' &&
               decl.init.object.name === pathId &&
-              shadowDepths.pathId === 0 &&
+              shadowDepths[pathId] === 0 &&
               decl.init.computed === false &&
               decl.init.property.type === 'Identifier') {
             pathImportIds[decl.init.property.name] = decl.id.name;
