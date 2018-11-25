@@ -22,8 +22,10 @@ together with all its dependencies, gcc-style.
 ### CLI
 
 ```bash
-$ ncc input.js -o bundle.js
+$ ncc build input.js -o dist
 ```
+
+Outputs the build of `input.js` into `dist/index.js`.
 
 ### Node.js
 
