@@ -1,7 +1,5 @@
 const { resolve } = require("path");
 const args = require("arg")({
-  "--help": Boolean,
-  "-h": "--help",
   "--external": [String],
   "-e": "--external",
   "--out": String,
@@ -10,18 +8,19 @@ const args = require("arg")({
   M: "--no-minify"
 });
 
-const usage = `ncc build <input-file> [opts]
+const usage = `Usage: ncc <cmd> <opts>
+
+Commands:
+  build <input-file> [opts]
+  run <input-file> [opts]
+  help
+  version
+
 Options:
+  -o, --out [file]      Output directory for build (defaults to dist)
   -M, --no-minify       Skip output minification
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
-  -o, --out [file]      Output directory (defaults to dist)
-  -h, --help            Show help
 `;
-
-if (args["--help"]) {
-  console.error(usage);
-  process.exit(2);
-}
 
 if (args._.length === 0) {
   console.error(`Error: No command specified\n${usage}`);
@@ -51,6 +50,14 @@ switch (args._[0]) {
         fs.writeFileSync(outDir + "/" + asset, assets[asset]);
       }
     });
+  break;
+
+  case "help":
+    console.error(usage);
+    process.exit(2);
+
+  case "version":
+    console.log(require('../package.json').version);
   break;
 
   default:
