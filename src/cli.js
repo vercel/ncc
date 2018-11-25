@@ -1,14 +1,4 @@
 const { resolve, relative, dirname, sep } = require("path");
-const args = require("arg")({
-  "--external": [String],
-  "-e": "--external",
-  "--out": String,
-  "-o": "--out",
-  "--no-minify": Boolean,
-  M: "--no-minify",
-  "--quiet": Boolean,
-  "-q": "--quiet"
-});
 
 const usage = `Usage: ncc <cmd> <opts>
 
@@ -24,6 +14,26 @@ Options:
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
 `;
+
+let args;
+try {
+  args = require("arg")({
+    "--external": [String],
+    "-e": "--external",
+    "--out": String,
+    "-o": "--out",
+    "--no-minify": Boolean,
+    M: "--no-minify",
+    "--quiet": Boolean,
+    "-q": "--quiet"
+  });
+}
+catch (e) {
+  if (e.message.indexOf('Unknown or unexpected option') === -1)
+    throw e;
+  console.error(e.message + `\n${usage}`);
+  process.exit(1);
+}
 
 function renderSummary (code, assets, outDir, buildTime) {
   if (!outDir.endsWith(sep))
@@ -45,7 +55,7 @@ function renderSummary (code, assets, outDir, buildTime) {
 
   const sizePadding = maxSize.toString().length;
 
-  const indexRender = `${codeSize.toString().padStart(sizePadding, ' ')}kB  ${outDir}${'index.js'.padEnd(maxAssetNameLength, ' ')}   [${buildTime}ms]\n`;
+  const indexRender = `${codeSize.toString().padStart(sizePadding, ' ')}kB  ${outDir}${'index.js'.padEnd(maxAssetNameLength, ' ')}   [${buildTime}ms]`;
 
   let output = "", first = true;
   for (const asset of orderedAssets) {
@@ -54,7 +64,7 @@ function renderSummary (code, assets, outDir, buildTime) {
     else
       output += "\n";
     if (codeSize < assetSizes[asset])
-      output += indexRender;
+      output += indexRender + "\n";
     output += `${assetSizes[asset].toString().padStart(sizePadding, ' ')}kB  ${outDir}${asset}`
   }
 
