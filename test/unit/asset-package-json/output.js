@@ -92,7 +92,7 @@ module.exports =
 const path = __webpack_require__(1);
 
 var binding_path =
-    binary.find(__dirname + '/assets/package.json');
+    binary.find(__dirname + '/package.json');
 
 /***/ }),
 /* 1 */

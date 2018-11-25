@@ -44,8 +44,8 @@ module.exports = function (code) {
       name = basename.substr(0, basename.length - ext.length) + ++i + ext;
     assetNames[name] = assetPath;
 
-    this.emitFile('assets/' + name, fs.readFileSync(assetPath));
-    return "__dirname + '/assets/" + JSON.stringify(name).slice(1, -1) + "'";
+    this.emitFile(name, fs.readFileSync(assetPath));
+    return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
 
   const magicString = new MagicString(code);

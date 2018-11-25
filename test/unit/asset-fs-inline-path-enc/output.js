@@ -91,7 +91,7 @@ module.exports =
 
 const fs = __webpack_require__(1);
 const { join } = __webpack_require__(2);
-console.log(fs.readFileSync(__dirname + '/assets/asset.txt', 'utf8'));
+console.log(fs.readFileSync(__dirname + '/asset.txt', 'utf8'));
 
 /***/ }),
 /* 1 */

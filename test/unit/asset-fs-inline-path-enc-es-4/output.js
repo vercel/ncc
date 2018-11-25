@@ -112,7 +112,7 @@ __webpack_require__.r(__webpack_exports__);
 
 const join = path__WEBPACK_IMPORTED_MODULE_1__["join"];
 
-console.log(fs__WEBPACK_IMPORTED_MODULE_0___default.a.readFileSync(__dirname + '/assets/asset.txt', 'utf8'));
+console.log(fs__WEBPACK_IMPORTED_MODULE_0___default.a.readFileSync(__dirname + '/asset.txt', 'utf8'));
 
 /***/ })
 /******/ ]);

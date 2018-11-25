@@ -90,7 +90,7 @@ module.exports =
 /***/ (function(module, exports, __webpack_require__) {
 
 const fs = __webpack_require__(1);
-console.log(fs.readFileSync(__dirname + '/assets/asset.txt'));
+console.log(fs.readFileSync(__dirname + '/asset.txt'));
 
 /***/ }),
 /* 1 */
