@@ -32,8 +32,10 @@ Outputs the build of `input.js` into `dist/index.js`.
 ```js
 require('@zeit/ncc')('/path/to/input', {
   minify: true  // default
-}).then(code => {
-  console.log(code)
+}).then(({ code, assets }) => {
+  console.log(code);
+  // assets is an object of asset file names to sources
+  // expected relative to the output code (if any)
 })
 ```
 
