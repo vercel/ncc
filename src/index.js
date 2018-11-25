@@ -3,22 +3,23 @@ const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
-const WebpackParser = require('webpack/lib/Parser');
-const webpackParse = WebpackParser.parse
+const tsLoader = require("ts-loader");
+const WebpackParser = require("webpack/lib/Parser");
+const webpackParse = WebpackParser.parse;
 
 // overload the webpack parser so that we can make
 // acorn work with the node.js / commonjs semantics
 // of being able to `return` in the top level of a
 // requireable module
 // https://github.com/zeit/ncc/issues/40
-WebpackParser.parse = function (source, opts = {}) {
+WebpackParser.parse = function(source, opts = {}) {
   return webpackParse.call(this, source, {
     ...opts,
     allowReturnOutsideFunction: true
   });
-}
+};
 
-const SUPPORTED_EXTENSIONS = [".mjs", ".js", ".json"];
+const SUPPORTED_EXTENSIONS = [".tsx", ".ts", ".mjs", ".js", ".json"];
 
 function resolveModule(context, request, callback, forcedExternals = []) {
   const resolveOptions = {
@@ -44,7 +45,10 @@ function resolveModule(context, request, callback, forcedExternals = []) {
   });
 }
 
-module.exports = async (entry, { externals = [], minify = true, sourceMap = false } = {}) => {
+module.exports = async (
+  entry,
+  { externals = [], minify = true, sourceMap = false } = {}
+) => {
   const mfs = new MemoryFS();
   const compiler = webpack({
     entry,
@@ -70,24 +74,45 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
     node: false,
     externals: (...args) => resolveModule(...[...args, externals]),
     module: {
-      rules: [{
-        test: /\.(js|mjs)/,
-        use: [{ loader: __dirname + "/asset-relocator.js" }]
-      }]
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: "ts-loader",
+          exclude: /node_modules/
+        },
+        {
+          test: /\.(js|mjs)/,
+          use: [{ loader: __dirname + "/asset-relocator.js" }]
+        }
+      ]
     },
     plugins: [
       {
         apply(compiler) {
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
-            compilation.moduleTemplates.javascript.hooks.render.tap("ncc", (moduleSourcePostModule, module, options, dependencyTemplates) => {
-              if (module._contextDependencies &&
-                  moduleSourcePostModule._value.match(/webpackEmptyAsyncContext|webpackEmptyContext/)) {
-                return moduleSourcePostModule._value.replace('var e = new Error',
-                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` + 
-                    `\nvar e = new Error`);
+            compilation.moduleTemplates.javascript.hooks.render.tap(
+              "ncc",
+              (
+                moduleSourcePostModule,
+                module,
+                options,
+                dependencyTemplates
+              ) => {
+                if (
+                  module._contextDependencies &&
+                  moduleSourcePostModule._value.match(
+                    /webpackEmptyAsyncContext|webpackEmptyContext/
+                  )
+                ) {
+                  return moduleSourcePostModule._value.replace(
+                    "var e = new Error",
+                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` +
+                      `\nvar e = new Error`
+                  );
+                }
               }
-            });
+            );
           });
 
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
@@ -140,15 +165,13 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles (mfsData, output, curBase = '') {
+function getFlatFiles(mfsData, output, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
-    const curPath = curBase + '/' + path;
+    const curPath = curBase + "/" + path;
     // directory
-    if (item[""] === true)
-      getFlatFiles(item, output, curPath);
+    if (item[""] === true) getFlatFiles(item, output, curPath);
     // file
-    else if (!curPath.endsWith("/"))
-      output[curPath.substr(1)] = mfsData[path];
+    else if (!curPath.endsWith("/")) output[curPath.substr(1)] = mfsData[path];
   }
 }
