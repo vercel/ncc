@@ -38,5 +38,9 @@ require('@zeit/ncc')('/path/to/input', {
 ## Known issues
 
 - [ ] Minification is creating problems
-- [ ] FS inlining is not implemented
 - [ ] Native modules are not supported
+
+## Caveats
+
+- Files / assets are relocated based on a static evaluator. Dynamic non-statically analyzable asset loads may not work out.
+- Dynamic requires are inlined only so far as they are statically analyzable. There may be ways to improve this as discussed in https://github.com/zeit/ncc/issues/41.
