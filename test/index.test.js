@@ -1,22 +1,23 @@
 const fs = require("fs");
-const sourceMapSupport = require('source-map-support');
-const ncc = require("../");
+const ncc = global.coverage ? require("../src/index") : require("../");
 const mkdirp = require("mkdirp");
 const rimraf = require("rimraf");
 const { dirname } = require("path");
 
 const sourceMapSources = {};
-sourceMapSupport.install({
-  retrieveSourceMap (source) {
-    if (!sourceMapSources[source])
-      return null;
+if (!global.coverage) {
+  require('source-map-support').install({
+    retrieveSourceMap (source) {
+      if (!sourceMapSources[source])
+        return null;
 
-    return {
-      url: source,
-      map: sourceMapSources[source]
-    };
-  }
-});
+      return {
+        url: source,
+        map: sourceMapSources[source]
+      };
+    }
+  });
+}
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
