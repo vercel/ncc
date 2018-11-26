@@ -31,7 +31,7 @@ Outputs the build of `input.js` into `dist/index.js`.
 $ ncc run input.js
 ```
 
-Build to a temporary folder and run the executable.
+Build to a temporary folder and run the built JS file through Node.js.
 
 ### Node.js
 
