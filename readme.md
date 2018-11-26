@@ -28,10 +28,10 @@ $ ncc build input.js -o dist
 Outputs the build of `input.js` into `dist/index.js`.
 
 ```bash
-$ ncc run input.js
+$ ncc run input.js --source-map
 ```
 
-Build to a temporary folder and run the executable.
+Build to a temporary folder and run the executable, with source maps for debugging.
 
 ### Node.js
 

@@ -26,7 +26,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
     preserveSymlinks: true,
     extensions: SUPPORTED_EXTENSIONS
   };
-
+  
   if (new Set(forcedExternals).has(request)) {
     console.error(`ncc: Skipping bundling "${request}" per config`);
     return callback(null, `commonjs ${request}`);
@@ -44,7 +44,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
   });
 }
 
-module.exports = async (entry, { externals = [], minify = true, sourceMap = false } = {}) => {
+module.exports = async (entry, { externals = [], minify = true, sourcemap = false, filename = "index.js" } = {}) => {
   const mfs = new MemoryFS();
   const compiler = webpack({
     entry,
@@ -52,12 +52,12 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
       nodeEnv: false,
       minimize: false
     },
-    devtool: sourceMap ? "cheap-source-map" : false,
+    devtool: sourcemap ? "cheap-source-map" : false,
     mode: "production",
     target: "node",
     output: {
       path: "/",
-      filename: "out.js",
+      filename,
       libraryTarget: "commonjs2"
     },
     resolve: {
@@ -126,10 +126,10 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
       }
       const assets = Object.create(null);
       getFlatFiles(mfs.data, assets);
-      delete assets["out.js"];
-      delete assets["out.js.map"];
-      const code = mfs.readFileSync("/out.js", "utf8");
-      const map = sourceMap ? mfs.readFileSync("/out.js.map", "utf8") : null;
+      delete assets["index.js"];
+      delete assets["index.js.map"];
+      const code = mfs.readFileSync("/index.js", "utf8");
+      const map = sourcemap ? mfs.readFileSync("/index.js.map", "utf8") : null;
       resolve({
         code,
         map,
