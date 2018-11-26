@@ -1,6 +1,7 @@
 {
   "name": "@zeit/ncc",
   "version": "0.1.14",
+  "repository": "zeit/ncc",
   "license": "MIT",
   "main": "./dist/ncc/index.js",
   "bin": {
