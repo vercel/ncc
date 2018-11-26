@@ -31,7 +31,7 @@ Outputs the build of `input.js` into `dist/index.js`.
 $ ncc run input.js --source-map
 ```
 
-Build to a temporary folder and run the executable, with source maps for debugging.
+Build to a temporary folder and run the built JS file through Node.js, with source maps support for debugging.
 
 ### Node.js
 
