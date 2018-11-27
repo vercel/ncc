@@ -107,7 +107,7 @@ switch (args._[0]) {
       minify: !args["--no-minify"],
       externals: args["--external"]
     });
-    
+
     ncc.then(({ code, assets }) => {
       outDir = outDir || resolve("dist");
       const fs = require("fs");
@@ -126,6 +126,9 @@ switch (args._[0]) {
         const ps = require("child_process").fork(outDir + "/index.js");
         ps.on("close", () => require("rimraf").sync(outDir));
       }
+    }, (err) => {
+      console.error(err.stack);
+      process.exit(1);
     });
   break;
 
