@@ -96,6 +96,9 @@ module.exports = function (code) {
   let didRelocate = false;
 
   function computeStaticValue (expr, id) {
+    // function expression analysis disabled due to static-eval locals bug
+    if (expr.type === 'FunctionExpression')
+      return;
     const vars = {};
     if (shadowDepths.__filename === 0)
       vars.__dirname = path.resolve(id, '..');
