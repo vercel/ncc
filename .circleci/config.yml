@@ -15,3 +15,6 @@ jobs:
       - run:
           name: Integration tests
           command: yarn test
+      - run:
+          name: Coverage
+          command: yarn test-coverage

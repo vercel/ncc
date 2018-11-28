@@ -1,5 +1,8 @@
 # ncc
 
+[![Build Status](https://circleci.com/gh/zeit/ncc.svg?&style=shield)](https://circleci.com/gh/zeit/workflows/ncc)
+[![codecov](https://codecov.io/gh/zeit/ncc/branch/master/graph/badge.svg)](https://codecov.io/gh/zeit/ncc)
+
 Simple CLI for compiling a Node.js module into a single file,
 together with all its dependencies, gcc-style.
 
@@ -37,7 +40,9 @@ Build to a temporary folder and run the built JS file through Node.js.
 
 ```js
 require('@zeit/ncc')('/path/to/input', {
-  minify: true  // default
+  minify: true, // default
+  // externals to leave as requires of the build
+  externals: ["externalpackage"] 
 }).then(({ code, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources
