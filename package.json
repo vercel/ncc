@@ -11,7 +11,7 @@
     "build": "node scripts/build",
     "codecov": "codecov",
     "test": "npm run build && jest",
-    "test-coverage": "jest --coverage --globals \"{\\\"coverage\\\":true}\"",
+    "test-coverage": "jest --coverage --globals \"{\\\"coverage\\\":true}\" && codecov",
     "prepublish": "npm test"
   },
   "devDependencies": {
