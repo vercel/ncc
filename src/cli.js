@@ -111,7 +111,6 @@ switch (args._[0]) {
       externals: args["--external"],
       sourcemap: args["--source-map"]
     });
-    
     ncc.then(({ code, map, assets }) => {
       outDir = outDir || resolve("dist");
       const fs = require("fs");
@@ -135,6 +134,9 @@ switch (args._[0]) {
         });
         ps.on("close", () => require("rimraf").sync(outDir));
       }
+    }, (err) => {
+      console.error(err.stack);
+      process.exit(1);
     });
   break;
 
