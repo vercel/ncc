@@ -70,10 +70,15 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
     node: false,
     externals: (...args) => resolveModule(...[...args, externals]),
     module: {
-      rules: [{
-        test: /\.(js|mjs)/,
-        use: [{ loader: __dirname + "/asset-relocator.js" }]
-      }]
+      rules: [
+        {
+          parser: { amd: false }
+        },
+        {
+          test: /\.(js|mjs)/,
+          use: [{ loader: __dirname + "/asset-relocator.js" }]
+        }
+      ]
     },
     plugins: [
       {
