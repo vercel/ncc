@@ -23,7 +23,7 @@ try {
     "--out": String,
     "-o": "--out",
     "--no-minify": Boolean,
-    M: "--no-minify",
+    "-M": "--no-minify",
     "--quiet": Boolean,
     "-q": "--quiet"
   });
