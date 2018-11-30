@@ -63,7 +63,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!integrationTest.endsWith(".js")) continue;
   it(`should evaluate ${integrationTest} without errors`, async () => {
-    const { code, map, assets } = await ncc(__dirname + "/integration/" + integrationTest, { sourceMap: true });
+    const { code, map, assets } = await ncc(__dirname + "/integration/" + integrationTest, { sourcemap: true });
     module.exports = null;
     sourceMapSources[integrationTest] = map;
     // integration tests will load assets relative to __dirname
