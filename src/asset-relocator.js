@@ -22,7 +22,7 @@ function isReference(node, parent) {
 	return true;
 }
 
-const assetRegEx = /_\_dirname|_\_filename/;
+const assetRegEx = /_\_dirname|_\_filename|require\.main/;
 module.exports = function (code) {
   const id = this.resourcePath;
 
@@ -93,7 +93,7 @@ module.exports = function (code) {
       }
     }
   }
-  let didRelocate = false;
+  let transformed = false;
 
   function computeStaticValue (expr, id) {
     // function expression analysis disabled due to static-eval locals bug
@@ -149,8 +149,7 @@ module.exports = function (code) {
       // __dirname and __filename only currently
       // Can add require.resolve, import.meta.url, even path-like environment variables
       if (node.type === 'Identifier' && isReference(node, parent)) {
-        if (!shadowDepths[node.name] &&
-            (node.name === '__dirname' || node.name === '__filename')) {
+        if ((node.name === '__dirname' || node.name === '__filename') && !shadowDepths[node.name]) {
           curStaticValue = computeStaticValue(node, id);
           // if it computes, then we start backtracking
           if (curStaticValue) {
@@ -160,11 +159,22 @@ module.exports = function (code) {
         }
       }
 
+      else if (node.type === 'MemberExpression' &&
+               node.object.type === 'Identifier' &&
+               node.object.name === 'require' &&
+               !shadowDepths.require &&
+               node.property.type === 'Identifier' &&
+               node.property.name === 'main' &&
+               !node.computed) {
+        magicString.overwrite(node.object.start, node.object.end, '__non_webpack_require__');
+        transformed = true;
+      }
+
       // for now we only support top-level variable declarations
       // so "var { join } = require('path')" will only detect in the top scope.
       // Intermediate scope handling for these requires is straightforward, but
       // would need nested shadow depth handling of the pathIds.
-      if (parent === ast && node.type === 'VariableDeclaration') {
+      else if (parent === ast && node.type === 'VariableDeclaration') {
         for (const decl of node.declarations) {
           // var path = require('path')
           if (decl.id.type === 'Identifier' &&
@@ -231,7 +241,7 @@ module.exports = function (code) {
         if (isFile) {
           const replacement = emitAsset(path.resolve(staticChildValue));
           if (replacement) {
-            didRelocate = true;
+            transformed = true;
             magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
           }
           staticChildNode = staticChildValue = undefined;
@@ -240,7 +250,7 @@ module.exports = function (code) {
     }
   });
 
-  if (!didRelocate)
+  if (!transformed)
     return this.callback(null, code);
 
   code = magicString.toString();
