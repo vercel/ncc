@@ -73,7 +73,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
       mkdirp.sync(dirname(assetPath));
       fs.writeFileSync(assetPath, assets[asset]);
     }
-    (__dirname => {
+    ((__dirname, require) => {
       try {
         eval(`${code}\n//# sourceURL=${integrationTest}`);
       }
@@ -83,7 +83,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
         fs.writeFileSync(__dirname + "/index.js", code);
         throw e;
       }
-    })(__dirname + "/tmp");
+    })(__dirname + "/tmp", id => require(id.startsWith('./') ? './tmp/' + id.substr(2) : id));
     if ("function" !== typeof module.exports) {
       throw new Error(
         `Integration test "${integrationTest}" evaluation failed. It does not export a function`

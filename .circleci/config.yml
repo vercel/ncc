@@ -9,11 +9,14 @@ jobs:
       - run:
           name: Installing dependencies
           command: yarn install
+      - run:
+          name: Build unit test binary
+          command: yarn build-test-binary
       # - run:
       #     name: Linting
       #     command: yarn lint
       - run:
-          name: Integration tests
+          name: Unit & integration tests
           command: yarn test
       - run:
           name: Coverage

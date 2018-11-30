@@ -18,7 +18,7 @@ WebpackParser.parse = function (source, opts = {}) {
   });
 }
 
-const SUPPORTED_EXTENSIONS = [".js", ".mjs", ".json"];
+const SUPPORTED_EXTENSIONS = [".js", ".mjs", ".json", ".node"];
 
 function resolveModule(context, request, callback, forcedExternals = []) {
   const resolveOptions = {
@@ -46,6 +46,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
 
 module.exports = async (entry, { externals = [], minify = true, sourceMap = false, filename = "index.js" } = {}) => {
   const mfs = new MemoryFS();
+  const assetNames = Object.create(null);
   const compiler = webpack({
     entry,
     optimization: {
@@ -75,8 +76,18 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
           parser: { amd: false }
         },
         {
-          test: /\.(js|mjs)/,
-          use: [{ loader: __dirname + "/asset-relocator.js" }]
+          test: /\.(js|mjs)$/,
+          use: [{
+            loader: __dirname + "/loaders/relocate-loader.js",
+            options: { assetNames }
+          }]
+        },
+        {
+          test: /\.node$/,
+          use: [{
+            loader: __dirname + "/loaders/node-loader.js",
+            options: { assetNames }
+          }]
         }
       ]
     },

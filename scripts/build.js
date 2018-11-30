@@ -15,21 +15,24 @@ async function main() {
     // to bundle it. even if we did want watching and a bigger
     // bundle, webpack (and therefore ncc) cannot currently bundle
     // chokidar, which is quite convenient
-    externals: ["chokidar", "./asset-relocator.js"]
+    externals: ["chokidar", "./relocate-loader.js"]
   });
 
-  const { code: assetRelocator, assets: assetRelocatorAssets } = await ncc(__dirname + "/../src/asset-relocator");
-
+  const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(__dirname + "/../src/loaders/relocate-loader");
+  const { code: nodeLoader, assets: nodeLoaderAssets } = await ncc(__dirname + "/../src/loaders/node-loader");
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(require.resolve("source-map-support/register"));
 
-  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length || Object.keys(assetRelocatorAssets).length || Object.keys(sourcemapAssets).length) {
+  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length ||
+      Object.keys(relocateLoaderAssets).length || Object.keys(nodeLoaderAssets).length ||
+      Object.keys(sourcemapAssets).length) {
     console.error('Assets emitted by core build, these need to be written into the dist directory');
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
-  writeFileSync(__dirname + "/../dist/ncc/asset-relocator.js", assetRelocator);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/node-loader.js", nodeLoader);
 
   // copy webpack buildin
   await copy(

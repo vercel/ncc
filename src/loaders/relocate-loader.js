@@ -6,6 +6,8 @@ const { attachScopes } = require('rollup-pluginutils');
 const evaluate = require('static-eval');
 const acorn = require('acorn');
 const bindings = require('bindings');
+const getUniqueAssetName = require('../utils/dedupe-names');
+const { getOptions } = require('loader-utils');
 
 // binary support for inlining logic from - node-pre-gyp/lib/pre-binding.js
 function isPregypId (id) {
@@ -55,20 +57,16 @@ module.exports = function (code) {
   if (id.endsWith('.json') || !code.match(relocateRegEx))
     return this.callback(null, code);
 
-  const assetNames = Object.create(null);
+  const options = getOptions(this);
   const emitAsset = (assetPath) => {
     // JS assets to support require(assetPath) and not fs-based handling
     // NB package.json is ambiguous here...
     if (assetPath.endsWith('.js') || assetPath.endsWith('.mjs'))
       return;
 
+    const name = getUniqueAssetName(assetPath, options.assetNames);
+
     // console.log('Emitting ' + assetPath + ' for module ' + id);
-    const basename = path.basename(assetPath);
-    const ext = path.extname(basename);
-    let name = basename, i = 0;
-    while (name in assetNames && assetNames[name] !== assetPath)
-      name = basename.substr(0, basename.length - ext.length) + ++i + ext;
-    assetNames[name] = assetPath;
 
     this.emitFile(name, fs.readFileSync(assetPath));
     return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
@@ -225,9 +223,9 @@ module.exports = function (code) {
       // __dirname,  __filename, binary only currently as well as require('bindings')(...)
       // Can add require.resolve, import.meta.url, even path-like environment variables
       if (node.type === 'Identifier' && isExpressionReference(node, parent)) {
-        if ((node.name === '__dirname' ||
-            node.name === '__filename' ||
-            node.name === pregypId || node.name === bindingsId) && !shadowDepths[node.name]) {
+        if (!shadowDepths[node.name] &&
+            (node.name === '__dirname' || node.name === '__filename' ||
+            node.name === pregypId || node.name === bindingsId)) {
           staticChildValue = computeStaticValue(node, false);
           // if it computes, then we start backtracking
           if (staticChildValue) {
