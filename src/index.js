@@ -18,7 +18,7 @@ WebpackParser.parse = function (source, opts = {}) {
   });
 }
 
-const SUPPORTED_EXTENSIONS = [".mjs", ".js", ".json"];
+const SUPPORTED_EXTENSIONS = [".js", ".mjs", ".json"];
 
 function resolveModule(context, request, callback, forcedExternals = []) {
   const resolveOptions = {
@@ -70,10 +70,15 @@ module.exports = async (entry, { externals = [], minify = true, sourcemap = fals
     node: false,
     externals: (...args) => resolveModule(...[...args, externals]),
     module: {
-      rules: [{
-        test: /\.(js|mjs)/,
-        use: [{ loader: __dirname + "/asset-relocator.js" }]
-      }]
+      rules: [
+        {
+          parser: { amd: false }
+        },
+        {
+          test: /\.(js|mjs)/,
+          use: [{ loader: __dirname + "/asset-relocator.js" }]
+        }
+      ]
     },
     plugins: [
       {

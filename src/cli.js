@@ -24,7 +24,7 @@ try {
     "--out": String,
     "-o": "--out",
     "--no-minify": Boolean,
-    M: "--no-minify",
+    "-M": "--no-minify",
     "--source-map": Boolean,
     "-s": "--source-map",
     "--quiet": Boolean,
