@@ -43,7 +43,7 @@ require('@zeit/ncc')('/path/to/input', {
   minify: true, // default
   // externals to leave as requires of the build
   externals: ["externalpackage"],
-  sourcemap: true // default
+  sourceMap: true // default
 }).then(({ code, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources
