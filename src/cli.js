@@ -11,6 +11,7 @@ Commands:
 Options:
   -o, --out [file]      Output directory for build (defaults to dist)
   -M, --no-minify       Skip output minification
+  -S, --no-source-map   Skip source map output
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
 `;
@@ -24,6 +25,8 @@ try {
     "-o": "--out",
     "--no-minify": Boolean,
     "-M": "--no-minify",
+    "--no-source-map": Boolean,
+    "-S": "--no-source-map",
     "--quiet": Boolean,
     "-q": "--quiet"
   });
@@ -36,7 +39,7 @@ catch (e) {
 }
 
 function renderSummary (code, assets, outDir, buildTime) {
-  if (!outDir.endsWith(sep))
+  if (outDir && !outDir.endsWith(sep))
     outDir += sep;
   const codeSize = Math.round(Buffer.byteLength(code, 'utf8') / 1024);
   const assetSizes = Object.create(null);
@@ -105,15 +108,18 @@ switch (args._[0]) {
     const startTime = Date.now();
     const ncc = require("./index.js")(eval("require.resolve")(resolve(args._[1] || ".")), {
       minify: !args["--no-minify"],
-      externals: args["--external"]
+      externals: args["--external"],
+      sourceMap: !args["--no-source-map"]
     });
-
-    ncc.then(({ code, assets }) => {
+    ncc.then(({ code, map, assets }) => {
       outDir = outDir || resolve("dist");
       const fs = require("fs");
       const mkdirp = require("mkdirp");
       mkdirp.sync(outDir);
       fs.writeFileSync(outDir + "/index.js", code);
+      if (map)
+        fs.writeFileSync(outDir + "/index.js.map", map);
+
       for (const asset of Object.keys(assets)) {
         mkdirp.sync(dirname(asset));
         fs.writeFileSync(outDir + "/" + asset, assets[asset]);
@@ -123,7 +129,9 @@ switch (args._[0]) {
         console.log(renderSummary(code, assets, run ? '' : relative(process.cwd(), outDir), Date.now() - startTime));
 
       if (run) {
-        const ps = require("child_process").fork(outDir + "/index.js");
+        const ps = require("child_process").fork(outDir + "/index.js", {
+          execArgv: map ? ["-r", resolve(__dirname, "../dist/ncc/sourcemap-register")] : []
+        });
         ps.on("close", () => require("rimraf").sync(outDir));
       }
     }, (err) => {
