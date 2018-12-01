@@ -17,6 +17,7 @@
   "devDependencies": {
     "@sentry/node": "^4.3.0",
     "acorn": "^6.0.4",
+    "analytics-node": "^3.3.0",
     "apollo-server-express": "^2.2.2",
     "arg": "^2.0.0",
     "auth0": "^2.14.0",
