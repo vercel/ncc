@@ -109,7 +109,7 @@ switch (args._[0]) {
     const ncc = require("./index.js")(eval("require.resolve")(resolve(args._[1] || ".")), {
       minify: !args["--no-minify"],
       externals: args["--external"],
-      sourcemap: !args["--no-source-map"]
+      sourceMap: !args["--no-source-map"]
     });
     ncc.then(({ code, map, assets }) => {
       outDir = outDir || resolve("dist");
