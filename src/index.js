@@ -44,7 +44,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
   });
 }
 
-module.exports = async (entry, { externals = [], minify = true, sourcemap = false, filename = "index.js" } = {}) => {
+module.exports = async (entry, { externals = [], minify = true, sourceMap = false, filename = "index.js" } = {}) => {
   const mfs = new MemoryFS();
   const compiler = webpack({
     entry,
@@ -52,7 +52,7 @@ module.exports = async (entry, { externals = [], minify = true, sourcemap = fals
       nodeEnv: false,
       minimize: false
     },
-    devtool: sourcemap ? "cheap-source-map" : false,
+    devtool: sourceMap ? "cheap-source-map" : false,
     mode: "production",
     target: "node",
     output: {
@@ -134,7 +134,7 @@ module.exports = async (entry, { externals = [], minify = true, sourcemap = fals
       delete assets["index.js"];
       delete assets["index.js.map"];
       const code = mfs.readFileSync("/index.js", "utf8");
-      const map = sourcemap ? mfs.readFileSync("/index.js.map", "utf8") : null;
+      const map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
       resolve({
         code,
         map,
