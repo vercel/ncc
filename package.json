@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@azure/cosmos": "^2.0.5",
+    "@google-cloud/bigquery": "^2.0.1",
     "@sentry/node": "^4.3.0",
     "acorn": "^6.0.4",
     "analytics-node": "^3.3.0",
