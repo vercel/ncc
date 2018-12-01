@@ -34,7 +34,7 @@ Outputs the build of `input.js` into `dist/index.js`.
 $ ncc run input.js
 ```
 
-Build to a temporary folder and run the built JS file through Node.js.
+Build to a temporary folder and run the built JS file through Node.js, with source maps support for debugging.
 
 ### Node.js
 
@@ -42,7 +42,8 @@ Build to a temporary folder and run the built JS file through Node.js.
 require('@zeit/ncc')('/path/to/input', {
   minify: true, // default
   // externals to leave as requires of the build
-  externals: ["externalpackage"] 
+  externals: ["externalpackage"],
+  sourceMap: true // default
 }).then(({ code, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources

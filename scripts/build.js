@@ -20,13 +20,16 @@ async function main() {
 
   const { code: assetRelocator, assets: assetRelocatorAssets } = await ncc(__dirname + "/../src/asset-relocator");
 
-  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length || Object.keys(assetRelocatorAssets).length) {
+  const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(require.resolve("source-map-support/register"));
+
+  if (Object.keys(cliAssets).length || Object.keys(indexAssets).length || Object.keys(assetRelocatorAssets).length || Object.keys(sourcemapAssets).length) {
     console.error('Assets emitted by core build, these need to be written into the dist directory');
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
   writeFileSync(__dirname + "/../dist/ncc/asset-relocator.js", assetRelocator);
+  writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
 
   // copy webpack buildin
   await copy(
