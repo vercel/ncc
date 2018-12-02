@@ -22,6 +22,11 @@ together with all its dependencies, gcc-style.
 
 ## Usage
 
+### Installation
+```bash
+npm i -g @zeit/ncc
+```
+
 ### CLI
 
 ```bash
