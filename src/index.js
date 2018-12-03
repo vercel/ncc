@@ -2,7 +2,7 @@ const resolve = require("resolve");
 const fs = require("fs");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
-const WebpackParser = require('webpack/lib/Parser');
+const WebpackParser = require("webpack/lib/Parser");
 const webpackParse = WebpackParser.parse;
 const terser = require("terser");
 const shebangRegEx = require('./utils/shebang');
@@ -12,14 +12,14 @@ const shebangRegEx = require('./utils/shebang');
 // of being able to `return` in the top level of a
 // requireable module
 // https://github.com/zeit/ncc/issues/40
-WebpackParser.parse = function (source, opts = {}) {
+WebpackParser.parse = function(source, opts = {}) {
   return webpackParse.call(this, source, {
     ...opts,
     allowReturnOutsideFunction: true
   });
-}
+};
 
-const SUPPORTED_EXTENSIONS = [".js", ".mjs", ".json", ".node"];
+const SUPPORTED_EXTENSIONS = [".ts", ".tsx", ".js", ".mjs", ".json", ".node"];
 
 function resolveModule(context, request, callback, forcedExternals = []) {
   const resolveOptions = {
@@ -27,7 +27,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
     preserveSymlinks: true,
     extensions: SUPPORTED_EXTENSIONS
   };
-  
+
   if (new Set(forcedExternals).has(request)) {
     console.error(`ncc: Skipping bundling "${request}" per config`);
     return callback(null, `commonjs ${request}`);
@@ -45,7 +45,15 @@ function resolveModule(context, request, callback, forcedExternals = []) {
   });
 }
 
-module.exports = async (entry, { externals = [], minify = false, sourceMap = false, filename = "index.js" } = {}) => {
+module.exports = async (
+  entry,
+  {
+    externals = [],
+    minify = false,
+    sourceMap = false,
+    filename = "index.js"
+  } = {}
+) => {
   const shebangMatch = fs.readFileSync(resolve.sync(entry)).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
   const assetNames = Object.create(null);
@@ -85,6 +93,13 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
           }]
         },
         {
+          test: /\.node$/,
+          use: [{
+            loader: __dirname + "/loaders/node-loader.js",
+            options: { assetNames, assets }
+          }]
+        },
+        {
           test: /\.(js|mjs)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
@@ -92,11 +107,8 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
           }]
         },
         {
-          test: /\.node$/,
-          use: [{
-            loader: __dirname + "/loaders/node-loader.js",
-            options: { assetNames, assets }
-          }]
+          test: /\.tsx?$/,
+          use: [{ loader: __dirname + "/loaders/ts-loader.js" }]
         }
       ]
     },
@@ -105,14 +117,28 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
         apply(compiler) {
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
-            compilation.moduleTemplates.javascript.hooks.render.tap("ncc", (moduleSourcePostModule, module, options, dependencyTemplates) => {
-              if (module._contextDependencies &&
-                  moduleSourcePostModule._value.match(/webpackEmptyAsyncContext|webpackEmptyContext/)) {
-                return moduleSourcePostModule._value.replace('var e = new Error',
-                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` + 
-                    `\nvar e = new Error`);
+            compilation.moduleTemplates.javascript.hooks.render.tap(
+              "ncc",
+              (
+                moduleSourcePostModule,
+                module,
+                options,
+                dependencyTemplates
+              ) => {
+                if (
+                  module._contextDependencies &&
+                  moduleSourcePostModule._value.match(
+                    /webpackEmptyAsyncContext|webpackEmptyContext/
+                  )
+                ) {
+                  return moduleSourcePostModule._value.replace(
+                    "var e = new Error",
+                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` +
+                      `\nvar e = new Error`
+                  );
+                }
               }
-            });
+            );
           });
 
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
@@ -198,15 +224,13 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles (mfsData, output, curBase = '') {
+function getFlatFiles(mfsData, output, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
-    const curPath = curBase + '/' + path;
+    const curPath = curBase + "/" + path;
     // directory
-    if (item[""] === true)
-      getFlatFiles(item, output, curPath);
+    if (item[""] === true) getFlatFiles(item, output, curPath);
     // file
-    else if (!curPath.endsWith("/"))
-      output[curPath.substr(1)] = mfsData[path];
+    else if (!curPath.endsWith("/")) output[curPath.substr(1)] = mfsData[path];
   }
 }
