@@ -17,8 +17,9 @@ together with all its dependencies, gcc-style.
 ## Design goals
 
 - Zero configuration
-- Only support Node.js (soon, optionally with TypeScript) codebases
-- Make it work as well as possible with the entire Node.js / npm ecosystem
+- TypeScript built-in
+- Only supports Node.js programs as input / output
+- Support all Node.js patterns and npm modules
 
 ## Usage
 
@@ -41,7 +42,20 @@ $ ncc run input.js
 
 Build to a temporary folder and run the built JS file through Node.js, with source maps support for debugging.
 
-### Node.js
+### With TypeScript
+
+The only requirement is to point `ncc` to `.ts` or `.tsx` files. A `tsconfig.json`
+file is necessary. Most likely you want to indicate `es2015` support:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2015"
+  }
+}
+```
+
+### Programmatically From Node.js
 
 ```js
 require('@zeit/ncc')('/path/to/input', {
