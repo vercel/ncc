@@ -16,7 +16,7 @@ function isPregypId (id) {
 const versioning = require('node-pre-gyp/lib/util/versioning.js');
 const napi = require('node-pre-gyp/lib/util/napi.js');
 const pregyp = {
-  find(package_json_path, opts) {
+  find (package_json_path, opts) {
     const package_json = JSON.parse(fs.readFileSync(package_json_path).toString());
     versioning.validate_config(package_json, opts);
     var napi_build_version;
@@ -30,7 +30,7 @@ const pregyp = {
   }
 };
 
-function isReference(node, parent) {
+function isExpressionReference(node, parent) {
 	if (parent.type === 'MemberExpression') return parent.computed || node === parent.object;
 
 	// disregard the `bar` in { bar: foo }
@@ -40,7 +40,10 @@ function isReference(node, parent) {
 	if (parent.type === 'MethodDefinition') return false;
 
 	// disregard the `bar` in `export { foo as bar }`
-	if (parent.type === 'ExportSpecifier' && node !== parent.local) return false;
+  if (parent.type === 'ExportSpecifier' && node !== parent.local) return false;
+
+  // disregard the `bar` in var bar = asdf
+  if (parent.type === 'VariableDeclarator' && node.id === node) return false;
 
 	return true;
 }
@@ -154,7 +157,7 @@ module.exports = function (code) {
       return bindings(opts);
     };
   }
-  function computeStaticValue (expr) {
+  function computeStaticValue (expr, bindingsReq) {
     staticBindingsInstance = false;
     // function expression analysis disabled due to static-eval locals bug
     if (expr.type === 'FunctionExpression')
@@ -180,13 +183,10 @@ module.exports = function (code) {
       if (shadowDepths[pathFn] === 0)
         vars[pathFn] = path[pathImportIds[pathFn]];
     }
-    if (shadowDepths.require === 0)
+    if (bindingsReq && shadowDepths.require === 0)
       vars.require = function (reqId) {
         if (reqId === 'bindings')
           return createBindings(id);
-        if (isPregypId(reqId))
-          return pregyp;
-        return undefined;
       };
 
     // evaluate returns undefined for non-statically-analyzable
@@ -224,15 +224,15 @@ module.exports = function (code) {
       // detect asset leaf expression triggers (if not already)
       // __dirname,  __filename, binary only currently as well as require('bindings')(...)
       // Can add require.resolve, import.meta.url, even path-like environment variables
-      if (node.type === 'Identifier' && isReference(node, parent)) {
+      if (node.type === 'Identifier' && isExpressionReference(node, parent)) {
         if ((node.name === '__dirname' ||
             node.name === '__filename' ||
             node.name === pregypId || node.name === bindingsId) && !shadowDepths[node.name]) {
-          staticChildValue = computeStaticValue(node);
+          staticChildValue = computeStaticValue(node, false);
           // if it computes, then we start backtracking
           if (staticChildValue) {
-            staticChildValueBindingsInstance = staticBindingsInstance;
             staticChildNode = node;
+            staticChildValueBindingsInstance = staticBindingsInstance;
             return this.skip();
           }
         }
@@ -241,10 +241,10 @@ module.exports = function (code) {
       else if (node.type === 'CallExpression' &&  
           !isESM && isStaticRequire(node.callee) &&
           node.callee.arguments[0].value === 'bindings') {
-        staticChildValue = computeStaticValue(node);
+        staticChildValue = computeStaticValue(node, true);
         if (staticChildValue) {
-          staticChildValueBindingsInstance = staticBindingsInstance;
           staticChildNode = node;
+          staticChildValueBindingsInstance = staticBindingsInstance;
           return this.skip();
         }
       }
@@ -273,16 +273,19 @@ module.exports = function (code) {
             if (decl.init.arguments[0].value === 'path') {
               pathId = decl.id.name;
               shadowDepths[pathId] = 0;
+              return this.skip();
             }
             // var binary = require('node-pre-gyp')
             else if (isPregypId(decl.init.arguments[0].value)) {
               pregypId = decl.id.name;
               shadowDepths[pregypId] = 0;
+              return this.skip();
             }
             // var bindings = require('bindings')
-            else if (decl.init.arguments[0] === 'bindings') {
+            else if (decl.init.arguments[0].value === 'bindings') {
               bindingsId = decl.id.name;
               shadowDepths[bindingsId] = 0;
+              return this.skip();
             }
           }
           // var { join } = path | require('path');
@@ -296,6 +299,7 @@ module.exports = function (code) {
                 continue;
               pathImportIds[prop.value.name] = prop.key.name;
               shadowDepths[prop.key.name] = 0;
+              return this.skip();
             }
           }
           // var join = path.join
@@ -309,6 +313,7 @@ module.exports = function (code) {
               decl.init.property.type === 'Identifier') {
             pathImportIds[decl.init.property.name] = decl.id.name;
             shadowDepths[decl.id.name] = 0;
+            return this.skip();
           }
         }
       }
@@ -325,10 +330,10 @@ module.exports = function (code) {
       // computing a static expression outward
       // -> compute and backtrack
       if (staticChildNode) {
-        const curStaticValue = computeStaticValue(node);
+        const curStaticValue = computeStaticValue(node, false);
         if (curStaticValue) {
-          staticChildNode = node;
           staticChildValue = curStaticValue;
+          staticChildNode = node;
           staticChildValueBindingsInstance = staticBindingsInstance;
           return;
         }
