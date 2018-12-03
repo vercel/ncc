@@ -51,6 +51,7 @@
     "isomorphic-unfetch": "^3.0.0",
     "jest": "^23.6.0",
     "jimp": "^0.5.6",
+    "jugglingdb": "^2.0.0-rc8",
     "koa": "^2.6.2",
     "leveldown": "^4.0.1",
     "loader-utils": "^1.1.0",
