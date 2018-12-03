@@ -6,6 +6,27 @@ const { attachScopes } = require('rollup-pluginutils');
 const evaluate = require('static-eval');
 const acorn = require('acorn');
 
+// binary support for inlining logic from - node-pre-gyp/lib/pre-binding.js
+function isPregypId (id) {
+  return id === 'node-pre-gyp' ||
+      id === 'node-pre-gyp/lib/pre-binding' ||
+      id === 'node-pre-gyp/lib/pre-binding.js';
+}
+const versioning = require('node-pre-gyp/lib/util/versioning.js');
+const napi = require('node-pre-gyp/lib/util/napi.js');
+function pregypFind (package_json_path, opts) {
+  const package_json = JSON.parse(fs.readFileSync(package_json_path).toString());
+  versioning.validate_config(package_json, opts);
+  var napi_build_version;
+  if (napi.get_napi_build_versions (package_json, opts)) {
+    napi_build_version = napi.get_best_napi_build_version(package_json, opts);
+  }
+  opts = opts || {};
+  if (!opts.module_root) opts.module_root = path.dirname(package_json_path);
+  var meta = versioning.evaluate(package_json,opts,napi_build_version);
+  return meta.module;
+}
+
 // Very basic first-pass fs.readFileSync inlining
 function isReference(node, parent) {
 	if (parent.type === 'MemberExpression') return parent.computed || node === parent.object;
@@ -22,7 +43,7 @@ function isReference(node, parent) {
 	return true;
 }
 
-const assetRegEx = /_\_dirname|_\_filename|require\.main/;
+const assetRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp/;
 module.exports = function (code) {
   const id = this.resourcePath;
 
@@ -64,6 +85,8 @@ module.exports = function (code) {
   let scope = attachScopes(ast, 'scope');
 
   let pathId, pathImportIds = {};
+  let pregypId;
+
   const shadowDepths = Object.create(null);
   shadowDepths.__filename = 0;
   shadowDepths.__dirname = 0;
@@ -90,6 +113,15 @@ module.exports = function (code) {
             }
           }
         }
+        else if (isPregypId(source)) {
+          for (const impt of decl.specifiers) {
+            if (impt.type === 'ImportNamespaceSpecifier' || impt.type === 'ImportDefaultSpecifier') {
+              pregypId = impt.local.name;
+              shadowDepths[pregypId] = 0;
+            }
+            // import { find } from 'node-pre-gyp' not yet implemented
+          }
+        }
       }
     }
   }
@@ -107,6 +139,10 @@ module.exports = function (code) {
     if (pathId) {
       if (shadowDepths[pathId] === 0)
         vars[pathId] = path;
+    }
+    if (pregypId) {
+      if (shadowDepths[pregypId] === 0)
+        vars[pregypId] = { find: pregypFind };
     }
     for (const pathFn of Object.keys(pathImportIds)) {
       if (shadowDepths[pathFn] === 0)
@@ -146,10 +182,12 @@ module.exports = function (code) {
         return this.skip();
 
       // detect asset leaf expression triggers (if not already)
-      // __dirname and __filename only currently
+      // __dirname,  __filename, binary only currently
       // Can add require.resolve, import.meta.url, even path-like environment variables
       if (node.type === 'Identifier' && isReference(node, parent)) {
-        if ((node.name === '__dirname' || node.name === '__filename') && !shadowDepths[node.name]) {
+        if ((node.name === '__dirname' ||
+            node.name === '__filename' ||
+            node.name === pregypId) && !shadowDepths[node.name]) {
           curStaticValue = computeStaticValue(node, id);
           // if it computes, then we start backtracking
           if (curStaticValue) {
@@ -178,10 +216,16 @@ module.exports = function (code) {
         for (const decl of node.declarations) {
           // var path = require('path')
           if (decl.id.type === 'Identifier' &&
-              !isESM && isStaticRequire(decl.init) &&
-              decl.init.arguments[0].value === 'path') {
-            pathId = decl.id.name;
-            shadowDepths[pathId] = 0;
+              !isESM && isStaticRequire(decl.init)) {
+            if (decl.init.arguments[0].value === 'path') {
+              pathId = decl.id.name;
+              shadowDepths[pathId] = 0;
+            }
+            // var binary = require('node-pre-gyp')
+            else if (isPregypId(decl.init.arguments[0].value)) {
+              pregypId = decl.id.name;
+              shadowDepths[pregypId] = 0;
+            }
           }
           // var { join } = path | require('path');
           else if (decl.id.type === 'ObjectPattern' && decl.init &&
