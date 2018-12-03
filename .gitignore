@@ -2,6 +2,7 @@
 dist/**/*.js
 !scripts
 !src
+!src/*.js
 !test
 !test/integration
 !test/integration/*.js
