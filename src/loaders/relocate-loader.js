@@ -50,7 +50,82 @@ function isExpressionReference(node, parent) {
 	return true;
 }
 
-const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings/;
+// Wrapper detections for require extraction
+// detects:
+// 
+// When.js-style AMD wrapper:
+//   (function (define) { 'use strict' define(function (require) { ... }) })
+//   (typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); })
+// // ...
+function unwrapIfAMD (ast, scope, magicString, len) {
+  let transformed = false;
+  if (ast.body.length === 1 &&
+      ast.body[0].type === 'ExpressionStatement' &&
+      ast.body[0].expression.type === 'CallExpression' &&
+      ast.body[0].expression.callee.type === 'FunctionExpression' &&
+      ast.body[0].expression.arguments.length === 1) {
+    const arg = ast.body[0].expression.arguments[0];
+    if (arg.type === 'ConditionalExpression' && 
+        arg.test.type === 'LogicalExpression' &&
+        arg.test.operator === '&&' &&
+        arg.test.left.type === 'BinaryExpression' &&
+        arg.test.left.operator === '===' &&
+        arg.test.left.left.type === 'UnaryExpression' &&
+        arg.test.left.left.operator === 'typeof' &&
+        arg.test.left.left.argument.name === 'define' &&
+        arg.test.left.right.type === 'Literal' &&
+        arg.test.left.right.value === 'function' &&
+        arg.test.right.type === 'MemberExpression' &&
+        arg.test.right.object.type === 'Identifier' &&
+        arg.test.right.property.type === 'Identifier' &&
+        arg.test.right.property.name === 'amd' &&
+        arg.test.right.computed === false &&
+        arg.alternate.type === 'FunctionExpression' &&
+        arg.alternate.params.length === 1 &&
+        arg.alternate.params[0].type === 'Identifier' &&
+        arg.alternate.body.body.length === 1 &&
+        arg.alternate.body.body[0].type === 'ExpressionStatement' &&
+        arg.alternate.body.body[0].expression.type === 'AssignmentExpression' &&
+        arg.alternate.body.body[0].expression.left.type === 'MemberExpression' &&
+        arg.alternate.body.body[0].expression.left.object.type === 'Identifier' &&
+        arg.alternate.body.body[0].expression.left.object.name === 'module' &&
+        arg.alternate.body.body[0].expression.left.property.type === 'Identifier' &&
+        arg.alternate.body.body[0].expression.left.property.name === 'exports' &&
+        arg.alternate.body.body[0].expression.left.computed === false &&
+        arg.alternate.body.body[0].expression.right.type === 'CallExpression' &&
+        arg.alternate.body.body[0].expression.right.callee.type === 'Identifier' &&
+        arg.alternate.body.body[0].expression.right.callee.name === arg.alternate.params[0].name &&
+        arg.alternate.body.body[0].expression.right.arguments.length === 1 &&
+        arg.alternate.body.body[0].expression.right.arguments[0].type === 'Identifier' &&
+        arg.alternate.body.body[0].expression.right.arguments[0].name === 'require') {
+      let iifeBody = ast.body[0].expression.callee.body.body;
+
+      if (iifeBody[0].type === 'ExpressionStatement' &&
+          iifeBody[0].expression.type === 'Literal' &&
+          iifeBody[0].expression.value === 'use strict') {
+        iifeBody = iifeBody.slice(1);
+      }
+
+      if (iifeBody.length === 1 &&
+          iifeBody[0].type === 'ExpressionStatement' &&
+          iifeBody[0].expression.type === 'CallExpression' &&
+          iifeBody[0].expression.callee.type === 'Identifier' &&
+          iifeBody[0].expression.callee.name === arg.test.right.object.name &&
+          iifeBody[0].expression.arguments.length === 1 &&
+          iifeBody[0].expression.arguments[0].type === 'FunctionExpression' &&
+          iifeBody[0].expression.arguments[0].params.length === 1 &&
+          iifeBody[0].expression.arguments[0].params[0].type === 'Identifier' &&
+          iifeBody[0].expression.arguments[0].params[0].name === 'require') {
+        magicString.remove(iifeBody[0].expression.arguments[0].params[0].start, iifeBody[0].expression.arguments[0].params[0].end);
+        transformed = true;
+      }
+    }
+  }
+  return { ast, scope, transformed };
+}
+
+const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
+
 module.exports = function (code) {
   const id = this.resourcePath;
 
@@ -205,6 +280,8 @@ module.exports = function (code) {
         node.arguments.length === 1 &&
         node.arguments[0].type === 'Literal';
   }
+
+  ({ ast, scope, transformed } = unwrapIfAMD(ast, scope, magicString, code.length));
 
   walk(ast, {
     enter (node, parent) {
