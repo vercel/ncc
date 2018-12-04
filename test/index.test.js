@@ -10,7 +10,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         .toString().trim()
         // Windows support
         .replace(/\r/g, '');
-    await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false }).then(async ({ code, assets }) => {
+    await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false, sourceMap: false }).then(async ({ code, assets }) => {
       // very simple asset validation in unit tests
       if (unitTest.startsWith('asset-')) {
         expect(Object.keys(assets).length).toBeGreaterThan(0);
@@ -32,7 +32,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 }
 
 // the twilio test can take a while (large codebase)
-jest.setTimeout(30000);
+jest.setTimeout(50000);
 
 function clearDir (dir) {
   try {
@@ -48,7 +48,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!integrationTest.endsWith(".js")) continue;
   it(`should evaluate ${integrationTest} without errors`, async () => {
-    const { code, map, assets } = await ncc(__dirname + "/integration/" + integrationTest, { sourceMap: true });
+    const { code, map, assets } = await ncc(__dirname + "/integration/" + integrationTest, { minify: true, sourceMap: true });
     const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
     clearDir(tmpDir);
     mkdirp.sync(tmpDir);

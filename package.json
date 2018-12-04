@@ -80,6 +80,7 @@
     "source-map-support": "^0.5.9",
     "stripe": "^6.15.0",
     "strong-globalize": "^4.1.2",
+    "terser": "^3.11.0",
     "the-answer": "^1.0.0",
     "twilio": "^3.23.2",
     "vue": "^2.5.17",

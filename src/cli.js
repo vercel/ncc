@@ -119,7 +119,7 @@ switch (args._[0]) {
     const ncc = require("./index.js")(
       eval("require.resolve")(resolve(args._[1] || ".")),
       {
-        minify: !args["--no-minify"],
+        minify: !args["--no-minify"] && !run,
         externals: args["--external"],
         sourceMap: !args["--no-source-map"]
       }
