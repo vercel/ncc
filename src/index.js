@@ -77,6 +77,12 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
           parser: { amd: false }
         },
         {
+          test: /\.js$/,
+          use: [{
+            loader: __dirname + "/loaders/shebang-loader.js"
+          }]
+        },
+        {
           test: /\.(js|mjs)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
