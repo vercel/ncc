@@ -11,9 +11,8 @@
     "build": "node scripts/build",
     "build-test-binary": "cd test/binary && node-gyp rebuild && cp build/Release/hello.node ../integration/hello.node",
     "codecov": "codecov",
-    "test": "npm run build && jest",
+    "test": "npm run build-test-binary && npm run build && jest",
     "test-coverage": "jest --coverage --globals \"{\\\"coverage\\\":true}\" && codecov",
-    "postinstall": "npm run build-test-binary",
     "prepublish": "in-publish && npm test || not-in-publish"
   },
   "devDependencies": {
