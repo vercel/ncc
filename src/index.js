@@ -1,10 +1,10 @@
 const resolve = require("resolve");
 const fs = require("fs");
-const path = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const WebpackParser = require('webpack/lib/Parser');
-const webpackParse = WebpackParser.parse
+const webpackParse = WebpackParser.parse;
+const terser = require("terser");
 
 // overload the webpack parser so that we can make
 // acorn work with the node.js / commonjs semantics
@@ -44,7 +44,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
   });
 }
 
-module.exports = async (entry, { externals = [], minify = true, sourceMap = false, filename = "index.js" } = {}) => {
+module.exports = async (entry, { externals = [], minify = false, sourceMap = false, filename = "index.js" } = {}) => {
   const mfs = new MemoryFS();
   const assetNames = Object.create(null);
   const assets = Object.create(null);
@@ -143,8 +143,8 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
       }
       const assets = Object.create(null);
       getFlatFiles(mfs.data, assets);
-      delete assets["index.js"];
-      delete assets["index.js.map"];
+      delete assets[filename];
+      delete assets[filename + ".map"];
       const code = mfs.readFileSync("/index.js", "utf8");
       const map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
       resolve({
@@ -153,6 +153,30 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
         assets
       });
     });
+  })
+  .then(({ code, map, assets }) => {
+    if (!minify)
+      return { code, map, assets };
+    const result = terser.minify(code, {
+      compress: {
+        keep_classnames: true,
+        keep_fnames: true
+      },
+      mangle: {
+        keep_classnames: true,
+        keep_fnames: true
+      },
+      sourceMap: sourceMap ? {
+        content: map,
+        filename,
+        url: filename + ".map"
+      } : false
+    });
+    // For some reason, auth0 returns "undefined"!
+    // custom terser phase used over Webpack integration for this reason
+    if (result.code === undefined)
+      return { code, map, assets };
+    return { code: result.code, map: result.map, assets };
   });
 };
 
