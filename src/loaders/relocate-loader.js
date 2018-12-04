@@ -125,6 +125,7 @@ function unwrapIfAMD (ast, scope, magicString, len) {
 }
 
 const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
+const pkgNameRegEx = /(@[^\\\/]+[\\\/])?[^\\\/]+/;
 
 module.exports = function (code) {
   const id = this.resourcePath;
@@ -139,13 +140,51 @@ module.exports = function (code) {
     if (assetPath.endsWith('.js') || assetPath.endsWith('.mjs'))
       return;
 
+    if (options.assets[assetPath])
+      return "__dirname + '/" + JSON.stringify(options.assets[assetPath]).slice(1, -1) + "'";
+
     const name = getUniqueAssetName(assetPath, options.assetNames);
+    options.assets[assetPath] = name;
 
     // console.log('Emitting ' + assetPath + ' for module ' + id);
 
     this.emitFile(name, fs.readFileSync(assetPath));
     return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
+  const emitAssetDirectory = (assetDirPath) => {
+    if (options.assets[assetDirPath])
+      return "__dirname + '/" + JSON.stringify(options.assets[assetDirPath]).slice(1, -1) + "'";
+
+    const dirName = path.basename(assetDirPath);
+    const name = getUniqueAssetName(dirName, options.assetNames);
+    options.assets[assetDirPath] = name;
+    
+    console.log('Emitting directory ' + assetDirPath + " as " + name);
+    for (const file of fs.readdirSync(assetDirPath)) {
+      let source;
+      try {
+        source = fs.readFileSync(assetDirPath + '/' + file);
+      }
+      catch (e) {
+        // nested directories not yet supported
+        continue;
+      }
+      this.emitFile(name + '/' + file, source);
+    }
+
+    return "__dirname + '/" + JSON.stringify(options.assets[assetDirPath]).slice(1, -1) + "'";
+  };
+
+  // determined the node_modules package folder as pkgBase
+  let pkgBase = '';
+  const pkgIndex = id.lastIndexOf('node_modules');
+  if (pkgIndex !== -1 &&
+      (id[pkgIndex - 1] === '/' || id[pkgIndex - 1] === '\\') &&
+      (id[pkgIndex + 12] === '/' || id[pkgIndex + 12] === '\\')) {
+    const pkgNameMatch = id.substr(pkgIndex + 13).match(pkgNameRegEx);
+    if (pkgNameMatch)
+      pkgBase = id.substr(0, pkgIndex + 13 + pkgNameMatch[0].length);
+  }
 
   const magicString = new MagicString(code);
 
@@ -414,20 +453,31 @@ module.exports = function (code) {
         }
         // no static value -> see if we should emit the asset if it exists
         // Currently we only handle files. In theory whole directories could also be emitted if necessary.
-        let isFile = false;
+        let stats;
         if (typeof staticChildValue === 'string') {
           try {
-            isFile = fs.statSync(staticChildValue).isFile();
+            stats = fs.statSync(staticChildValue);
           }
           catch (e) {}
         }
-        if (isFile) {
+        if (stats && stats.isFile()) {
           let replacement = emitAsset(path.resolve(staticChildValue));
           // require('bindings')(...)
           // -> require(require('bindings')(...))
           if (staticChildValueBindingsInstance) {
             replacement = '__non_webpack_require__(' + replacement + ')';
           }
+          if (replacement) {
+            transformed = true;
+            magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
+          }
+          staticChildNode = staticChildValue = undefined;
+        }
+        else if (stats && stats.isDirectory() &&
+            // dont emit __dirname or package base
+            staticChildValue !== path.dirname(id) &&
+            staticChildValue !== pkgBase) {
+          let replacement = emitAssetDirectory(path.resolve(staticChildValue));
           if (replacement) {
             transformed = true;
             magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);

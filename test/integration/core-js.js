@@ -1,5 +1,2 @@
-require("core-js");
 
-module.exports = () => {
-  require("core-js").Array.map([], () => {});
-};
+require("core-js").Array.map([], () => {});

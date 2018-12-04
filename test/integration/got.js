@@ -1,4 +1,1 @@
 require('got');
-module.exports = () => {
-
-}

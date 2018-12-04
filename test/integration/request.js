@@ -1,8 +1,8 @@
 const request = require("request");
 const url = "https://dog.ceo/api/breeds/image/random";
 
-module.exports = () => {
-  return new Promise((resolve, reject) => {
+(async () => {
+  await new Promise((resolve, reject) => {
     request.get(url, { json: true }, (err, resp, body) => {
       if (err) return reject(err);
       if (body.status != "success") {
@@ -11,4 +11,4 @@ module.exports = () => {
       resolve();
     });
   });
-};
+})();

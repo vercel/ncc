@@ -1,3 +1,1 @@
 require('mariadb')
-module.exports = () => {
-}

@@ -47,6 +47,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
 module.exports = async (entry, { externals = [], minify = true, sourceMap = false, filename = "index.js" } = {}) => {
   const mfs = new MemoryFS();
   const assetNames = Object.create(null);
+  const assets = Object.create(null);
   const compiler = webpack({
     entry,
     optimization: {
@@ -79,14 +80,14 @@ module.exports = async (entry, { externals = [], minify = true, sourceMap = fals
           test: /\.(js|mjs)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
-            options: { assetNames }
+            options: { assetNames, assets }
           }]
         },
         {
           test: /\.node$/,
           use: [{
             loader: __dirname + "/loaders/node-loader.js",
-            options: { assetNames }
+            options: { assetNames, assets }
           }]
         }
       ]
