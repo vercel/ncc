@@ -15,8 +15,7 @@ const resolvers = {
   }
 };
 
-module.exports = () => {
-  const server = new ApolloServer({ typeDefs, resolvers });
-  const app = express();
-  server.applyMiddleware({ app });
-};
+
+const server = new ApolloServer({ typeDefs, resolvers });
+const app = express();
+server.applyMiddleware({ app });

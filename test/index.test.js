@@ -4,21 +4,6 @@ const mkdirp = require("mkdirp");
 const rimraf = require("rimraf");
 const { dirname } = require("path");
 
-const sourceMapSources = {};
-if (!global.coverage) {
-  require('source-map-support').install({
-    retrieveSourceMap (source) {
-      if (!sourceMapSources[source])
-        return null;
-
-      return {
-        url: source,
-        map: sourceMapSources[source]
-      };
-    }
-  });
-}
-
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
     const expected = fs.readFileSync(`${__dirname}/unit/${unitTest}/output.js`)
@@ -49,9 +34,9 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 // the twilio test can take a while (large codebase)
 jest.setTimeout(30000);
 
-function clearTmp () {
+function clearDir (dir) {
   try {
-    rimraf.sync(__dirname + "/tmp");
+    rimraf.sync(dir);
   }
   catch (e) {
     if (e.code !== "ENOENT")
@@ -64,32 +49,28 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   if (!integrationTest.endsWith(".js")) continue;
   it(`should evaluate ${integrationTest} without errors`, async () => {
     const { code, map, assets } = await ncc(__dirname + "/integration/" + integrationTest, { sourceMap: true });
-    module.exports = null;
-    sourceMapSources[integrationTest] = map;
-    // integration tests will load assets relative to __dirname
-    clearTmp();
+    const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
+    clearDir(tmpDir);
+    mkdirp.sync(tmpDir);
     for (const asset of Object.keys(assets)) {
-      const assetPath = __dirname + "/tmp/" + asset;
+      const assetPath = tmpDir + asset;
       mkdirp.sync(dirname(assetPath));
       fs.writeFileSync(assetPath, assets[asset]);
     }
-    ((__dirname, require) => {
-      try {
-        eval(`${code}\n//# sourceURL=${integrationTest}`);
-      }
-      catch (e) {
-        // useful for debugging
-        mkdirp.sync(__dirname);
-        fs.writeFileSync(__dirname + "/index.js", code);
-        throw e;
-      }
-    })(__dirname + "/tmp", id => require(id.startsWith('./') ? './tmp/' + id.substr(2) : id));
-    if ("function" !== typeof module.exports) {
-      throw new Error(
-        `Integration test "${integrationTest}" evaluation failed. It does not export a function`
-      );
-    }
-    await module.exports();
+    fs.writeFileSync(tmpDir + "index.js", code);
+    fs.writeFileSync(tmpDir + "index.js.map", map);
+    await new Promise((resolve, reject) => {
+      const ps = require("child_process").fork(tmpDir + "index.js", {
+        execArgv: ["-r", "source-map-support/register.js"]
+      });
+      ps.on("close", (code) => {
+        if (code === 0)
+          resolve();
+        else
+          reject(new Error(`Test failed.`));
+      });
+    });
+    clearDir(tmpDir);
   });
 }
 
