@@ -32,7 +32,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 }
 
 // the twilio test can take a while (large codebase)
-jest.setTimeout(30000);
+jest.setTimeout(50000);
 
 function clearDir (dir) {
   try {
