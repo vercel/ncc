@@ -8,6 +8,7 @@ const acorn = require('acorn');
 const bindings = require('bindings');
 const getUniqueAssetName = require('../utils/dedupe-names');
 const { getOptions } = require('loader-utils');
+const sharedlibEmit = require('../utils/sharedlib-emit');
 
 // binary support for inlining logic from - node-pre-gyp/lib/pre-binding.js
 function isPregypId (id) {
@@ -142,6 +143,11 @@ module.exports = function (code) {
 
     if (options.assets[assetPath])
       return "__dirname + '/" + JSON.stringify(options.assets[assetPath]).slice(1, -1) + "'";
+
+    // If the asset is a ".node" binary, then glob for possible shared
+    // libraries that should also be included
+    if (assetPath.endsWith('.node'))
+      sharedlibEmit(assetPath, this.emitFile);
 
     const name = getUniqueAssetName(assetPath, options.assetNames);
     options.assets[assetPath] = name;
