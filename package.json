@@ -13,6 +13,7 @@
     "codecov": "codecov",
     "test": "npm run build && jest",
     "test-coverage": "jest --coverage --globals \"{\\\"coverage\\\":true}\" && codecov",
+    "postinstall": "npm run build-test-binary",
     "prepublish": "in-publish && npm test || not-in-publish"
   },
   "devDependencies": {
