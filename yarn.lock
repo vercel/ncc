@@ -68,6 +68,31 @@
     core-js "^2.5.7"
     regenerator-runtime "^0.12.0"
 
+"@bugsnag/browser@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@bugsnag/browser/-/browser-5.0.1.tgz#ce8535cef3ecf9c8c760bec1c4afefa0a14059a0"
+  integrity sha512-BxAerpEdFe5IdvEDt2eL2d+FDcLmm9IC2Sc+s3uZLHQFenYlrnskM/GGghY26LmBeCiVThREcX5wqzjOLV6Mhg==
+
+"@bugsnag/js@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@bugsnag/js/-/js-5.0.1.tgz#dcc4308f6984070f6b206b7bdb7876c9c8f6d994"
+  integrity sha512-8gQGLZal88zGdGmf6AH7gYSAsC2moXy+RJD9h2SquKt9HiAd1LzpeKgUtiJI4Oo/CGEQM06hvGTz8qnJgG6GpQ==
+  dependencies:
+    "@bugsnag/browser" "^5.0.1"
+    "@bugsnag/node" "^5.0.1"
+
+"@bugsnag/node@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@bugsnag/node/-/node-5.0.1.tgz#3f6362dae1030911fb9ad370940fb1309c31186e"
+  integrity sha512-8sApByaiUlCsdZa9k4CQUVrM0/RuLX+K1OMHjM6i1EwhikSolvcmhd4+XbD62AdiO66vwHN6FgtNsykSQHgQMg==
+  dependencies:
+    byline "^5.0.0"
+    error-stack-parser "^2.0.2"
+    iserror "^0.0.2"
+    pump "^3.0.0"
+    request "^2.87.0"
+    stack-generator "^2.0.3"
+
 "@firebase/app-types@0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.3.2.tgz#a92dc544290e2893bd8c02a81e684dae3d8e7c85"
@@ -3299,6 +3324,13 @@ error-inject@^1.0.0:
   resolved "https://registry.yarnpkg.com/error-inject/-/error-inject-1.0.0.tgz#e2b3d91b54aed672f309d950d154850fa11d4f37"
   integrity sha1-4rPZG1Su1nLzCdlQ0VSFD6EdTzc=
 
+error-stack-parser@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/error-stack-parser/-/error-stack-parser-2.0.2.tgz#4ae8dbaa2bf90a8b450707b9149dcabca135520d"
+  integrity sha512-E1fPutRDdIj/hohG0UpT5mayXNCxXP9d+snxFsPU9X0XgccOumKraa3juDMwTUyi7+Bu5+mCGagjg4IYeNbOdw==
+  dependencies:
+    stackframe "^1.0.4"
+
 es-abstract@^1.5.1:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/es-abstract/-/es-abstract-1.12.0.tgz#9dbbdd27c6856f0001421ca18782d786bf8a6165"
@@ -5149,6 +5181,11 @@ isarray@1.0.0, isarray@^1.0.0, isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
+
+iserror@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/iserror/-/iserror-0.0.2.tgz#bd53451fe2f668b9f2402c1966787aaa2c7c0bf5"
+  integrity sha1-vVNFH+L2aLnyQCwZZnh6qix8C/U=
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -9456,6 +9493,13 @@ stable@^0.1.6:
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.8.tgz#836eb3c8382fe2936feaf544631017ce7d47a3cf"
   integrity sha512-ji9qxRnOVfcuLDySj9qzhGSEFVobyt1kIOSkj1qZzYLzq7Tos/oUUWvotUPQLlrsidqsK6tBH89Bc9kL5zHA6w==
 
+stack-generator@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/stack-generator/-/stack-generator-2.0.3.tgz#bb74385c67ffc4ccf3c4dee5831832d4e509c8a0"
+  integrity sha512-kdzGoqrnqsMxOEuXsXyQTmvWXZmG0f3Ql2GDx5NtmZs59sT2Bt9Vdyq0XdtxUi58q/+nxtbF9KOQ9HkV1QznGg==
+  dependencies:
+    stackframe "^1.0.4"
+
 stack-trace@0.0.10:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/stack-trace/-/stack-trace-0.0.10.tgz#547c70b347e8d32b4e108ea1a2a159e5fdde19c0"
@@ -9465,6 +9509,11 @@ stack-utils@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/stack-utils/-/stack-utils-1.0.2.tgz#33eba3897788558bebfc2db059dc158ec36cebb8"
   integrity sha512-MTX+MeG5U994cazkjd/9KNAapsHnibjMLnfXodlkXw76JEea0UiNzrqidzo1emMwk7w5Qhc9jd4Bn9TBb1MFwA==
+
+stackframe@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/stackframe/-/stackframe-1.0.4.tgz#357b24a992f9427cba6b545d96a14ed2cbca187b"
+  integrity sha512-to7oADIniaYwS3MhtCa/sQhrxidCCQiF/qp4/m5iN3ipf0Y7Xlri0f6eG29r08aL7JYl8n32AF3Q5GYBZ7K8vw==
 
 standard-as-callback@^1.0.0:
   version "1.0.1"
