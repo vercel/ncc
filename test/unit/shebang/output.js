@@ -1,3 +1,4 @@
+#!/bin/user/env node
 module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
