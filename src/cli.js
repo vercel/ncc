@@ -187,3 +187,8 @@ switch (args._[0]) {
     console.error(`Error: Invalid command "${args._[0]}"\n${usage}`);
     process.exit(1);
 }
+
+// remove me when node.js makes this the default behavior
+process.on("unhandledRejection", e => {
+  throw e;
+});
