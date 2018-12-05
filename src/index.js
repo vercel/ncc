@@ -136,6 +136,13 @@ module.exports = async (
               }
             }
           }]
+        },
+        {
+          test: /\.(js|mjs|tsx?)$/,
+          use: [{
+            loader: __dirname + "/loaders/terser-loader.js",
+            options: { sourceMap }
+          }]
         }
       ]
     },
@@ -263,7 +270,7 @@ module.exports = async (
     if (map)
       map.mappings = ";" + map.mappings;
     return { code, map, assets };
-  })
+  });
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
