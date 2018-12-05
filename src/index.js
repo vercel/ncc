@@ -137,13 +137,13 @@ module.exports = async (
             }
           }]
         },
-        {
+        ...minify ? [{
           test: /\.(js|mjs|tsx?)$/,
           use: [{
             loader: __dirname + "/loaders/terser-loader.js",
             options: { sourceMap }
           }]
-        }
+        }] : []
       ]
     },
     plugins: [
