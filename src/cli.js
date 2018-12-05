@@ -1,4 +1,5 @@
 const { resolve, relative, dirname, sep } = require("path");
+const glob = require("glob");
 
 const usage = `Usage: ncc <cmd> <opts>
 
@@ -125,11 +126,19 @@ switch (args._[0]) {
       }
     );
     ncc.then(
-      ({ code, map, assets }) => {
+      async ({ code, map, assets }) => {
         outDir = outDir || resolve("dist");
         const fs = require("fs");
         const mkdirp = require("mkdirp");
         mkdirp.sync(outDir);
+        // remove all existing ".js" files in the out directory
+        await Promise.all(
+          (await new Promise((resolve, reject) =>
+            glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
+          )).map(file =>
+            new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
+          ))
+        );
         fs.writeFileSync(outDir + "/index.js", code);
         if (map) fs.writeFileSync(outDir + "/index.js.map", map);
 
