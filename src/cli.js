@@ -144,8 +144,9 @@ switch (args._[0]) {
         if (map) fs.writeFileSync(outDir + "/index.js.map", map);
 
         for (const asset of Object.keys(assets)) {
-          mkdirp.sync(dirname(asset));
-          fs.writeFileSync(outDir + "/" + asset, assets[asset]);
+          const assetPath = outDir + "/" + asset;
+          mkdirp.sync(dirname(assetPath));
+          fs.writeFileSync(assetPath, assets[asset]);
         }
 
         if (!args["--quiet"])
@@ -166,12 +167,12 @@ switch (args._[0]) {
           });
           ps.on("close", () => require("rimraf").sync(outDir));
         }
-      },
-      err => {
-        console.error(err.stack);
-        process.exit(1);
       }
-    );
+    )
+    .catch(err => {
+      console.error(err.stack);
+      process.exit(1);
+    });
     break;
 
   case "help":
@@ -186,3 +187,8 @@ switch (args._[0]) {
     console.error(`Error: Invalid command "${args._[0]}"\n${usage}`);
     process.exit(1);
 }
+
+// remove me when node.js makes this the default behavior
+process.on("unhandledRejection", e => {
+  throw e;
+});
