@@ -1,5 +1,6 @@
 const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
+const shebangRegEx = require("./utils/shebang");
 
 const usage = `Usage: ncc <cmd> <opts>
 
@@ -139,7 +140,7 @@ switch (args._[0]) {
             new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
           ))
         );
-        fs.writeFileSync(outDir + "/index.js", code);
+        fs.writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
         if (map) fs.writeFileSync(outDir + "/index.js.map", map);
 
         for (const asset of Object.keys(assets)) {

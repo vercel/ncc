@@ -5,6 +5,7 @@ const MemoryFS = require("memory-fs");
 const WebpackParser = require('webpack/lib/Parser');
 const webpackParse = WebpackParser.parse;
 const terser = require("terser");
+const shebangRegEx = require('./utils/shebang');
 
 // overload the webpack parser so that we can make
 // acorn work with the node.js / commonjs semantics
@@ -45,6 +46,7 @@ function resolveModule(context, request, callback, forcedExternals = []) {
 }
 
 module.exports = async (entry, { externals = [], minify = false, sourceMap = false, filename = "index.js" } = {}) => {
+  const shebangMatch = fs.readFileSync(resolve.sync(entry)).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
   const assetNames = Object.create(null);
   const assets = Object.create(null);
@@ -75,6 +77,12 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
       rules: [
         {
           parser: { amd: false }
+        },
+        {
+          test: /\.js$/,
+          use: [{
+            loader: __dirname + "/loaders/shebang-loader.js"
+          }]
         },
         {
           test: /\.(js|mjs)$/,
@@ -177,7 +185,16 @@ module.exports = async (entry, { externals = [], minify = false, sourceMap = fal
     if (result.code === undefined)
       return { code, map, assets };
     return { code: result.code, map: result.map, assets };
-  });
+  })
+  .then(({ code, map, assets}) => {
+    if (!shebangMatch)
+      return { code, map, assets };
+    code = shebangMatch[0] + code;
+    // add a line offset to the sourcemap
+    if (map)
+      map.mappings = ";" + map.mappings;
+    return { code, map, assets };
+  })
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
