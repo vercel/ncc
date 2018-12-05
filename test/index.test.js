@@ -6,28 +6,32 @@ const { dirname } = require("path");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
-    const expected = fs.readFileSync(`${__dirname}/unit/${unitTest}/output.js`)
-        .toString().trim()
-        // Windows support
-        .replace(/\r/g, '');
-    await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false, sourceMap: false }).then(async ({ code, assets }) => {
-      // very simple asset validation in unit tests
-      if (unitTest.startsWith('asset-')) {
-        expect(Object.keys(assets).length).toBeGreaterThan(0);
-        expect(assets[Object.keys(assets)[0]] instanceof Buffer);
-      }
-      const actual = code.trim()
+    const expected = fs
+      .readFileSync(`${__dirname}/unit/${unitTest}/output.js`)
+      .toString()
+      .trim()
       // Windows support
-      .replace(/\r/g, '');
-      try {
-        expect(actual).toBe(expected);
+      .replace(/\r/g, "");
+    await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false }).then(
+      async ({ code, assets }) => {
+        // very simple asset validation in unit tests
+        if (unitTest.startsWith("asset-")) {
+          expect(Object.keys(assets).length).toBeGreaterThan(0);
+          expect(assets[Object.keys(assets)[0]] instanceof Buffer);
+        }
+        const actual = code
+          .trim()
+          // Windows support
+          .replace(/\r/g, "");
+        try {
+          expect(actual).toBe(expected);
+        } catch (e) {
+          // useful for updating fixtures
+          fs.writeFileSync(`${__dirname}/unit/${unitTest}/actual.js`, actual);
+          throw e;
+        }
       }
-      catch (e) {
-        // useful for updating fixtures
-        fs.writeFileSync(`${__dirname}/unit/${unitTest}/actual.js`, actual);
-        throw e;
-      }
-    });
+    );
   });
 }
 
@@ -39,16 +43,18 @@ function clearDir (dir) {
     rimraf.sync(dir);
   }
   catch (e) {
-    if (e.code !== "ENOENT")
-      throw e;
+    if (e.code !== "ENOENT") throw e;
   }
 }
 
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
-  if (!integrationTest.endsWith(".js")) continue;
+  if (!/\.(mjs|tsx?|js)$/.test(integrationTest)) continue;
   it(`should evaluate ${integrationTest} without errors`, async () => {
-    const { code, map, assets } = await ncc(__dirname + "/integration/" + integrationTest, { minify: true, sourceMap: true });
+    const { code, map, assets } = await ncc(
+      __dirname + "/integration/" + integrationTest,
+      { minify: true, sourceMap: true }
+    );
     const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
     clearDir(tmpDir);
     mkdirp.sync(tmpDir);
