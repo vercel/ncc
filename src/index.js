@@ -127,6 +127,9 @@ module.exports = (
         {
           test: /\.tsx?$/,
           use: [{
+            loader: __dirname + "/loaders/terser-loader.js",
+            options: { sourceMap }
+          }, {
             loader: __dirname + "/loaders/ts-loader.js",
             options: {
               compilerOptions: {
@@ -134,7 +137,22 @@ module.exports = (
               }
             }
           }]
-        }
+        },
+        ...minify ? [{
+          test: /\.(js|mjs)$/,
+          use: [{
+            loader: __dirname + "/loaders/thread-loader.js",
+            options: {
+              workers: require("os").cpus().length / 2,
+              workerParallelJobs: 50,
+              workerNodeArgs: process.execArgv,
+              poolParallelJobs: 200
+            }
+          }, {
+            loader: __dirname + "/loaders/terser-loader.js",
+            options: { sourceMap }
+          }]
+        }] : []
       ]
     },
     plugins: [
