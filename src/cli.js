@@ -167,12 +167,12 @@ switch (args._[0]) {
           });
           ps.on("close", () => require("rimraf").sync(outDir));
         }
-      },
-      err => {
-        console.error(err.stack);
-        process.exit(1);
       }
-    );
+    )
+    .catch(err => {
+      console.error(err.stack);
+      process.exit(1);
+    });
     break;
 
   case "help":
@@ -187,8 +187,3 @@ switch (args._[0]) {
     console.error(`Error: Invalid command "${args._[0]}"\n${usage}`);
     process.exit(1);
 }
-
-// remove me when node.js makes this the default behavior
-process.on("unhandledRejection", e => {
-  throw e;
-});
