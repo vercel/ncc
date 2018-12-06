@@ -69,7 +69,7 @@ async function main() {
   // copy webpack buildin
   await copy(
     __dirname + "/../node_modules/webpack/buildin/*.js",
-    __dirname + "/../dist/buildin/"
+    __dirname + "/../dist/ncc/buildin/"
   );
 
   for (const file of await glob(__dirname + "/../dist/**/*.js")) {
