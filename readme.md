@@ -50,7 +50,8 @@ file is necessary. Most likely you want to indicate `es2015` support:
 ```json
 {
   "compilerOptions": {
-    "target": "es2015"
+    "target": "es2015",
+    "moduleResolution": "node"
   }
 }
 ```
