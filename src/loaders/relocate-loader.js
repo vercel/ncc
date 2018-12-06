@@ -208,7 +208,6 @@ function handleWrappers (ast, scope, magicString, len) {
 }
 
 const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
-const pkgNameRegEx = /(@[^\\\/]+[\\\/])?[^\\\/]+/;
 
 module.exports = function (code) {
   this.async();
