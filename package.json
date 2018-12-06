@@ -1,6 +1,6 @@
 {
   "name": "@zeit/ncc",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "repository": "zeit/ncc",
   "license": "MIT",
   "main": "./dist/ncc/index.js",
@@ -86,6 +86,7 @@
     "the-answer": "^1.0.0",
     "ts-loader": "^5.3.1",
     "twilio": "^3.23.2",
+    "typescript": "^3.2.1",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "webpack": "^4.26.0",
