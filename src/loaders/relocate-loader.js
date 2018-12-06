@@ -558,7 +558,6 @@ module.exports = function (code) {
             transformed = true;
             magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
           }
-          staticChildNode = staticChildValue = undefined;
         }
         else if (stats && stats.isDirectory() &&
             // dont emit __dirname or package base
@@ -569,8 +568,8 @@ module.exports = function (code) {
             transformed = true;
             magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
           }
-          staticChildNode = staticChildValue = undefined;
         }
+        staticChildNode = staticChildValue = undefined;
       }
     }
   });
