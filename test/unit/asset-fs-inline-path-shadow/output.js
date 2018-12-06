@@ -96,7 +96,7 @@ console.log(fs.readFileSync(__dirname + '/asset.txt', 'utf8'));
 
 (function () {
   var join = () => 'nope';
-  console.log(fs.readFileSync(join(__dirname, 'asset.txt'), 'utf8'));
+  console.log(fs.readFileSync(join(__dirname + '/asset-fs-inline-path-shadow', 'asset.txt'), 'utf8'));
 })();
 
 /***/ }),

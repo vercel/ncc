@@ -10270,7 +10270,7 @@ strong-error-handler@^3.0.0:
     js2xmlparser "^3.0.0"
     strong-globalize "^4.1.0"
 
-strong-globalize@^4.1.0, strong-globalize@^4.1.1, strong-globalize@^4.1.2:
+strong-globalize@^4.1.0, strong-globalize@^4.1.1:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/strong-globalize/-/strong-globalize-4.1.2.tgz#9679b1e6cde2bf88d2843a0815fd6d9a5ee34de4"
   integrity sha512-2ks3/fuQy4B/AQDTAaEvTXYSqH4TWrv9VGlbZ4YujzijEJbIWbptF/9dO13duv87aRhWdM5ABEiTy7ZmnmBhdQ==
