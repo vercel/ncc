@@ -9,6 +9,7 @@ const bindings = require('bindings');
 const getUniqueAssetName = require('../utils/dedupe-names');
 const { getOptions } = require('loader-utils');
 const sharedlibEmit = require('../utils/sharedlib-emit');
+const glob = require('glob');
 
 // binary support for inlining logic from - node-pre-gyp/lib/pre-binding.js
 function isPregypId (id) {
@@ -207,9 +208,9 @@ function handleWrappers (ast, scope, magicString, len) {
 }
 
 const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
-const pkgNameRegEx = /(@[^\\\/]+[\\\/])?[^\\\/]+/;
 
 module.exports = function (code) {
+  this.async();
   const id = this.resourcePath;
 
   if (id.endsWith('.json') || !code.match(relocateRegEx))
@@ -234,8 +235,12 @@ module.exports = function (code) {
     options.assets[assetPath] = name;
 
     // console.log('Emitting ' + assetPath + ' for module ' + id);
-
-    this.emitFile(name, fs.readFileSync(assetPath));
+    assetEmissionPromises = assetEmissionPromises.then(async () => {
+      const source = await new Promise((resolve, reject) =>
+        fs.readFile(assetPath, (err, source) => err ? reject(err) : resolve(source))
+      );
+      this.emitFile(name, source);
+    });
     return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
   const emitAssetDirectory = (assetDirPath) => {
@@ -245,33 +250,26 @@ module.exports = function (code) {
     const dirName = path.basename(assetDirPath);
     const name = getUniqueAssetName(dirName, options.assetNames);
     options.assets[assetDirPath] = name;
-    
-    console.log('Emitting directory ' + assetDirPath + " as " + name);
-    for (const file of fs.readdirSync(assetDirPath)) {
-      let source;
-      try {
-        source = fs.readFileSync(assetDirPath + '/' + file);
-      }
-      catch (e) {
-        // nested directories not yet supported
-        continue;
-      }
-      this.emitFile(name + '/' + file, source);
-    }
 
-    return "__dirname + '/" + JSON.stringify(options.assets[assetDirPath]).slice(1, -1) + "'";
+    assetEmissionPromises = assetEmissionPromises.then(async () => {
+      const files = await new Promise((resolve, reject) =>
+        glob(assetDirPath + '/**/*', { mark: true }, (err, files) => err ? reject(err) : resolve(files))
+      );
+      await Promise.all(files.map(async file => {
+        // dont emit empty directories
+        if (file.endsWith('/'))
+          return;
+        const source = await new Promise((resolve, reject) =>
+          fs.readFile(file, (err, source) => err ? reject(err) : resolve(source))
+        );
+        this.emitFile(name + file.substr(assetDirPath.length), source);
+      }));
+    });
+
+    return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
 
-  // determined the node_modules package folder as pkgBase
-  let pkgBase = '';
-  const pkgIndex = id.lastIndexOf('node_modules');
-  if (pkgIndex !== -1 &&
-      (id[pkgIndex - 1] === '/' || id[pkgIndex - 1] === '\\') &&
-      (id[pkgIndex + 12] === '/' || id[pkgIndex + 12] === '\\')) {
-    const pkgNameMatch = id.substr(pkgIndex + 13).match(pkgNameRegEx);
-    if (pkgNameMatch)
-      pkgBase = id.substr(0, pkgIndex + 13 + pkgNameMatch[0].length);
-  }
+  let assetEmissionPromises = Promise.resolve();
 
   const magicString = new MagicString(code);
 
@@ -559,10 +557,7 @@ module.exports = function (code) {
             magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
           }
         }
-        else if (stats && stats.isDirectory() &&
-            // dont emit __dirname or package base
-            staticChildValue !== path.dirname(id) &&
-            staticChildValue !== pkgBase) {
+        else if (stats && stats.isDirectory()) {
           let replacement = emitAssetDirectory(path.resolve(staticChildValue));
           if (replacement) {
             transformed = true;
@@ -577,8 +572,10 @@ module.exports = function (code) {
   if (!transformed)
     return this.callback(null, code);
 
-  code = magicString.toString();
-  const map = magicString.generateMap();
-
-  this.callback(null, code, map);
+  assetEmissionPromises.then(() => {
+    code = magicString.toString();
+    const map = magicString.generateMap();
+  
+    this.callback(null, code, map);
+  });
 };
