@@ -83,6 +83,7 @@
     "strong-globalize": "^4.1.2",
     "terser": "^3.11.0",
     "the-answer": "^1.0.0",
+    "ts-loader": "^5.3.1",
     "twilio": "^3.23.2",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
