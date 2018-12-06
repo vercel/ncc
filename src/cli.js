@@ -42,7 +42,7 @@ function renderSummary(code, assets, outDir, buildTime) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
   const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
   const assetSizes = Object.create(null);
-  let maxSize = codeSize;
+  let totalSize = codeSize;
   let maxAssetNameLength = 8; // "index.js".length
   for (const asset of Object.keys(assets)) {
     const assetSource = assets[asset];
@@ -50,34 +50,36 @@ function renderSummary(code, assets, outDir, buildTime) {
       (assetSource.byteLength || Buffer.byteLength(assetSource, "utf8")) / 1024
     );
     assetSizes[asset] = assetSize;
-    if (assetSize > maxSize) maxSize = assetSize;
+    totalSize += assetSize;
     if (asset.length > maxAssetNameLength) maxAssetNameLength = asset.length;
   }
   const orderedAssets = Object.keys(assets).sort((a, b) =>
     assetSizes[a] > assetSizes[b] ? 1 : -1
   );
 
-  const sizePadding = maxSize.toString().length;
+  const sizePadding = totalSize.toString().length;
 
-  const indexRender = `${codeSize
+  let indexRender = `${codeSize
     .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js".padEnd(
-    maxAssetNameLength,
-    " "
-  )}   [${buildTime}ms]`;
+    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js"}`;
 
   let output = "",
     first = true;
   for (const asset of orderedAssets) {
     if (first) first = false;
     else output += "\n";
-    if (codeSize < assetSizes[asset]) output += indexRender + "\n";
+    if (codeSize < assetSizes[asset] && indexRender) {
+      output += indexRender + "\n";
+      indexRender = null;
+    }
     output += `${assetSizes[asset]
       .toString()
       .padStart(sizePadding, " ")}kB  ${outDir}${asset}`;
   }
 
-  if (maxSize === codeSize) output += (first ? "" : "\n") + indexRender;
+  if (indexRender) output += (first ? "" : "\n") + indexRender;
+
+  output += `\n${totalSize}kB  [${buildTime}ms]`;
 
   return output;
 }
