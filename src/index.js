@@ -84,10 +84,7 @@ module.exports = async (
     module: {
       rules: [
         {
-          parser: { amd: false }
-        },
-        {
-          test: /\.js$/,
+          parser: { amd: false },
           use: [{
             loader: __dirname + "/loaders/shebang-loader.js"
           }]
@@ -100,7 +97,7 @@ module.exports = async (
           }]
         },
         {
-          test: /\.(js|mjs)$/,
+          test: /\.(js|mjs|tsx?)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
             options: { assetNames, assets }
