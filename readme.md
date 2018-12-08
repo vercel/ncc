@@ -74,3 +74,5 @@ require('@zeit/ncc')('/path/to/input', {
 ## Caveats
 
 - Files / assets are relocated based on a static evaluator. Dynamic non-statically analyzable asset loads may not work out correctly
+
+Have a nice day.
