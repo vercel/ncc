@@ -66,6 +66,12 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js", tsLoader);
 
+  // copy typescript types
+  await copy(
+    __dirname + "/../node_modules/typescript/lib/*.ts",
+    __dirname + "/../dist/ncc/loaders/lib/"
+  );
+
   // copy webpack buildin
   await copy(
     __dirname + "/../node_modules/webpack/buildin/*.js",

@@ -105,7 +105,7 @@ module.exports = async (
         },
         {
           test: /\.tsx?$/,
-          use: [{ loader: __dirname + "/loaders/ts-loader.js" }]
+          use: [{ loader: __dirname + "/loaders/ts-loader.js", options: {} }]
         }
       ]
     },
@@ -128,10 +128,14 @@ module.exports = async (
                     /webpackEmptyAsyncContext|webpackEmptyContext/
                   )
                 ) {
+                  module.type = 'HACK'; // hack to ensure __webpack_require__ is added to wrapper
                   return moduleSourcePostModule._value.replace(
                     "var e = new Error",
-                    `try { return require(req) }\ncatch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }` +
-                      `\nvar e = new Error`
+                    `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
+                    `  return __webpack_require__(req);\n` +
+                    `try { return require(req) }\n` + 
+                    `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
+                    `var e = new Error`
                   );
                 }
               }
