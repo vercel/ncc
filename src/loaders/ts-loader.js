@@ -6,8 +6,15 @@ const { getOptions } = require("loader-utils");
 const loader = require("ts-loader");
 const tsId = require.resolve("typescript");
 module.exports = function () {
+  let first = true;
   const options = getOptions(this);
   if (!options.compiler)
-    options.compiler = tsId;
+    Object.defineProperty(options, 'compiler', {
+      get () {
+        // hack to disable the warning when "compiler !== 'typescript'" while
+        // still supporting numeric id on first access for require call
+        return first ? (first = false, tsId) : 'typescript';
+      }
+    });
   return loader.apply(this, arguments);
 };
