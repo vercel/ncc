@@ -1,6 +1,9 @@
 const { resolve, relative, dirname, sep } = require("path");
+const execa = require('execa')
 const glob = require("glob");
+
 const shebangRegEx = require("./utils/shebang");
+const { stat } = require("./utils/filesystem")
 
 const usage = `Usage: ncc <cmd> <opts>
 
@@ -11,12 +14,13 @@ Commands:
   version
 
 Options:
-  -o, --out [file]      Output directory for build (defaults to dist)
-  -M, --no-minify       Skip output minification
-  -S, --no-source-map   Skip source map output
-  -e, --external [mod]  Skip bundling 'mod'. Can be used many times
-  -q, --quiet           Disable build summaries / non-error outputs
-`;
+  -o, --out [file]        Output directory for build (defaults to dist)
+  -M, --no-minify         Skip output minification
+  -S, --no-source-map     Skip source map output
+  -e, --external [mod]    Skip bundling 'mod'. Can be used many times
+  -q, --quiet             Disable build summaries / non-error outputs
+  -D, --no-dependencies   Disable autoinstall dependencies feature
+`
 
 let args;
 try {
@@ -30,7 +34,9 @@ try {
     "--no-source-map": Boolean,
     "-S": "--no-source-map",
     "--quiet": Boolean,
-    "-q": "--quiet"
+    "-q": "--quiet",
+    "--no-dependencies": Boolean,
+    "-D": "--no-dependencies"
   });
 } catch (e) {
   if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
@@ -119,16 +125,35 @@ switch (args._[0]) {
       process.exit(1);
     }
 
-    const startTime = Date.now();
-    const ncc = require("./index.js")(
-      eval("require.resolve")(resolve(args._[1] || ".")),
-      {
-        minify: !args["--no-minify"] && !run,
-        externals: args["--external"],
-        sourceMap: !args["--no-source-map"]
+    let startTime
+    
+    new Promise(async r => {
+      if (args['--no-dependencies']) {
+        r()
       }
-    );
-    ncc.then(
+      const [hasPackageJson, hasNodeModules] = await Promise.all([
+        stat(resolve(process.cwd(), 'package.json')),
+        stat(resolve(process.cwd(), 'node_modules'))
+      ])
+      if (hasPackageJson && !hasNodeModules) {
+        const npm = /^win/.test(process.platform) ? 'npm.cmd' : 'npm'
+        await execa(npm, ['install'], { stdout: process.stdout, stderr: process.stderr })
+      }
+      r()
+    })
+    .then(() => {
+      startTime = Date.now();
+      const ncc = require("./index.js")(
+        eval("require.resolve")(resolve(args._[1] || ".")),
+        {
+          minify: !args["--no-minify"] && !run,
+          externals: args["--external"],
+          sourceMap: !args["--no-source-map"]
+        }
+      )
+      return ncc
+    })
+    .then(
       async ({ code, map, assets }) => {
         outDir = outDir || resolve("dist");
         const fs = require("fs");
