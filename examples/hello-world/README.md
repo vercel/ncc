@@ -4,14 +4,6 @@
 
 Within this directory, run `yarn` to install dependencies.
 
-To execute the Node.js program, run:
+To execute the Node.js program with `ncc`, run `yarn dev`.
 
-```sh
-npx ncc run index.js
-```
-
-To build the outputs of `index.js` into the `dist/` directory, run:
-
-```sh
-npx ncc build index.js -o dist
-```
+To build the program with `ncc`, run `yarn build`.
