@@ -1,3 +1,4 @@
+const path = require('path');
 const { getOptions } = require('loader-utils');
 const getUniqueAssetName = require('../utils/dedupe-names');
 const sharedlibEmit = require('../utils/sharedlib-emit');
@@ -11,7 +12,7 @@ module.exports = async function (content) {
   const id = this.resourcePath;
   const options = getOptions(this);
 
-  const pkgBase = getPackageBase(this.resourcePath);
+  const pkgBase = getPackageBase(this.resourcePath) || path.dirname(id);
   if (!options.assetNames[`sharedlibs:${pkgBase}`]) {
     options.assetNames[`sharedlibs:${pkgBase}`] = true;
     await sharedlibEmit(pkgBase, this.emitFile);
