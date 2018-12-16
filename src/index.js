@@ -5,7 +5,8 @@ const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
-const shebangRegEx = require('./utils/shebang');
+const shebangRegEx = require("./utils/shebang");
+const nccCacheDir = require("./utils/ncc-cache-dir");
 
 const SUPPORTED_EXTENSIONS = [".ts", ".tsx", ".js", ".mjs", ".json", ".node"];
 
@@ -68,6 +69,13 @@ module.exports = async (
 
   const compiler = webpack({
     entry,
+    cache: {
+      type: "filesystem",
+      cacheDirectory: nccCacheDir,
+      name: "ncc",
+      version: require('../package.json').version,
+      store: "instant"
+    },
     optimization: {
       nodeEnv: false,
       minimize: false
