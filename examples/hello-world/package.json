@@ -11,6 +11,6 @@
     "chalk": "^2.4.1"
   },
   "devDependencies": {
-    "@zeit/ncc": "file:../../"
+    "@zeit/ncc": "latest"
   }
 }

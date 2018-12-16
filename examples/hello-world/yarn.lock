@@ -2,8 +2,10 @@
 # yarn lockfile v1
 
 
-"@zeit/ncc@file:../..":
+"@zeit/ncc@latest":
   version "0.5.5"
+  resolved "https://registry.yarnpkg.com/@zeit/ncc/-/ncc-0.5.5.tgz#92ab3a89ce5ad393262752be69bbae9a9eb7dff1"
+  integrity sha512-yUg7RJKG5DsrCLGrCaxplEwu3Vd8rqhYaYYi25SD6wXMCMPEcu4GskgqT1+mQq7rXLzJkq7q+WGb+ayzzM7f4w==
 
 ansi-styles@^3.2.1:
   version "3.2.1"
