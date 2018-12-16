@@ -105,7 +105,14 @@ module.exports = async (
         },
         {
           test: /\.tsx?$/,
-          use: [{ loader: __dirname + "/loaders/ts-loader.js", options: {} }]
+          use: [{
+            loader: __dirname + "/loaders/ts-loader.js",
+            options: {
+              compilerOptions: {
+                outDir: '//'
+              }
+            }
+          }]
         }
       ]
     },
