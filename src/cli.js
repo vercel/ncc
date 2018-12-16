@@ -21,8 +21,6 @@ Options:
 let args;
 try {
   args = require("arg")({
-    "--compress": Boolean,
-    "-c": "--compress",
     "--external": [String],
     "-e": "--external",
     "--out": String,
@@ -125,7 +123,6 @@ switch (args._[0]) {
     const ncc = require("./index.js")(
       eval("require.resolve")(resolve(args._[1] || ".")),
       {
-        compress: args["--compress"],
         minify: !args["--no-minify"] && !run,
         externals: args["--external"],
         sourceMap: !args["--no-source-map"]
