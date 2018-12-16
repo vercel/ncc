@@ -23,5 +23,6 @@ module.exports = function () {
   const options = getOptions(this);
   if (!options.compiler)
     options.compiler = tsId;
+  
   return loader.apply(this, arguments);
 };
