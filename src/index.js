@@ -193,10 +193,7 @@ module.exports = async (
     if (!minify)
       return { code, map, assets };
     const result = terser.minify(code, {
-      compress: {
-        keep_classnames: true,
-        keep_fnames: true
-      },
+      compress: false,
       mangle: {
         keep_classnames: true,
         keep_fnames: true
