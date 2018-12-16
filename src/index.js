@@ -72,7 +72,7 @@ module.exports = async (
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
   try {
-    resolvePlugins.push(new TsconfigPathsPlugin());
+    resolvePlugins.push(new TsconfigPathsPlugin({ silent: true }));
 
     const tsconfig = tsconfigPaths.loadConfig();
     if (tsconfig.resultType === "success") {
