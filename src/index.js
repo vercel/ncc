@@ -7,6 +7,7 @@ const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
+const nccCacheDir = require("./utils/ncc-cache-dir");
 
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
@@ -43,6 +44,13 @@ module.exports = async (
 
   const compiler = webpack({
     entry,
+    cache: {
+      type: "filesystem",
+      cacheDirectory: nccCacheDir,
+      name: "ncc",
+      version: require('../package.json').version,
+      store: "instant"
+    },
     optimization: {
       nodeEnv: false,
       minimize: false

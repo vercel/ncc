@@ -1,12 +1,15 @@
 const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
+const rimraf = require("rimraf");
 
 const usage = `Usage: ncc <cmd> <opts>
 
 Commands:
   build <input-file> [opts]
   run <input-file> [opts]
+  cache clean
+  cache dir
   help
   version
 
@@ -19,6 +22,7 @@ Options:
 `;
 
 let args;
+
 try {
   args = require("arg")({
     "--external": [String],
@@ -93,17 +97,33 @@ let run = false;
 let outDir = args["--out"];
 
 switch (args._[0]) {
+  case "cache":
+    if (args._.length > 2)
+      errTooManyArguments("cache");
+
+    const flags = Object.keys(args).filter(arg => arg.startsWith("--"));
+    if (flags.length)
+      errFlagNotCompatible(flags[0], "cache");
+
+    const cacheDir = require("./utils/ncc-cache-dir");
+    if (args._[1] === "dir") {
+      console.log(cacheDir);
+    }
+    else if (args._[1] === "clear") {
+      rimraf.sync(cacheDir);
+    }
+    else {
+      errInvalidCommand("cache " + args._[1]);
+    }
+
+  break;
   case "run":
-    if (args._.length > 2) {
-      console.error(`Error: Too many run arguments provided\n${usage}`);
-      process.exit(1);
-    }
-    if (args["--out"]) {
-      console.error(
-        `Error: --out flag is not compatible with ncc run\n${usage}`
-      );
-      process.exit(1);
-    }
+    if (args._.length > 2)
+      errTooManyArguments("run");
+
+    if (args["--out"])
+      errFlagNotCompatible("--out", "run");
+
     outDir = resolve(
       require("os").tmpdir(),
       Math.random()
@@ -114,10 +134,8 @@ switch (args._[0]) {
 
   // fallthrough
   case "build":
-    if (args._.length > 2) {
-      console.error(`Error: Too many build arguments provided\n${usage}`);
-      process.exit(1);
-    }
+    if (args._.length > 2)
+      errTooManyArguments("build");
 
     const startTime = Date.now();
     const ncc = require("./index.js")(
@@ -186,8 +204,22 @@ switch (args._[0]) {
     break;
 
   default:
-    console.error(`Error: Invalid command "${args._[0]}"\n${usage}`);
-    process.exit(1);
+    errInvalidCommand(args._[0]);
+}
+
+function errTooManyArguments (cmd) {
+  console.error(`Error: Too many ${cmd} arguments provided\n${usage}`);
+  process.exit(1);
+}
+
+function errFlagNotCompatible (flag, cmd) {
+  console.error(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`);
+  process.exit(1);
+}
+
+function errInvalidCommand (cmd) {
+  console.error(`Error: Invalid command "${cmd}"\n${usage}`);
+  process.exit(1);
 }
 
 // remove me when node.js makes this the default behavior
