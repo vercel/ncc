@@ -63,7 +63,9 @@ require('@zeit/ncc')('/path/to/input', {
   minify: false, // default
   // externals to leave as requires of the build
   externals: ["externalpackage"],
-  sourceMap: false // default
+  sourceMap: false, // default
+  // provide a custom cache path or disable caching
+  cache: "./custom/cache/path" | false 
 }).then(({ code, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources

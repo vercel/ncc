@@ -2,20 +2,23 @@ const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
+const crypto = require("crypto");
+const fs = require("fs");
+const mkdirp = require("mkdirp");
 
 const usage = `Usage: ncc <cmd> <opts>
 
 Commands:
   build <input-file> [opts]
   run <input-file> [opts]
-  cache clean
-  cache dir
+  cache clean|dir|size
   help
   version
 
 Options:
   -o, --out [file]      Output directory for build (defaults to dist)
   -m, --minify          Minify output
+  -C, --no-cache        Skip build cache population
   -s, --source-map      Generate source map
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
@@ -33,6 +36,8 @@ try {
     "-m": "--minify",
     "--source-map": Boolean,
     "-s": "--source-map",
+    "--no-cache": Boolean,
+    "-C": "--no-cache",
     "--quiet": Boolean,
     "-q": "--quiet"
   });
@@ -106,14 +111,27 @@ switch (args._[0]) {
       errFlagNotCompatible(flags[0], "cache");
 
     const cacheDir = require("./utils/ncc-cache-dir");
-    if (args._[1] === "dir") {
-      console.log(cacheDir);
-    }
-    else if (args._[1] === "clear") {
-      rimraf.sync(cacheDir);
-    }
-    else {
-      errInvalidCommand("cache " + args._[1]);
+    switch (args._[1]) {
+      case "clean":
+        rimraf.sync(cacheDir);
+      break;
+      case "dir":
+        console.log(cacheDir);
+      break;
+      case "size":
+        require("get-folder-size")(cacheDir, (err, size) => {
+          if (err) {
+            if (err.code === 'ENOENT') {
+              console.log("0MB");
+              return;
+            }
+            throw err;
+          }
+          console.log(`${(size / 1024 / 1024).toFixed(2)}MB`);
+        });
+      break;
+      default:
+        errInvalidCommand("cache " + args._[1]);
     }
 
   break;
@@ -126,10 +144,15 @@ switch (args._[0]) {
 
     outDir = resolve(
       require("os").tmpdir(),
-      Math.random()
-        .toString(16)
-        .substr(2)
+      crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
     );
+    if (fs.existsSync(outDir)) {
+      console.error(
+        `Error: Application at ${args._[1] || "."} is already running or didn't cleanup after previous run.` +
+        `To manually clear the last run build, try running "rm -rf ${outDir}".`
+      );
+      process.exit(1);
+    }
     run = true;
 
   // fallthrough
@@ -143,14 +166,13 @@ switch (args._[0]) {
       {
         minify: args["--minify"],
         externals: args["--external"],
-        sourceMap: args["--source-map"] || run && args["--minify"]
+        sourceMap: args["--source-map"] || run && args["--minify"],
+        cacheDirectory: args["--no-cache"] ? false : undefined
       }
     );
     ncc.then(
       async ({ code, map, assets }) => {
         outDir = outDir || resolve("dist");
-        const fs = require("fs");
-        const mkdirp = require("mkdirp");
         mkdirp.sync(outDir);
         // remove all existing ".js" files in the out directory
         await Promise.all(
