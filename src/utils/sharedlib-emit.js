@@ -1,27 +1,28 @@
 const os = require('os');
-const path = require('path');
 const fs = require('fs');
+const glob = require('glob');
 
-let libRegEx;
+let sharedlibGlob;
 switch (os.platform()) {
   case 'darwin':
-    libRegEx = /\.dylib$/;
+    sharedlibGlob = '/**/*.dylib';
   break;
   case 'win32':
-    libRegEx = /\.dll$/;
+    sharedlibGlob = '/**/*.dll';
   break;
   default:
-    libRegEx = /\.so(\.\d+)?$/;
+    sharedlibGlob = '/**/*.so?(.*)';
 }
 
 // helper for emitting the associated shared libraries when a binary is emitted
-module.exports = function (binaryPath, emitFile) {
-  const dir = path.dirname(binaryPath);
-  const files = fs.readdirSync(dir);
-
-  const sharedLibs = files.filter(name => name.match(libRegEx));
-  sharedLibs.forEach(name => {
-    const libPath = path.resolve(dir, name);
-    emitFile(name, fs.readFileSync(libPath));
-  });
+module.exports = async function (pkgPath, emitFile) {
+  const files = await new Promise((resolve, reject) =>
+    glob(pkgPath + sharedlibGlob, { ignore: 'node_modules/**/*' }, (err, files) => err ? reject(err) : resolve(files))
+  );
+  await Promise.all(files.map(async file => {
+    const source = await new Promise((resolve, reject) =>
+      fs.readFile(file, (err, source) => err ? reject(err) : resolve(source))
+    );
+    emitFile(file.substr(pkgPath.length), source);
+  }));
 };

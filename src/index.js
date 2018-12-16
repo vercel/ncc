@@ -128,7 +128,14 @@ module.exports = async (
         },
         {
           test: /\.tsx?$/,
-          use: [{ loader: __dirname + "/loaders/ts-loader.js", options: {} }]
+          use: [{
+            loader: __dirname + "/loaders/ts-loader.js",
+            options: {
+              compilerOptions: {
+                outDir: '//'
+              }
+            }
+          }]
         }
       ]
     },
@@ -231,10 +238,7 @@ module.exports = async (
     if (!minify)
       return { code, map, assets };
     const result = terser.minify(code, {
-      compress: {
-        keep_classnames: true,
-        keep_fnames: true
-      },
+      compress: false,
       mangle: {
         keep_classnames: true,
         keep_fnames: true
