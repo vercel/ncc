@@ -192,6 +192,21 @@ module.exports = async (
   });
   compiler.inputFileSystem = fs;
   compiler.outputFileSystem = mfs;
+  // tsconfig-paths-webpack-plugin requires a readJson method on the filesystem
+  compiler.inputFileSystem.readJson = (path, callback) => {
+    compiler.inputFileSystem.readFile(path, (err, data) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      try {
+        callback(null, JSON.parse(data));
+      } catch (e) {
+        callback(e);
+      }
+    });
+  };
   compiler.resolvers.normal.fileSystem = mfs;
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
