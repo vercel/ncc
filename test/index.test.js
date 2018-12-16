@@ -6,13 +6,19 @@ const { dirname } = require("path");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
+    const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
-      .readFileSync(`${__dirname}/unit/${unitTest}/output.js`)
+      .readFileSync(`${testDir}/output.js`)
       .toString()
       .trim()
       // Windows support
       .replace(/\r/g, "");
-    await ncc(`${__dirname}/unit/${unitTest}/input.js`, { minify: false }).then(
+
+    // set env variable so tsconfig-paths can find the config
+    process.env.TS_NODE_PROJECT = `${testDir}/tsconfig.json`;
+    // find the name of the input file (e.g input.ts)
+    const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
+    await ncc(`${testDir}/${inputFile}`, { minify: false }).then(
       async ({ code, assets }) => {
         // very simple asset validation in unit tests
         if (unitTest.startsWith("asset-")) {
@@ -27,7 +33,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
           expect(actual).toBe(expected);
         } catch (e) {
           // useful for updating fixtures
-          fs.writeFileSync(`${__dirname}/unit/${unitTest}/actual.js`, actual);
+          fs.writeFileSync(`${testDir}/actual.js`, actual);
           throw e;
         }
       }
