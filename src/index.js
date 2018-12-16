@@ -50,6 +50,7 @@ module.exports = async (
   {
     externals = [],
     minify = false,
+    compress = false,
     sourceMap = false,
     filename = "index.js"
   } = {}
@@ -193,10 +194,10 @@ module.exports = async (
     if (!minify)
       return { code, map, assets };
     const result = terser.minify(code, {
-      compress: {
+      compress: compress ? {
         keep_classnames: true,
         keep_fnames: true
-      },
+      } : false,
       mangle: {
         keep_classnames: true,
         keep_fnames: true

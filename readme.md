@@ -61,6 +61,8 @@ file is necessary. Most likely you want to indicate `es2015` support:
 ```js
 require('@zeit/ncc')('/path/to/input', {
   minify: true, // default
+  // use minification compression
+  compress: false,
   // externals to leave as requires of the build
   externals: ["externalpackage"],
   sourceMap: true // default
