@@ -43,10 +43,11 @@ function resolveModule(matchPath, context, request, callback, forcedExternals = 
 module.exports = async (
   entry,
   {
+    cache,
     externals = [],
+    filename = "index.js",
     minify = true,
-    sourceMap = false,
-    filename = "index.js"
+    sourceMap = false
   } = {}
 ) => {
   const shebangMatch = fs.readFileSync(resolve.sync(entry)).toString().match(shebangRegEx);
@@ -69,9 +70,9 @@ module.exports = async (
 
   const compiler = webpack({
     entry,
-    cache: {
+    cache: cache === false ? undefined : {
       type: "filesystem",
-      cacheDirectory: nccCacheDir,
+      cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
       name: "ncc",
       version: require('../package.json').version,
       store: "instant"
