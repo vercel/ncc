@@ -93,7 +93,7 @@
     "typescript": "^3.2.2",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
-    "webpack": "^4.26.0",
+    "webpack": "github:webpack/webpack#next",
     "when": "^3.7.8"
   }
 }
