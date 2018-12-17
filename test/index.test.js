@@ -42,7 +42,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 }
 
 // the twilio test can take a while (large codebase)
-jest.setTimeout(100000);
+jest.setTimeout(200000);
 
 function clearDir (dir) {
   try {
@@ -68,6 +68,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
       global.gc();
       console.log(`GC Completed, Heap Size: ${process.memoryUsage().heapUsed / 1024 ** 2} MB`);
     }
+
     const { code, map, assets } = await ncc(
       __dirname + "/integration/" + integrationTest,
       {
