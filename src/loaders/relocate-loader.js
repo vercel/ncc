@@ -267,8 +267,8 @@ module.exports = function (code) {
         glob(assetDirPath + '/**/*', { mark: true, ignore: 'node_modules/**/*' }, (err, files) => err ? reject(err) : resolve(files))
       );
       await Promise.all(files.map(async file => {
-        // dont emit empty directories
-        if (file.endsWith('/'))
+        // dont emit empty directories or ".js" files
+        if (file.endsWith('/') || file.endsWith('.js'))
           return;
         const source = await new Promise((resolve, reject) =>
           fs.readFile(file, (err, source) => err ? reject(err) : resolve(source))
