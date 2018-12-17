@@ -58,8 +58,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   if (!/\.(mjs|tsx?|js)$/.test(integrationTest)) continue;
   it(`should evaluate ${integrationTest} without errors`, async () => {
     const { code, map, assets } = await ncc(
-      __dirname + "/integration/" + integrationTest,
-      { minify: true, sourceMap: true }
+      __dirname + "/integration/" + integrationTest
     );
     const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
     clearDir(tmpDir);
