@@ -56,6 +56,10 @@ function clearDir (dir) {
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!/\.(mjs|tsx?|js)$/.test(integrationTest)) continue;
+
+  // disabled pending https://github.com/zeit/ncc/issues/141
+  if (integrationTest.endsWith('loopback.js')) continue;
+
   it(`should evaluate ${integrationTest} without errors`, async () => {
     const { code, map, assets } = await ncc(
       __dirname + "/integration/" + integrationTest,
