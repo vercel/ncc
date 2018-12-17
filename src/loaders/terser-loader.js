@@ -2,12 +2,11 @@ const terser = require("terser");
 const { getOptions } = require('loader-utils');
 
 module.exports = function (code) {
+  if (this.cacheable)
+    this.cacheable();
   const options = getOptions(this);
   const result = terser.minify(code, {
-    compress: {
-      keep_classnames: true,
-      keep_fnames: true
-    },
+    compress: false,
     mangle: {
       keep_classnames: true,
       keep_fnames: true
