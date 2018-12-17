@@ -64,8 +64,15 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   if (integrationTest.endsWith('path-platform.js')) continue;
 
   it(`should evaluate ${integrationTest} without errors`, async () => {
+    if (global.gc) {
+      global.gc();
+      console.log(`GC Completed, Heap Size: ${process.memoryUsage().heapUsed / 1024 ** 2} MB`);
+    }
     const { code, map, assets } = await ncc(
-      __dirname + "/integration/" + integrationTest
+      __dirname + "/integration/" + integrationTest,
+      {
+        cache: !global.coverage,
+      }
     );
     const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
     clearDir(tmpDir);
