@@ -87,13 +87,14 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     fs.writeFileSync(tmpDir + "index.js.map", map);
     await new Promise((resolve, reject) => {
       const ps = require("child_process").fork(tmpDir + "index.js", {
+        stdio: "inherit",
         execArgv: ["-r", "source-map-support/register.js"]
       });
-      ps.on("close", (code) => {
+      ps.on("close", (code, signal) => {
         if (code === 0)
           resolve();
         else
-          reject(new Error(`Test failed.`));
+          reject(new Error(`Test failed with code ${code} - ${signal}.`));
       });
     });
     clearDir(tmpDir);
