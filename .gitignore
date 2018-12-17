@@ -7,9 +7,6 @@ dist/**/*.js
 !test/integration
 !test/integration/*.json
 !test/integration/*.js
-!test/integration/*.ts
-!test/unit
-!test/unit/**
 !dist/
 !dist/ncc/
 !dist/buildin/
