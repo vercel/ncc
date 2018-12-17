@@ -1,5 +1,5 @@
 const resolve = require("resolve");
-const fs = require("fs");
+const fs = require("graceful-fs");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const WebpackParser = require("webpack/lib/Parser");

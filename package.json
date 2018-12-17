@@ -44,6 +44,7 @@
     "fontkit": "^1.7.7",
     "glob": "^7.1.3",
     "got": "^9.3.2",
+    "graceful-fs": "^4.1.15",
     "graphql": "^14.0.2",
     "hot-shots": "^5.9.2",
     "in-publish": "^2.0.0",
