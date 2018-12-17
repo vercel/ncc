@@ -1,5 +1,5 @@
 const path = require('path');
-const fs = require('fs');
+const fs = require('graceful-fs');
 const { walk } = require('estree-walker');
 const MagicString = require('magic-string');
 const { attachScopes } = require('rollup-pluginutils');

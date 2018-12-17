@@ -1,5 +1,5 @@
 const os = require('os');
-const fs = require('fs');
+const fs = require('graceful-fs');
 const glob = require('glob');
 
 let sharedlibGlob;
