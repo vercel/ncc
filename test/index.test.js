@@ -72,7 +72,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     const { code, map, assets } = await ncc(
       __dirname + "/integration/" + integrationTest,
       {
-        cache: !global.coverage,
+        cache: false
       }
     );
     const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
