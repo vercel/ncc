@@ -57,7 +57,7 @@ module.exports = async (
   entry,
   {
     externals = [],
-    minify = false,
+    minify = true,
     sourceMap = false,
     filename = "index.js"
   } = {}
