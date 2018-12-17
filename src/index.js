@@ -5,8 +5,6 @@ const MemoryFS = require("memory-fs");
 const WebpackParser = require("webpack/lib/Parser");
 const webpackParse = WebpackParser.parse;
 const terser = require("terser");
-const tsconfigPaths = require("tsconfig-paths");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 
 // overload the webpack parser so that we can make
@@ -23,7 +21,7 @@ WebpackParser.parse = function(source, opts = {}) {
 
 const SUPPORTED_EXTENSIONS = [".ts", ".tsx", ".js", ".mjs", ".json", ".node"];
 
-function resolveModule(matchPath, context, request, callback, forcedExternals = []) {
+function resolveModule(context, request, callback, forcedExternals = []) {
   const resolveOptions = {
     basedir: context,
     preserveSymlinks: true,
@@ -37,12 +35,6 @@ function resolveModule(matchPath, context, request, callback, forcedExternals = 
 
   resolve(request, resolveOptions, err => {
     if (err) {
-      // check tsconfig paths before erroring
-      if (matchPath && matchPath(request, undefined, undefined, SUPPORTED_EXTENSIONS)) {
-        callback();
-        return;
-      }
-
       console.error(
         `ncc: Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`
       );
@@ -66,20 +58,6 @@ module.exports = async (
   const mfs = new MemoryFS();
   const assetNames = Object.create(null);
   const assets = Object.create(null);
-  const resolvePlugins = [];
-  let tsconfigMatchPath;
-  // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
-  // we need to catch here because the plugin will
-  // error if there's no tsconfig in the working directory
-  try {
-    resolvePlugins.push(new TsconfigPathsPlugin({ silent: true }));
-
-    const tsconfig = tsconfigPaths.loadConfig();
-    if (tsconfig.resultType === "success") {
-      tsconfigMatchPath = tsconfigPaths.createMatchPath(tsconfig.absoluteBaseUrl, tsconfig.paths);
-    }
-  } catch (e) {}
-
   const compiler = webpack({
     entry,
     optimization: {
@@ -98,12 +76,11 @@ module.exports = async (
       extensions: SUPPORTED_EXTENSIONS,
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
-      mainFields: ["main"],
-      plugins: resolvePlugins
+      mainFields: ["main"]
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: (...args) => resolveModule(tsconfigMatchPath, ...[...args, externals]),
+    externals: (...args) => resolveModule(...[...args, externals]),
     module: {
       rules: [
         {
@@ -163,7 +140,7 @@ module.exports = async (
                     "var e = new Error",
                     `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
                     `  return __webpack_require__(req);\n` +
-                    `try { return require(req) }\n` +
+                    `try { return require(req) }\n` + 
                     `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
                     `var e = new Error`
                   );
@@ -199,21 +176,6 @@ module.exports = async (
   });
   compiler.inputFileSystem = fs;
   compiler.outputFileSystem = mfs;
-  // tsconfig-paths-webpack-plugin requires a readJson method on the filesystem
-  compiler.inputFileSystem.readJson = (path, callback) => {
-    compiler.inputFileSystem.readFile(path, (err, data) => {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      try {
-        callback(null, JSON.parse(data));
-      } catch (e) {
-        callback(e);
-      }
-    });
-  };
   compiler.resolvers.normal.fileSystem = mfs;
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
