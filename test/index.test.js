@@ -8,7 +8,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
-      .readFileSync(`${testDir}/output.js`)
+      .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js`)
       .toString()
       .trim()
       // Windows support
