@@ -5,6 +5,7 @@ dist/**/*.js
 !src/*.js
 !test
 !test/integration
+!test/integration/*.json
 !test/integration/*.js
 !test/integration/*.ts
 !test/unit
