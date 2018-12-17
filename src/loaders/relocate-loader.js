@@ -212,6 +212,8 @@ const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|binding
 
 
 module.exports = function (code) {
+  if (this.cacheable)
+    this.cacheable();
   this.async();
   const id = this.resourcePath;
 

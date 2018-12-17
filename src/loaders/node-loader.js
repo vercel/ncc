@@ -5,9 +5,9 @@ const sharedlibEmit = require('../utils/sharedlib-emit');
 const getPackageBase = require('../utils/get-package-base');
 
 module.exports = async function (content) {
-  this.async();
   if (this.cacheable)
     this.cacheable();
+  this.async();
 
   const id = this.resourcePath;
   const options = getOptions(this);
