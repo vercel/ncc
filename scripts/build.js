@@ -44,18 +44,17 @@ async function main() {
     require.resolve("source-map-support/register")
   );
 
+  // detect unexpected asset emissions from core build
   if (
     Object.keys(cliAssets).length ||
-    Object.keys(indexAssets).length ||
+    Object.keys(indexAssets).some(asset => !asset.startsWith('locales/')) ||
     Object.keys(nodeLoaderAssets).length ||
     Object.keys(relocateLoaderAssets).length ||
     Object.keys(shebangLoaderAssets).length ||
-    Object.keys(tsLoaderAssets).length ||
+    Object.keys(tsLoaderAssets).some(asset => !asset.startsWith('lib/')) ||
     Object.keys(sourcemapAssets).length
   ) {
-    console.error(
-      "Assets emitted by core build, these need to be written into the dist directory"
-    );
+    console.error("New assets are being emitted by the core build");
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
