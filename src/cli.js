@@ -22,6 +22,7 @@ Options:
   -s, --source-map      Generate source map
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
+  -q, --watch           Start a watched build
 `;
 
 let args;
@@ -39,7 +40,9 @@ try {
     "--no-cache": Boolean,
     "-C": "--no-cache",
     "--quiet": Boolean,
-    "-q": "--quiet"
+    "-q": "--quiet",
+    "--watch": Boolean,
+    "-w": "--watch"
   });
 } catch (e) {
   if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
@@ -167,7 +170,8 @@ switch (args._[0]) {
         minify: args["--minify"],
         externals: args["--external"],
         sourceMap: args["--source-map"] || run && args["--minify"],
-        cacheDirectory: args["--no-cache"] ? false : undefined
+        cacheDirectory: args["--no-cache"] ? false : undefined,
+        watch: args["--watch"]
       }
     );
     ncc.then(
@@ -191,15 +195,19 @@ switch (args._[0]) {
           fs.writeFileSync(assetPath, assets[asset]);
         }
 
-        if (!args["--quiet"])
-          console.log(
+        if (!args["--quiet"]) {
+          console.log( 
             renderSummary(
               code,
               assets,
               run ? "" : relative(process.cwd(), outDir),
-              Date.now() - startTime
+              Date.now() - startTime,
             )
           );
+
+          if (args["--watch"])
+            console.log('Watching for changes...');
+        }
 
         if (run) {
           const ps = require("child_process").fork(outDir + "/index.js", {

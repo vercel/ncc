@@ -14,14 +14,15 @@ const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "mod
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
-module.exports = async (
+module.exports = (
   entry,
   {
     cache,
     externals = [],
     filename = "index.js",
     minify = false,
-    sourceMap = false
+    sourceMap = false,
+    watch = false
   } = {}
 ) => {
   const shebangMatch = fs.readFileSync(resolve.sync(entry)).toString().match(shebangRegEx);
@@ -215,56 +216,78 @@ module.exports = async (
       }
     });
   };
-  return new Promise((resolve, reject) => {
-    compiler.run((err, stats) => {
-      if (err) return reject(err);
-      FileCachePlugin.purgeMemoryCache();
-      if (stats.hasErrors()) {
-        return reject(new Error(stats.toString()));
-      }
-      const assets = Object.create(null);
-      getFlatFiles(mfs.data, assets);
-      delete assets[filename];
-      delete assets[filename + ".map"];
-      const code = mfs.readFileSync("/index.js", "utf8");
-      const map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
-      resolve({
-        code,
-        map,
-        assets
+  if (!watch) {
+    return new Promise((resolve, reject) => {
+      compiler.run((err, stats) => {
+        if (err) return reject(err);
+        if (stats.hasErrors()) {
+          return reject(new Error(stats.toString()));
+        }
+        resolve();
       });
-    });
-  })
-  .then(({ code, map, assets }) => {
-    if (!minify)
-      return { code, map, assets };
-    const result = terser.minify(code, {
-      compress: false,
-      mangle: {
-        keep_classnames: true,
-        keep_fnames: true
+    })
+    .then(finalizeHandler);
+  }
+  else {
+    let watcher;
+    return {
+      close () {
+        if (watcher)
+          watcher.close();
       },
-      sourceMap: sourceMap ? {
-        content: map,
-        filename,
-        url: filename + ".map"
-      } : false
-    });
-    // For some reason, auth0 returns "undefined"!
-    // custom terser phase used over Webpack integration for this reason
-    if (result.code === undefined)
-      return { code, map, assets };
-    return { code: result.code, map: result.map, assets };
-  })
-  .then(({ code, map, assets}) => {
-    if (!shebangMatch)
-      return { code, map, assets };
-    code = shebangMatch[0] + code;
-    // add a line offset to the sourcemap
-    if (map)
-      map.mappings = ";" + map.mappings;
+      async then (handler) {
+        watcher = compiler.watch({}, (err, stats) => {
+          if (err) return reject(err);
+          if (stats.hasErrors()) {
+            return reject(new Error(stats.toString()));
+          }
+          const { code, map, assets } = finalizeHandler();
+          // clear output file system
+          mfs.data = {};
+          handler({ code, map, assets });
+        });
+      }
+    };
+  }
+
+  function finalizeHandler () {
+    if (!watch)
+      FileCachePlugin.purgeMemoryCache();
+    const assets = Object.create(null);
+    getFlatFiles(mfs.data, assets);
+    delete assets[filename];
+    delete assets[filename + ".map"];
+    let code = mfs.readFileSync("/index.js", "utf8");
+    let map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
+
+    if (minify) {
+      const result = terser.minify(code, {
+        compress: false,
+        mangle: {
+          keep_classnames: true,
+          keep_fnames: true
+        },
+        sourceMap: sourceMap ? {
+          content: map,
+          filename,
+          url: filename + ".map"
+        } : false
+      });
+      // For some reason, auth0 returns "undefined"!
+      // custom terser phase used over Webpack integration for this reason
+      if (result.code !== undefined)
+        ({ code, map } = { code: result.code, map: result.map });
+    }
+
+    if (shebangMatch) {
+      code = shebangMatch[0] + code;
+      // add a line offset to the sourcemap
+      if (map)
+        map.mappings = ";" + map.mappings;
+    }
+
     return { code, map, assets };
-  })
+  }
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
