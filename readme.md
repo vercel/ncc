@@ -66,14 +66,14 @@ file is necessary. Most likely you want to indicate `es2015` support:
 
 ```js
 require('@zeit/ncc')('/path/to/input', {
-  // provide a custom cache path or disable caching
-  cache: "./custom/cache/path" | false,
   // externals to leave as requires of the build
   externals: ["externalpackage"],
   minify: false, // default
-  sourceMap: false, // default
+  sourceMap: false // default
+  // provide a custom cache path or disable caching
+  cache: "./custom/cache/path" | false,
   watch: false // default
-}).then(({ code, map, assets }) => {
+}).then(({ code, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources
   // expected relative to the output code (if any)

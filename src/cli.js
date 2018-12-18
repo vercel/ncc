@@ -17,10 +17,10 @@ Commands:
 
 Options:
   -o, --out [file]      Output directory for build (defaults to dist)
-  -m, --minify          Minify output
-  -C, --no-cache        Skip build cache population
-  -s, --source-map      Generate source map
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
+  -C, --no-cache        Skip build cache population
+  -m, --minify          Minify output
+  -s, --source-map      Generate source map
   -q, --quiet           Disable build summaries / non-error outputs
   -q, --watch           Start a watched build
 `;
