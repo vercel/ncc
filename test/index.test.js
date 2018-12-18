@@ -60,9 +60,6 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // disabled pending https://github.com/zeit/ncc/issues/141
   if (integrationTest.endsWith('loopback.js')) continue;
 
-  // TODO: Reenable this test once https://github.com/webpack/webpack/issues/8509 is fixed
-  if (integrationTest.endsWith('path-platform.js')) continue;
-
   it(`should evaluate ${integrationTest} without errors`, async () => {
     if (global.gc) {
       global.gc();
