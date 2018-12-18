@@ -85,7 +85,8 @@ When `watch: true` is set, the build object is not a promise, but has the follow
 ```js
 {
   // handler re-run on each build completion
-  handler (({ code, map, assets }) => { ... })
+  // watch errors are reported on "err"
+  handler (({ err, code, map, assets }) => { ... })
   // handler re-run on each rebuild start
   rebuild (() => {})
   // close the watcher

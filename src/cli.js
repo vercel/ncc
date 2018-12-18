@@ -164,6 +164,7 @@ switch (args._[0]) {
       errTooManyArguments("build");
 
     let startTime = Date.now();
+    let ps;
     const ncc = require("./index.js")(
       eval("require.resolve")(resolve(args._[1] || ".")),
       {
@@ -175,7 +176,14 @@ switch (args._[0]) {
       }
     );
 
-    async function handler ({ code, map, assets }) {
+    async function handler ({ err, code, map, assets }) {
+      // handle watch errors
+      if (err) {
+        console.error(err);
+        console.log('Watching for changes...');
+        return;
+      }
+
       outDir = outDir || resolve("dist");
       mkdirp.sync(outDir);
       // remove all existing ".js" files in the out directory
@@ -210,7 +218,7 @@ switch (args._[0]) {
       }
 
       if (run) {
-        const ps = require("child_process").fork(outDir + "/index.js", {
+        ps = require("child_process").fork(outDir + "/index.js", {
           execArgv: map
             ? ["-r", resolve(__dirname, "sourcemap-register")]
             : []
@@ -221,6 +229,8 @@ switch (args._[0]) {
     if (args["--watch"]) {
       ncc.handler(handler);
       ncc.rebuild(() => {
+        if (ps)
+          ps.kill();
         startTime = Date.now();
         console.log('File change, rebuilding...');
       });

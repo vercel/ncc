@@ -226,9 +226,8 @@ module.exports = (
     return new Promise((resolve, reject) => {
       compiler.run((err, stats) => {
         if (err) return reject(err);
-        if (stats.hasErrors()) {
+        if (stats.hasErrors())
           return reject(new Error(stats.toString()));
-        }
         resolve();
       });
     })
@@ -238,14 +237,15 @@ module.exports = (
     let cachedResult;
     watcher = compiler.watch({}, (err, stats) => {
       if (err) return reject(err);
-      if (stats.hasErrors()) {
-        return reject(new Error(stats.toString()));
-      }
+      if (err)
+        return watchHandler({ err });
+      if (stats.hasErrors())
+        return watchHandler({ err: stats.toString() });
       const { code, map, assets } = finalizeHandler();
       // clear output file system
       mfs.data = {};
       if (watchHandler)
-        watchHandler({ code, map, assets });
+        watchHandler({ code, map, assets, err: null });
       else
         cachedResult = { code, map, assets};
     });
