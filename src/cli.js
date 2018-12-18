@@ -163,7 +163,7 @@ switch (args._[0]) {
     if (args._.length > 2)
       errTooManyArguments("build");
 
-    const startTime = Date.now();
+    let startTime = Date.now();
     const ncc = require("./index.js")(
       eval("require.resolve")(resolve(args._[1] || ".")),
       {
@@ -174,55 +174,63 @@ switch (args._[0]) {
         watch: args["--watch"]
       }
     );
-    ncc.then(
-      async ({ code, map, assets }) => {
-        outDir = outDir || resolve("dist");
-        mkdirp.sync(outDir);
-        // remove all existing ".js" files in the out directory
-        await Promise.all(
-          (await new Promise((resolve, reject) =>
-            glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
-          )).map(file =>
-            new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
-          ))
-        );
-        fs.writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
-        if (map) fs.writeFileSync(outDir + "/index.js.map", map);
 
-        for (const asset of Object.keys(assets)) {
-          const assetPath = outDir + "/" + asset;
-          mkdirp.sync(dirname(assetPath));
-          fs.writeFileSync(assetPath, assets[asset]);
-        }
+    async function handler ({ code, map, assets }) {
+      outDir = outDir || resolve("dist");
+      mkdirp.sync(outDir);
+      // remove all existing ".js" files in the out directory
+      await Promise.all(
+        (await new Promise((resolve, reject) =>
+          glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
+        )).map(file =>
+          new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
+        ))
+      );
+      fs.writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
+      if (map) fs.writeFileSync(outDir + "/index.js.map", map);
 
-        if (!args["--quiet"]) {
-          console.log( 
-            renderSummary(
-              code,
-              assets,
-              run ? "" : relative(process.cwd(), outDir),
-              Date.now() - startTime,
-            )
-          );
-
-          if (args["--watch"])
-            console.log('Watching for changes...');
-        }
-
-        if (run) {
-          const ps = require("child_process").fork(outDir + "/index.js", {
-            execArgv: map
-              ? ["-r", resolve(__dirname, "sourcemap-register")]
-              : []
-          });
-          ps.on("close", () => require("rimraf").sync(outDir));
-        }
+      for (const asset of Object.keys(assets)) {
+        const assetPath = outDir + "/" + asset;
+        mkdirp.sync(dirname(assetPath));
+        fs.writeFileSync(assetPath, assets[asset]);
       }
-    )
-    .catch(err => {
-      console.error(err.stack);
-      process.exit(1);
-    });
+
+      if (!args["--quiet"]) {
+        console.log( 
+          renderSummary(
+            code,
+            assets,
+            run ? "" : relative(process.cwd(), outDir),
+            Date.now() - startTime,
+          )
+        );
+
+        if (args["--watch"])
+          console.log('Watching for changes...');
+      }
+
+      if (run) {
+        const ps = require("child_process").fork(outDir + "/index.js", {
+          execArgv: map
+            ? ["-r", resolve(__dirname, "sourcemap-register")]
+            : []
+        });
+        ps.on("close", () => require("rimraf").sync(outDir));
+      }
+    }
+    if (args["--watch"]) {
+      ncc.handler(handler);
+      ncc.rebuild(() => {
+        startTime = Date.now();
+        console.log('File change, rebuilding...');
+      });
+    } else {
+      ncc.then(handler)
+      .catch(err => {
+        console.error(err.stack);
+        process.exit(1);
+      });
+    }
     break;
 
   case "help":

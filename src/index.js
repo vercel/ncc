@@ -45,6 +45,8 @@ module.exports = (
 
   const externalSet = new Set(externals);
 
+  let watcher, watchHandler, rebuildHandler;
+
   const compiler = webpack({
     entry,
     cache: cache === false ? undefined : {
@@ -137,6 +139,10 @@ module.exports = (
     plugins: [
       {
         apply(compiler) {
+          compiler.hooks.watchRun.tap("ncc", () => {
+            if (rebuildHandler)
+              rebuildHandler();
+          });
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
             compilation.moduleTemplates.javascript.hooks.render.tap(
@@ -229,23 +235,43 @@ module.exports = (
     .then(finalizeHandler);
   }
   else {
-    let watcher;
+    let cachedResult;
+    watcher = compiler.watch({}, (err, stats) => {
+      if (err) return reject(err);
+      if (stats.hasErrors()) {
+        return reject(new Error(stats.toString()));
+      }
+      const { code, map, assets } = finalizeHandler();
+      // clear output file system
+      mfs.data = {};
+      if (watchHandler)
+        watchHandler({ code, map, assets });
+      else
+        cachedResult = { code, map, assets};
+    });
+    let closed = false;
     return {
       close () {
-        if (watcher)
-          watcher.close();
+        if (!watcher)
+          throw new Error('No watcher to close.');
+        if (closed)
+          throw new Error('Watcher already closed.');
+        closed = true;
+        watcher.close();
       },
-      async then (handler) {
-        watcher = compiler.watch({}, (err, stats) => {
-          if (err) return reject(err);
-          if (stats.hasErrors()) {
-            return reject(new Error(stats.toString()));
-          }
-          const { code, map, assets } = finalizeHandler();
-          // clear output file system
-          mfs.data = {};
-          handler({ code, map, assets });
-        });
+      handler (handler) {
+        if (watchHandler)
+          throw new Error('Watcher handler already provided.');
+        watchHandler = handler;
+        if (cachedResult) {
+          handler(cachedResult);
+          cachedResult = null;
+        }
+      },
+      rebuild (handler) {
+        if (rebuildHandler)
+          throw new Error('Rebuild handler already provided.');
+        rebuildHandler = handler;
       }
     };
   }

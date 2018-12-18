@@ -80,14 +80,14 @@ require('@zeit/ncc')('/path/to/input', {
 })
 ```
 
-When `watch: true` is set, the build object has the following signature:
+When `watch: true` is set, the build object is not a promise, but has the following signature:
 
 ```js
 {
-  // set handler re-run on each rebuild start
+  // handler re-run on each build completion
+  handler (({ code, map, assets }) => { ... })
+  // handler re-run on each rebuild start
   rebuild (() => {})
-  // set handler re-run on each build completion
-  then (({ code, map, assets }) => { ... })
   // close the watcher
   void close ();
 }
