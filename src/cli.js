@@ -12,8 +12,8 @@ Commands:
 
 Options:
   -o, --out [file]      Output directory for build (defaults to dist)
-  -M, --no-minify       Skip output minification
-  -S, --no-source-map   Skip source map output
+  -m, --minify          Minify output
+  -s, --source-map      Generate source map
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
 `;
@@ -25,10 +25,10 @@ try {
     "-e": "--external",
     "--out": String,
     "-o": "--out",
-    "--no-minify": Boolean,
-    "-M": "--no-minify",
-    "--no-source-map": Boolean,
-    "-S": "--no-source-map",
+    "--minify": Boolean,
+    "-m": "--minify",
+    "--source-map": Boolean,
+    "-s": "--source-map",
     "--quiet": Boolean,
     "-q": "--quiet"
   });
@@ -123,9 +123,9 @@ switch (args._[0]) {
     const ncc = require("./index.js")(
       eval("require.resolve")(resolve(args._[1] || ".")),
       {
-        minify: !args["--no-minify"] && !run,
+        minify: args["--minify"],
         externals: args["--external"],
-        sourceMap: !args["--no-source-map"]
+        sourceMap: args["--source-map"] || run && args["--minify"]
       }
     );
     ncc.then(

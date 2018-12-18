@@ -30,7 +30,7 @@ module.exports = async (
   entry,
   {
     externals = [],
-    minify = true,
+    minify = false,
     sourceMap = false,
     filename = "index.js"
   } = {}

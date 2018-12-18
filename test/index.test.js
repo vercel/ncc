@@ -18,7 +18,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     process.env.TS_NODE_PROJECT = `${testDir}/tsconfig.json`;
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
-    await ncc(`${testDir}/${inputFile}`, { minify: false }).then(
+    await ncc(`${testDir}/${inputFile}`).then(
       async ({ code, assets }) => {
         // very simple asset validation in unit tests
         if (unitTest.startsWith("asset-")) {
