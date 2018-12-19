@@ -228,7 +228,9 @@ module.exports = (
         if (err) return reject(err);
         if (stats.hasErrors())
           return reject(new Error(stats.toString()));
-        resolve();
+        compiler.close(() => {
+          resolve();
+        });
       });
     })
     .then(finalizeHandler);
