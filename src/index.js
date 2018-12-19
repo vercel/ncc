@@ -1,5 +1,6 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
+const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const WebpackParser = require("webpack/lib/Parser");
@@ -85,12 +86,12 @@ module.exports = async (
         else if (request.startsWith("../node_modules/")) request = request.substr(16);
         else return callback();
       }
-      if (request[0] === "/" || nodeBuiltins.has(request) ||
+      if (request[0] === "/" || /^[a-z]:\\/i.test(request) || nodeBuiltins.has(request) ||
           tsconfigMatchPath && tsconfigMatchPath(request, undefined, undefined, SUPPORTED_EXTENSIONS))
         return callback();
       const pkgNameMatch = request.match(pkgNameRegEx);
       if (pkgNameMatch) request = pkgNameMatch[0];
-      let pkgPath = context + '/node_modules/' + request;
+      let pkgPath = context + sep + 'node_modules' + sep + request;
       do {
         if (await new Promise((resolve, reject) =>
           fs.stat(pkgPath, (err, stats) =>
@@ -98,7 +99,7 @@ module.exports = async (
           )
         ))
           return callback();
-      } while (pkgPath.length > (pkgPath = pkgPath.substr(0, pkgPath.lastIndexOf('/', pkgPath.length - 15 - request.length)) + '/node_modules/' + request).length);
+      } while (pkgPath.length > (pkgPath = pkgPath.substr(0, pkgPath.lastIndexOf(sep, pkgPath.length - 15 - request.length)) + sep + 'node_modules' + sep + request).length);
       console.error(`ncc: Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`);
       return callback(null, `commonjs ${request}`);
     },
