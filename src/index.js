@@ -8,6 +8,9 @@ const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
+const { pkgNameRegEx } = require("./utils/get-package-base");
+
+const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
 // overload the webpack parser so that we can make
 // acorn work with the node.js / commonjs semantics
@@ -21,37 +24,7 @@ WebpackParser.parse = function(source, opts = {}) {
   });
 };
 
-const SUPPORTED_EXTENSIONS = [".ts", ".tsx", ".js", ".mjs", ".json", ".node"];
-
-function resolveModule(matchPath, context, request, callback, forcedExternals = []) {
-  const resolveOptions = {
-    basedir: context,
-    preserveSymlinks: true,
-    extensions: SUPPORTED_EXTENSIONS
-  };
-
-  if (new Set(forcedExternals).has(request)) {
-    console.error(`ncc: Skipping bundling "${request}" per config`);
-    return callback(null, `commonjs ${request}`);
-  }
-
-  resolve(request, resolveOptions, err => {
-    if (err) {
-      // check tsconfig paths before erroring
-      if (matchPath && matchPath(request, undefined, undefined, SUPPORTED_EXTENSIONS)) {
-        callback();
-        return;
-      }
-
-      console.error(
-        `ncc: Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`
-      );
-      return callback(null, `commonjs ${request}`);
-    }
-
-    callback();
-  });
-}
+const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
 module.exports = async (
   entry,
@@ -80,6 +53,8 @@ module.exports = async (
     }
   } catch (e) {}
 
+  const externalSet = new Set(externals);
+
   const compiler = webpack({
     entry,
     optimization: {
@@ -103,7 +78,30 @@ module.exports = async (
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: (...args) => resolveModule(tsconfigMatchPath, ...[...args, externals]),
+    externals: async (context, request, callback) => {
+      if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
+      if (request[0] === "." && (request[1] === "/" || request[1] === "." && request[2] === "/")) {
+        if (request.startsWith("./node_modules/")) request = request.substr(15);
+        else if (request.startsWith("../node_modules/")) request = request.substr(16);
+        else return callback();
+      }
+      if (request[0] === "/" || nodeBuiltins.has(request) ||
+          tsconfigMatchPath && tsconfigMatchPath(request, undefined, undefined, SUPPORTED_EXTENSIONS))
+        return callback();
+      const pkgNameMatch = request.match(pkgNameRegEx);
+      if (pkgNameMatch) request = pkgNameMatch[0];
+      let pkgPath = context + '/node_modules/' + request;
+      do {
+        if (await new Promise((resolve, reject) =>
+          fs.stat(pkgPath, (err, stats) =>
+            err && err.code !== 'ENOENT' ? reject(err) : resolve(stats ? stats.isDirectory() : false)
+          )
+        ))
+          return callback();
+      } while (pkgPath.length > (pkgPath = pkgPath.substr(0, pkgPath.lastIndexOf('/', pkgPath.length - 15 - request.length)) + '/node_modules/' + request).length);
+      console.error(`ncc: Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`);
+      return callback(null, `commonjs ${request}`);
+    },
     module: {
       rules: [
         {
