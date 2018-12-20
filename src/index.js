@@ -93,7 +93,7 @@ module.exports = (
       let pkgPath = context + sep + 'node_modules' + sep + request;
       do {
         if (await new Promise((resolve, reject) =>
-          fs.stat(pkgPath, (err, stats) =>
+          compiler.inputFileSystem.stat(pkgPath, (err, stats) =>
             err && err.code !== 'ENOENT' ? reject(err) : resolve(stats ? stats.isDirectory() : false)
           )
         ))
@@ -203,23 +203,7 @@ module.exports = (
       }
     ]
   });
-  compiler.inputFileSystem = fs;
   compiler.outputFileSystem = mfs;
-  // tsconfig-paths-webpack-plugin requires a readJson method on the filesystem
-  compiler.inputFileSystem.readJson = (path, callback) => {
-    compiler.inputFileSystem.readFile(path, (err, data) => {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      try {
-        callback(null, JSON.parse(data));
-      } catch (e) {
-        callback(e);
-      }
-    });
-  };
   if (!watch) {
     return new Promise((resolve, reject) => {
       compiler.run((err, stats) => {
