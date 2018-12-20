@@ -72,26 +72,11 @@ require('@zeit/ncc')('/path/to/input', {
   externals: ["externalpackage"],
   minify: false, // default
   sourceMap: false, // default
-  watch: false // default
 }).then(({ code, map, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources
   // expected relative to the output code (if any)
 })
-```
-
-When `watch: true` is set, the build object is not a promise, but has the following signature:
-
-```js
-{
-  // handler re-run on each build completion
-  // watch errors are reported on "err"
-  handler (({ err, code, map, assets }) => { ... })
-  // handler re-run on each rebuild start
-  rebuild (() => {})
-  // close the watcher
-  void close ();
-}
 ```
 
 ## Caveats
