@@ -15,6 +15,35 @@ const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "mod
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
+for (const key of Object.keys(fs)) {
+  const method = fs[key];
+  if (typeof method !== 'function')
+    continue;
+  if (key.endsWith('Sync')) {
+    fs[key] = function () {
+      const start = process.hrtime.bigint();
+      const result = method.apply(this, arguments);
+      const time = process.hrtime.bigint() - start;
+      console.log(`${key} [${Number(time) / 1000000}]: ${arguments[0]}`);
+      return result;
+    };
+  }
+  else {
+    fs[key] = function () {
+      const arg = arguments[0];
+      const start = process.hrtime.bigint();
+      const cb = arguments[arguments.length - 1];
+      const args = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
+      args.push(function () {
+        const time = process.hrtime.bigint() - start;
+        console.log(`${key} [${Number(time) / 1000000}]: ${arg}`);
+        cb.apply(this, arguments);
+      });
+      return method.apply(this, args);
+    };
+  }
+}
+
 module.exports = (
   entry,
   {
