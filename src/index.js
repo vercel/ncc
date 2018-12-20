@@ -3,37 +3,27 @@ const fs = require("graceful-fs");
 const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
-const WebpackParser = require("webpack/lib/Parser");
-const webpackParse = WebpackParser.parse;
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
+const nccCacheDir = require("./utils/ncc-cache-dir");
+const FileCachePlugin = require("webpack/lib/cache/FileCachePlugin");
 
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
-// overload the webpack parser so that we can make
-// acorn work with the node.js / commonjs semantics
-// of being able to `return` in the top level of a
-// requireable module
-// https://github.com/zeit/ncc/issues/40
-WebpackParser.parse = function(source, opts = {}) {
-  return webpackParse.call(this, source, {
-    ...opts,
-    allowReturnOutsideFunction: true
-  });
-};
-
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
-module.exports = async (
+module.exports = (
   entry,
   {
+    cache,
     externals = [],
-    minify = true,
+    filename = "index.js",
+    minify = false,
     sourceMap = false,
-    filename = "index.js"
+    watch = false
   } = {}
 ) => {
   const shebangMatch = fs.readFileSync(resolve.sync(entry)).toString().match(shebangRegEx);
@@ -56,8 +46,17 @@ module.exports = async (
 
   const externalSet = new Set(externals);
 
+  let watcher, watchHandler, rebuildHandler;
+
   const compiler = webpack({
     entry,
+    cache: cache === false ? undefined : {
+      type: "filesystem",
+      cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
+      name: "ncc",
+      version: require('../package.json').version,
+      store: "instant"
+    },
     optimization: {
       nodeEnv: false,
       minimize: false
@@ -141,6 +140,10 @@ module.exports = async (
     plugins: [
       {
         apply(compiler) {
+          compiler.hooks.watchRun.tap("ncc", () => {
+            if (rebuildHandler)
+              rebuildHandler();
+          });
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
             compilation.moduleTemplates.javascript.hooks.render.tap(
@@ -151,16 +154,23 @@ module.exports = async (
                 options,
                 dependencyTemplates
               ) => {
+                // hack to ensure __webpack_require__ is added to empty context wrapper
+                const getModuleRuntimeRequirements = compilation.chunkGraph.getModuleRuntimeRequirements;
+                compilation.chunkGraph.getModuleRuntimeRequirements = function (module) {
+                  const runtimeRequirements = getModuleRuntimeRequirements.apply(this, arguments);
+                  if (module._contextDependencies)
+                    runtimeRequirements.add('__webpack_require__');
+                  return runtimeRequirements;
+                };
                 if (
                   module._contextDependencies &&
                   moduleSourcePostModule._value.match(
                     /webpackEmptyAsyncContext|webpackEmptyContext/
                   )
                 ) {
-                  module.type = 'HACK'; // hack to ensure __webpack_require__ is added to wrapper
                   return moduleSourcePostModule._value.replace(
                     "var e = new Error",
-                    `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
+                    `if (typeof req === 'number')\n` +
                     `  return __webpack_require__(req);\n` +
                     `try { return require(req) }\n` +
                     `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
@@ -213,56 +223,100 @@ module.exports = async (
       }
     });
   };
-  compiler.resolvers.normal.fileSystem = mfs;
-  return new Promise((resolve, reject) => {
-    compiler.run((err, stats) => {
-      if (err) return reject(err);
-      if (stats.hasErrors()) {
-        return reject(new Error(stats.toString()));
-      }
-      const assets = Object.create(null);
-      getFlatFiles(mfs.data, assets);
-      delete assets[filename];
-      delete assets[filename + ".map"];
-      const code = mfs.readFileSync("/index.js", "utf8");
-      const map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
-      resolve({
-        code,
-        map,
-        assets
+  if (!watch) {
+    return new Promise((resolve, reject) => {
+      compiler.run((err, stats) => {
+        if (err) return reject(err);
+        if (stats.hasErrors())
+          return reject(new Error(stats.toString()));
+        compiler.close(() => {
+          resolve();
+        });
       });
+    })
+    .then(finalizeHandler);
+  }
+  else {
+    let cachedResult;
+    watcher = compiler.watch({}, (err, stats) => {
+      if (err) return reject(err);
+      if (err)
+        return watchHandler({ err });
+      if (stats.hasErrors())
+        return watchHandler({ err: stats.toString() });
+      const { code, map, assets } = finalizeHandler();
+      // clear output file system
+      mfs.data = {};
+      if (watchHandler)
+        watchHandler({ code, map, assets, err: null });
+      else
+        cachedResult = { code, map, assets};
     });
-  })
-  .then(({ code, map, assets }) => {
-    if (!minify)
-      return { code, map, assets };
-    const result = terser.minify(code, {
-      compress: false,
-      mangle: {
-        keep_classnames: true,
-        keep_fnames: true
+    let closed = false;
+    return {
+      close () {
+        if (!watcher)
+          throw new Error('No watcher to close.');
+        if (closed)
+          throw new Error('Watcher already closed.');
+        closed = true;
+        watcher.close();
       },
-      sourceMap: sourceMap ? {
-        content: map,
-        filename,
-        url: filename + ".map"
-      } : false
-    });
-    // For some reason, auth0 returns "undefined"!
-    // custom terser phase used over Webpack integration for this reason
-    if (result.code === undefined)
-      return { code, map, assets };
-    return { code: result.code, map: result.map, assets };
-  })
-  .then(({ code, map, assets}) => {
-    if (!shebangMatch)
-      return { code, map, assets };
-    code = shebangMatch[0] + code;
-    // add a line offset to the sourcemap
-    if (map)
-      map.mappings = ";" + map.mappings;
+      handler (handler) {
+        if (watchHandler)
+          throw new Error('Watcher handler already provided.');
+        watchHandler = handler;
+        if (cachedResult) {
+          handler(cachedResult);
+          cachedResult = null;
+        }
+      },
+      rebuild (handler) {
+        if (rebuildHandler)
+          throw new Error('Rebuild handler already provided.');
+        rebuildHandler = handler;
+      }
+    };
+  }
+
+  function finalizeHandler () {
+    if (!watch)
+      FileCachePlugin.purgeMemoryCache();
+    const assets = Object.create(null);
+    getFlatFiles(mfs.data, assets);
+    delete assets[filename];
+    delete assets[filename + ".map"];
+    let code = mfs.readFileSync("/index.js", "utf8");
+    let map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
+
+    if (minify) {
+      const result = terser.minify(code, {
+        compress: false,
+        mangle: {
+          keep_classnames: true,
+          keep_fnames: true
+        },
+        sourceMap: sourceMap ? {
+          content: map,
+          filename,
+          url: filename + ".map"
+        } : false
+      });
+      // For some reason, auth0 returns "undefined"!
+      // custom terser phase used over Webpack integration for this reason
+      if (result.code !== undefined)
+        ({ code, map } = { code: result.code, map: result.map });
+    }
+
+    if (shebangMatch) {
+      code = shebangMatch[0] + code;
+      // add a line offset to the sourcemap
+      if (map)
+        map.mappings = ";" + map.mappings;
+    }
+
     return { code, map, assets };
-  })
+  }
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler

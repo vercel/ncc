@@ -34,38 +34,35 @@ module.exports =
 /******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(655);
+/******/ 	return __webpack_require__(212);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 589:
-/***/ (function(module) {
-
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 655:
+/***/ 212:
 /***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(66);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(589);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _test_ts__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(960);
+/* harmony import */ var _test_ts__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_test_ts__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _test_ts__WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _test_ts__WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
 
 
-
-console.log(fs__WEBPACK_IMPORTED_MODULE_0___default.a.readFileSync(__dirname + '/asset.txt', 'utf8'));
 
 /***/ }),
 
-/***/ 66:
-/***/ (function(module) {
+/***/ 960:
+/***/ (function(__unusedmodule, exports) {
 
-module.exports = require("fs");
+"use strict";
+
+exports.__esModule = true;
+function test(arg) {
+    return arg;
+}
+exports.test = test;
+
 
 /***/ })
 

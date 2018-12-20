@@ -32,16 +32,37 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(817);
+/******/ 	return __webpack_require__(412);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 817:
+/***/ 412:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-// this should be a self-require not an asset!
-__webpack_require__(817)
+const fs = __webpack_require__(66);
+const { join } = __webpack_require__(589);
+
+console.log(fs.readFileSync(__dirname + '/asset.txt', 'utf8'));
+
+(function () {
+  var join = () => 'nope';
+  console.log(fs.readFileSync(join(__dirname + '/asset-fs-inline-path-shadow', 'asset.txt'), 'utf8'));
+})();
+
+/***/ }),
+
+/***/ 589:
+/***/ (function(module) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 66:
+/***/ (function(module) {
+
+module.exports = require("fs");
 
 /***/ })
 

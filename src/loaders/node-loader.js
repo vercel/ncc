@@ -5,18 +5,15 @@ const sharedlibEmit = require('../utils/sharedlib-emit');
 const getPackageBase = require('../utils/get-package-base');
 
 module.exports = async function (content) {
-  this.async();
   if (this.cacheable)
     this.cacheable();
+  this.async();
 
   const id = this.resourcePath;
   const options = getOptions(this);
 
   const pkgBase = getPackageBase(this.resourcePath) || path.dirname(id);
-  if (!options.assetNames[`sharedlibs:${pkgBase}`]) {
-    options.assetNames[`sharedlibs:${pkgBase}`] = true;
-    await sharedlibEmit(pkgBase, this.emitFile);
-  }
+  await sharedlibEmit(pkgBase, this.emitFile);
 
   const name = getUniqueAssetName(id.substr(pkgBase.length + 1), id, options.assetNames);
   this.emitFile(name, content);
