@@ -200,7 +200,7 @@ switch (args._[0]) {
       for (const asset of Object.keys(assets)) {
         const assetPath = outDir + "/" + asset;
         mkdirp.sync(dirname(assetPath));
-        fs.writeFileSync(assetPath, assets[asset]);
+        fs.writeFileSync(assetPath, assets[asset], { mode: 0o777 });
       }
 
       if (!args["--quiet"]) {
