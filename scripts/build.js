@@ -80,12 +80,6 @@ async function main() {
     __dirname + "/../dist/ncc/loaders/lib/"
   );
 
-  // copy webpack buildin
-  await copy(
-    __dirname + "/../node_modules/webpack/buildin/*.js",
-    __dirname + "/../dist/ncc/buildin/"
-  );
-
   for (const file of await glob(__dirname + "/../dist/**/*.js")) {
     console.log(
       `✓ ${relative(__dirname + "/../", file)} (${bytes(statSync(file).size)})`

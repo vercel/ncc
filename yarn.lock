@@ -11111,7 +11111,7 @@ webpack-sources@^1.1.0, webpack-sources@^1.3.0:
 
 "webpack@github:webpack/webpack#next":
   version "5.0.0-next"
-  resolved "https://codeload.github.com/webpack/webpack/tar.gz/ca9790954504b01a824f852ae618e2414da38b56"
+  resolved "https://codeload.github.com/webpack/webpack/tar.gz/3f71a165bf17bfb27138dcba799d9437a9af558c"
   dependencies:
     "@webassemblyjs/ast" "1.7.11"
     "@webassemblyjs/helper-module-context" "1.7.11"

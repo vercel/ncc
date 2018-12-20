@@ -261,8 +261,6 @@ module.exports = (
   }
 
   function finalizeHandler () {
-    if (!watch)
-      FileCachePlugin.purgeMemoryCache();
     const assets = Object.create(null);
     getFlatFiles(mfs.data, assets);
     delete assets[filename];
