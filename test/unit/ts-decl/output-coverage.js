@@ -1,6 +1,6 @@
 module.exports =
 /******/ (function(modules, runtime) { // webpackBootstrap
-/******/"use strict";
+/******/ 	"use strict";
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -66,42 +66,43 @@ exports.test = test;
 
 /***/ })
 
-/******/ },function(__webpack_require__) {
-"use strict";
-
-	/* webpack/runtime/make namespace object */
-	!function() {
-		// define __esModule on exports
-		__webpack_require__.r = function(exports) {
-			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-			}
-			Object.defineProperty(exports, '__esModule', { value: true });
-		};
-	}();
-	
-	/* webpack/runtime/compat get default export */
-	!function() {
-		// getDefaultExport function for compatibility with non-harmony modules
-		__webpack_require__.n = function(module) {
-			var getter = module && module.__esModule ?
-				function getDefault() { return module['default']; } :
-				function getModuleExports() { return module; };
-			__webpack_require__.d(getter, 'a', getter);
-			return getter;
-		};
-	}();
-	
-	/* webpack/runtime/define property getter */
-	!function() {
-		// define getter function for harmony exports
-		var hasOwnProperty = Object.prototype.hasOwnProperty;
-		__webpack_require__.d = function(exports, name, getter) {
-			if(!hasOwnProperty.call(exports, name)) {
-				Object.defineProperty(exports, name, { enumerable: true, get: getter });
-			}
-		};
-	}();
-	
-}
+/******/ },
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ 	"use strict";
+/******/ 
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	!function() {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = function(module) {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				function getDefault() { return module['default']; } :
+/******/ 				function getModuleExports() { return module; };
+/******/ 			__webpack_require__.d(getter, 'a', getter);
+/******/ 			return getter;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getter */
+/******/ 	!function() {
+/******/ 		// define getter function for harmony exports
+/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
+/******/ 		__webpack_require__.d = function(exports, name, getter) {
+/******/ 			if(!hasOwnProperty.call(exports, name)) {
+/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 			}
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ }
 );
