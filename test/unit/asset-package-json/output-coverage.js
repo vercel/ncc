@@ -32,16 +32,25 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(817);
+/******/ 	return __webpack_require__(724);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 817:
+/***/ 589:
+/***/ (function(module) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 724:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-// this should be a self-require not an asset!
-__webpack_require__(817)
+const path = __webpack_require__(589);
+
+var binding_path =
+    binary.find(__dirname + '/package.json');
 
 /***/ })
 

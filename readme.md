@@ -34,6 +34,12 @@ npm i -g @zeit/ncc
 $ ncc build input.js -o dist
 ```
 
+For fast rebuilds the watcher can be run with:
+
+```bash
+$ ncc build input.js -o dist -w
+```
+
 Outputs the build of `input.js` into `dist/index.js`.
 
 ```bash
@@ -60,15 +66,32 @@ file is necessary. Most likely you want to indicate `es2015` support:
 
 ```js
 require('@zeit/ncc')('/path/to/input', {
-  minify: true, // default
+  // provide a custom cache path or disable caching
+  cache: "./custom/cache/path" | false,
   // externals to leave as requires of the build
   externals: ["externalpackage"],
-  sourceMap: true // default
-}).then(({ code, assets }) => {
+  minify: false, // default
+  sourceMap: false, // default
+  watch: false // default
+}).then(({ code, map, assets }) => {
   console.log(code);
   // assets is an object of asset file names to sources
   // expected relative to the output code (if any)
 })
+```
+
+When `watch: true` is set, the build object is not a promise, but has the following signature:
+
+```js
+{
+  // handler re-run on each build completion
+  // watch errors are reported on "err"
+  handler (({ err, code, map, assets }) => { ... })
+  // handler re-run on each rebuild start
+  rebuild (() => {})
+  // close the watcher
+  void close ();
+}
 ```
 
 ## Caveats

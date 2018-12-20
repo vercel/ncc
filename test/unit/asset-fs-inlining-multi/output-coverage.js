@@ -32,16 +32,24 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(817);
+/******/ 	return __webpack_require__(473);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 817:
+/***/ 473:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-// this should be a self-require not an asset!
-__webpack_require__(817)
+const fs = __webpack_require__(66);
+console.log(fs.readFileSync(__dirname + '/asset.txt'));
+console.log(fs.readFileSync(__dirname + '/asset1.txt'));
+
+/***/ }),
+
+/***/ 66:
+/***/ (function(module) {
+
+module.exports = require("fs");
 
 /***/ })
 

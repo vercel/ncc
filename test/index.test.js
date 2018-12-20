@@ -8,7 +8,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
-      .readFileSync(`${testDir}/output.js`)
+      .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js`)
       .toString()
       .trim()
       // Windows support
@@ -18,7 +18,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     process.env.TS_NODE_PROJECT = `${testDir}/tsconfig.json`;
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
-    await ncc(`${testDir}/${inputFile}`, { minify: false }).then(
+    await ncc(`${testDir}/${inputFile}`).then(
       async ({ code, assets }) => {
         // very simple asset validation in unit tests
         if (unitTest.startsWith("asset-")) {
@@ -42,7 +42,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 }
 
 // the twilio test can take a while (large codebase)
-jest.setTimeout(100000);
+jest.setTimeout(200000);
 
 function clearDir (dir) {
   try {
@@ -61,8 +61,16 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   if (integrationTest.endsWith('loopback.js')) continue;
 
   it(`should evaluate ${integrationTest} without errors`, async () => {
+    if (global.gc) {
+      global.gc();
+      console.log(`GC Completed, Heap Size: ${process.memoryUsage().heapUsed / 1024 ** 2} MB`);
+    }
+
     const { code, map, assets } = await ncc(
-      __dirname + "/integration/" + integrationTest
+      __dirname + "/integration/" + integrationTest,
+      {
+        cache: false
+      }
     );
     const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
     clearDir(tmpDir);
@@ -76,13 +84,14 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     fs.writeFileSync(tmpDir + "index.js.map", map);
     await new Promise((resolve, reject) => {
       const ps = require("child_process").fork(tmpDir + "index.js", {
+        stdio: "inherit",
         execArgv: ["-r", "source-map-support/register.js"]
       });
-      ps.on("close", (code) => {
+      ps.on("close", (code, signal) => {
         if (code === 0)
           resolve();
         else
-          reject(new Error(`Test failed.`));
+          reject(new Error(`Test failed with code ${code} - ${signal}.`));
       });
     });
     clearDir(tmpDir);

@@ -212,6 +212,8 @@ const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|binding
 
 
 module.exports = function (code) {
+  if (this.cacheable)
+    this.cacheable();
   this.async();
   const id = this.resourcePath;
 
@@ -225,9 +227,6 @@ module.exports = function (code) {
     if (assetPath.endsWith('.js') || assetPath.endsWith('.mjs'))
       return;
 
-    if (options.assets[assetPath])
-      return "__dirname + '/" + JSON.stringify(options.assets[assetPath]).slice(1, -1) + "'";
-
     let outName = path.basename(assetPath);
 
     if (assetPath.endsWith('.node')) {
@@ -236,14 +235,11 @@ module.exports = function (code) {
         outName = assetPath.substr(pkgBase.length);
       // If the asset is a ".node" binary, then glob for possible shared
       // libraries that should also be included
-      if (!options.assetNames[`sharedlibs:${pkgBase}`]) {
-        options.assetNames[`sharedlibs:${pkgBase}`] = true;
-        assetEmissionPromises = assetEmissionPromises.then(sharedlibEmit(pkgBase, this.emitFile));
-      }
+      assetEmissionPromises = assetEmissionPromises.then(sharedlibEmit(pkgBase, this.emitFile));
     }
 
-    const name = getUniqueAssetName(outName, assetPath, options.assetNames);
-    options.assets[assetPath] = name;
+    const name = options.assets[assetPath] ||
+        (options.assets[assetPath] = getUniqueAssetName(outName, assetPath, options.assetNames));
 
     // console.log('Emitting ' + assetPath + ' for module ' + id);
     assetEmissionPromises = assetEmissionPromises.then(async () => {
@@ -255,11 +251,8 @@ module.exports = function (code) {
     return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
   const emitAssetDirectory = (assetDirPath) => {
-    if (options.assets[assetDirPath])
-      return "__dirname + '/" + JSON.stringify(options.assets[assetDirPath]).slice(1, -1) + "'";
-
     const dirName = path.basename(assetDirPath);
-    const name = getUniqueAssetName(dirName, assetDirPath, options.assetNames);
+    const name = options.assets[assetDirPath] || (options.assets[assetDirPath] = getUniqueAssetName(dirName, assetDirPath, options.assetNames));
     options.assets[assetDirPath] = name;
 
     assetEmissionPromises = assetEmissionPromises.then(async () => {

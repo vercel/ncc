@@ -1,3 +1,4 @@
+#!/bin/user/env node
 module.exports =
 /******/ (function(modules, runtime) { // webpackBootstrap
 /******/"use strict";
@@ -32,16 +33,15 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(817);
+/******/ 	return __webpack_require__(13);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 817:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ 13:
+/***/ (function(module) {
 
-// this should be a self-require not an asset!
-__webpack_require__(817)
+module.exports = 'asdf';
 
 /***/ })
 
