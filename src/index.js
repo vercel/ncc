@@ -146,6 +146,11 @@ module.exports = (
           });
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
+            // hack to ensure __webpack_require__ is added to empty context wrapper
+            compilation.hooks.additionalModuleRuntimeRequirements.tap("ncc", (module, runtimeRequirements) => {
+              if(module._contextDependencies)
+                runtimeRequirements.add('__webpack_require__');
+            });
             compilation.moduleTemplates.javascript.hooks.render.tap(
               "ncc",
               (
@@ -154,14 +159,6 @@ module.exports = (
                 options,
                 dependencyTemplates
               ) => {
-                // hack to ensure __webpack_require__ is added to empty context wrapper
-                const getModuleRuntimeRequirements = compilation.chunkGraph.getModuleRuntimeRequirements;
-                compilation.chunkGraph.getModuleRuntimeRequirements = function (module) {
-                  const runtimeRequirements = getModuleRuntimeRequirements.apply(this, arguments);
-                  if (module._contextDependencies)
-                    runtimeRequirements.add('__webpack_require__');
-                  return runtimeRequirements;
-                };
                 if (
                   module._contextDependencies &&
                   moduleSourcePostModule._value.match(
