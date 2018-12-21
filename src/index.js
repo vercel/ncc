@@ -279,8 +279,8 @@ module.exports = (
     getFlatFiles(mfs.data, assets, assetState.assetPermissions);
     delete assets[filename];
     delete assets[filename + ".map"];
-    let code = mfs.readFileSync("/" + filename, "utf8");
-    let map = sourceMap ? mfs.readFileSync("/" + filename + ".map", "utf8") : null;
+    let code = mfs.readFileSync(`/${filename}`, "utf8");
+    let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
 
     if (minify) {
       const result = terser.minify(code, {
@@ -309,7 +309,7 @@ module.exports = (
         assets[filename + '.map'] = map;
       code = `const { readFileSync } = require('fs'), { Script } = require('vm');\n` +
           `const source = readFileSync(__dirname + '/${filename}.cache.js').toString(), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
-          `new Script(source, { cachedData }).runInNewContext(Object.assign({}, global, { module, exports, require, __filename, __dirname }));\n`;
+          `new Script(source, { cachedData }).runInNewContext(Object.assign({}, global, { console, module, exports, require, __filename, __dirname }));\n`;
       if (map) map = {};
     }
 
