@@ -54,8 +54,7 @@ module.exports = (
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
       name: "ncc",
-      version: require('../package.json').version,
-      store: "instant"
+      version: require('../package.json').version
     },
     optimization: {
       nodeEnv: false,
