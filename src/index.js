@@ -208,9 +208,10 @@ module.exports = (
     return new Promise((resolve, reject) => {
       compiler.run((err, stats) => {
         if (err) return reject(err);
-        if (stats.hasErrors())
-          return reject(new Error(stats.toString()));
-        compiler.close(() => {
+        compiler.close(err => {
+          if (err) return reject(err);
+          if (stats.hasErrors())
+            return reject(new Error(stats.toString()));
           resolve();
         });
       });
