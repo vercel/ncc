@@ -1,0 +1,16 @@
+{
+  "name": "hello-world",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ncc run index.js",
+    "build": "ncc build index.js -o dist"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "latest"
+  }
+}

@@ -18,3 +18,7 @@ dist/**/*.js
 !.circleci
 !.*ignore
 !readme.md
+!examples/
+!examples/**
+examples/**/node_modules
+examples/**/dist
