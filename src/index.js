@@ -1,5 +1,6 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
+const crypto = require("crypto");
 const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
@@ -14,6 +15,14 @@ const FileCachePlugin = require("webpack/lib/cache/FileCachePlugin");
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
+
+const hashOf = name => {
+  return crypto
+		.createHash("md4")
+		.update(name)
+		.digest("hex")
+		.slice(0, 10);
+}
 
 module.exports = (
   entry,
@@ -53,7 +62,7 @@ module.exports = (
     cache: cache === false ? undefined : {
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
-      name: "ncc",
+      name: `ncc_${hashOf(entry)}`,
       version: require('../package.json').version
     },
     optimization: {
