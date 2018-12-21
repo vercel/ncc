@@ -94,7 +94,7 @@
     "typescript": "^3.2.2",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
-    "webpack": "github:webpack/webpack#next",
+    "webpack": "5.0.0-alpha.0",
     "when": "^3.7.8"
   }
 }

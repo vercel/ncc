@@ -1,5 +1,6 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
+const crypto = require("crypto");
 const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
@@ -14,6 +15,14 @@ const FileCachePlugin = require("webpack/lib/cache/FileCachePlugin");
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
+
+const hashOf = name => {
+  return crypto
+		.createHash("md4")
+		.update(name)
+		.digest("hex")
+		.slice(0, 10);
+}
 
 module.exports = (
   entry,
@@ -53,9 +62,8 @@ module.exports = (
     cache: cache === false ? undefined : {
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
-      name: "ncc",
-      version: require('../package.json').version,
-      store: "instant"
+      name: `ncc_${hashOf(entry)}`,
+      version: require('../package.json').version
     },
     optimization: {
       nodeEnv: false,
@@ -78,7 +86,7 @@ module.exports = (
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async (context, request, callback) => {
+    externals: async ({ context, request }, callback) => {
       if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
       if (request[0] === "." && (request[1] === "/" || request[1] === "." && request[2] === "/")) {
         if (request.startsWith("./node_modules/")) request = request.substr(15);
@@ -208,9 +216,10 @@ module.exports = (
     return new Promise((resolve, reject) => {
       compiler.run((err, stats) => {
         if (err) return reject(err);
-        if (stats.hasErrors())
-          return reject(new Error(stats.toString()));
-        compiler.close(() => {
+        compiler.close(err => {
+          if (err) return reject(err);
+          if (stats.hasErrors())
+            return reject(new Error(stats.toString()));
           resolve();
         });
       });
