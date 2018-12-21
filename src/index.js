@@ -77,7 +77,7 @@ module.exports = (
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async (context, request, callback) => {
+    externals: async ({ context, request }, callback) => {
       if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
       if (request[0] === "." && (request[1] === "/" || request[1] === "." && request[2] === "/")) {
         if (request.startsWith("./node_modules/")) request = request.substr(15);
