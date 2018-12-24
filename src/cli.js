@@ -151,10 +151,6 @@ switch (args._[0]) {
     if (args["--out"])
       errFlagNotCompatible("--out", "run");
 
-    if(!args["--no-dep-install"]) {
-      await installDependencies()
-    }
-
     outDir = resolve(
       require("os").tmpdir(),
       crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
@@ -173,10 +169,6 @@ switch (args._[0]) {
     if (args._.length > 2)
       errTooManyArguments("build");
 
-    if (!args["--no-dep-install"]) {
-      await installDependencies()
-    }
-
     let startTime = Date.now();
     let ps;
     const ncc = require("./index.js")(
@@ -191,6 +183,10 @@ switch (args._[0]) {
     );
 
     async function handler ({ err, code, map, assets }) {
+      if (!args["--no-dep-install"]) {
+        await installDependencies()
+      }
+
       // handle watch errors
       if (err) {
         console.error(err);
