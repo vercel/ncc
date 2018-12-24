@@ -5,7 +5,11 @@ dist/**/*.js
 !src/*.js
 !test
 !test/integration
+!test/integration/*.json
 !test/integration/*.js
+!test/integration/*.ts
+!test/unit
+!test/unit/**
 !dist/
 !dist/ncc/
 !dist/buildin/
@@ -14,3 +18,7 @@ dist/**/*.js
 !.circleci
 !.*ignore
 !readme.md
+!examples/
+!examples/**
+examples/**/node_modules
+examples/**/dist

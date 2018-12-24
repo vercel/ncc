@@ -1,5 +1,5 @@
 const path = require('path');
-const fs = require('fs');
+const fs = require('graceful-fs');
 const { walk } = require('estree-walker');
 const MagicString = require('magic-string');
 const { attachScopes } = require('rollup-pluginutils');
@@ -10,6 +10,7 @@ const getUniqueAssetName = require('../utils/dedupe-names');
 const { getOptions } = require('loader-utils');
 const sharedlibEmit = require('../utils/sharedlib-emit');
 const glob = require('glob');
+const getPackageBase = require('../utils/get-package-base');
 
 // binary support for inlining logic from - node-pre-gyp/lib/pre-binding.js
 function isPregypId (id) {
@@ -209,7 +210,10 @@ function handleWrappers (ast, scope, magicString, len) {
 
 const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
 
+
 module.exports = function (code) {
+  if (this.cacheable)
+    this.cacheable();
   this.async();
   const id = this.resourcePath;
 
@@ -223,16 +227,19 @@ module.exports = function (code) {
     if (assetPath.endsWith('.js') || assetPath.endsWith('.mjs'))
       return;
 
-    if (options.assets[assetPath])
-      return "__dirname + '/" + JSON.stringify(options.assets[assetPath]).slice(1, -1) + "'";
+    let outName = path.basename(assetPath);
 
-    // If the asset is a ".node" binary, then glob for possible shared
-    // libraries that should also be included
-    if (assetPath.endsWith('.node'))
-      sharedlibEmit(assetPath, this.emitFile);
+    if (assetPath.endsWith('.node')) {
+      // retain directory depth structure for binaries for rpath to work out
+      if (pkgBase)
+        outName = assetPath.substr(pkgBase.length);
+      // If the asset is a ".node" binary, then glob for possible shared
+      // libraries that should also be included
+      assetEmissionPromises = assetEmissionPromises.then(sharedlibEmit(pkgBase, this.emitFile));
+    }
 
-    const name = getUniqueAssetName(assetPath, options.assetNames);
-    options.assets[assetPath] = name;
+    const name = options.assets[assetPath] ||
+        (options.assets[assetPath] = getUniqueAssetName(outName, assetPath, options.assetNames));
 
     // console.log('Emitting ' + assetPath + ' for module ' + id);
     assetEmissionPromises = assetEmissionPromises.then(async () => {
@@ -244,20 +251,17 @@ module.exports = function (code) {
     return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
   const emitAssetDirectory = (assetDirPath) => {
-    if (options.assets[assetDirPath])
-      return "__dirname + '/" + JSON.stringify(options.assets[assetDirPath]).slice(1, -1) + "'";
-
     const dirName = path.basename(assetDirPath);
-    const name = getUniqueAssetName(dirName, options.assetNames);
+    const name = options.assets[assetDirPath] || (options.assets[assetDirPath] = getUniqueAssetName(dirName, assetDirPath, options.assetNames));
     options.assets[assetDirPath] = name;
 
     assetEmissionPromises = assetEmissionPromises.then(async () => {
       const files = await new Promise((resolve, reject) =>
-        glob(assetDirPath + '/**/*', { mark: true }, (err, files) => err ? reject(err) : resolve(files))
+        glob(assetDirPath + '/**/*', { mark: true, ignore: 'node_modules/**/*' }, (err, files) => err ? reject(err) : resolve(files))
       );
       await Promise.all(files.map(async file => {
-        // dont emit empty directories
-        if (file.endsWith('/'))
+        // dont emit empty directories or ".js" files
+        if (file.endsWith('/') || file.endsWith('.js'))
           return;
         const source = await new Promise((resolve, reject) =>
           fs.readFile(file, (err, source) => err ? reject(err) : resolve(source))
@@ -342,7 +346,9 @@ module.exports = function (code) {
   let transformed = false;
 
   let staticBindingsInstance = false;
-  function createBindings (id) {
+  // calculate the base-level package folder to load bindings from
+  const pkgBase = getPackageBase(id);
+  function createBindings () {
     return (opts = {}) => {
       if (typeof opts === 'string')
         opts = { bindings: opts };
@@ -350,7 +356,7 @@ module.exports = function (code) {
         opts.path = true;
         staticBindingsInstance = true;
       }
-      opts.module_root = path.dirname(id);
+      opts.module_root = pkgBase;
       return bindings(opts);
     };
   }
@@ -374,7 +380,7 @@ module.exports = function (code) {
     }
     if (bindingsId) {
       if (shadowDepths[bindingsId] === 0)
-        vars[bindingsId] = createBindings(id);
+        vars[bindingsId] = createBindings();
     }
     for (const pathFn of Object.keys(pathImportIds)) {
       if (shadowDepths[pathFn] === 0)
@@ -383,7 +389,7 @@ module.exports = function (code) {
     if (bindingsReq && shadowDepths.require === 0)
       vars.require = function (reqId) {
         if (reqId === 'bindings')
-          return createBindings(id);
+          return createBindings();
       };
 
     // evaluate returns undefined for non-statically-analyzable

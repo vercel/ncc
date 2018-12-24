@@ -10,7 +10,8 @@ async function main() {
   const { code: cli, assets: cliAssets } = await ncc(
     __dirname + "/../src/cli",
     {
-      externals: ["./index.js"]
+      externals: ["./index.js"],
+      minify: true
     }
   );
   const { code: index, assets: indexAssets } = await ncc(
@@ -20,42 +21,49 @@ async function main() {
       // to bundle it. even if we did want watching and a bigger
       // bundle, webpack (and therefore ncc) cannot currently bundle
       // chokidar, which is quite convenient
-      externals: ["chokidar"]
+      externals: ["chokidar"],
+      minify: true
     }
   );
 
   const { code: nodeLoader, assets: nodeLoaderAssets } = await ncc(
-    __dirname + "/../src/loaders/node-loader"
+    __dirname + "/../src/loaders/node-loader",
+    {
+      minify: true
+    }
   );
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
-    __dirname + "/../src/loaders/relocate-loader"
+    __dirname + "/../src/loaders/relocate-loader",
+    { minify: true }
   );
 
   const { code: shebangLoader, assets: shebangLoaderAssets } = await ncc(
-    __dirname + "/../src/loaders/shebang-loader"
+    __dirname + "/../src/loaders/shebang-loader",
+    { minify: true }
   );
 
   const { code: tsLoader, assets: tsLoaderAssets } = await ncc(
-    __dirname + "/../src/loaders/ts-loader"
+    __dirname + "/../src/loaders/ts-loader",
+    { minify: true }
   );
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
-    require.resolve("source-map-support/register")
+    require.resolve("source-map-support/register"),
+    { minfiy: true }
   );
 
+  // detect unexpected asset emissions from core build
   if (
     Object.keys(cliAssets).length ||
-    Object.keys(indexAssets).length ||
+    Object.keys(indexAssets).some(asset => !asset.startsWith('locales/')) ||
     Object.keys(nodeLoaderAssets).length ||
     Object.keys(relocateLoaderAssets).length ||
     Object.keys(shebangLoaderAssets).length ||
-    Object.keys(tsLoaderAssets).length ||
+    Object.keys(tsLoaderAssets).some(asset => !asset.startsWith('lib/')) ||
     Object.keys(sourcemapAssets).length
   ) {
-    console.error(
-      "Assets emitted by core build, these need to be written into the dist directory"
-    );
+    console.error("New assets are being emitted by the core build");
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
@@ -70,12 +78,6 @@ async function main() {
   await copy(
     __dirname + "/../node_modules/typescript/lib/*.ts",
     __dirname + "/../dist/ncc/loaders/lib/"
-  );
-
-  // copy webpack buildin
-  await copy(
-    __dirname + "/../node_modules/webpack/buildin/*.js",
-    __dirname + "/../dist/ncc/buildin/"
   );
 
   for (const file of await glob(__dirname + "/../dist/**/*.js")) {
