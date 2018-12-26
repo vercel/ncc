@@ -1,0 +1,16 @@
+{
+  "name": "typescript",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ncc run index.ts",
+    "build": "ncc build index.ts -o dist"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "latest"
+  }
+}
