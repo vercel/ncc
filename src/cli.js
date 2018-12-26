@@ -22,7 +22,7 @@ Options:
   -s, --source-map      Generate source map
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
-  -q, --watch           Start a watched build
+  -w, --watch           Start a watched build
 `;
 
 let args;
