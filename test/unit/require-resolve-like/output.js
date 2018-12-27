@@ -32,16 +32,16 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(817);
+/******/ 	return __webpack_require__(530);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 817:
+/***/ 530:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 // this should be a self-require not an asset!
-__webpack_require__(817)
+__webpack_require__(530)
 
 /***/ })
 

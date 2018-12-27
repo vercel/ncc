@@ -32,12 +32,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(644);
+/******/ 	return __webpack_require__(947);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 644:
+/***/ 947:
 /***/ (function() {
 
 if (typeof define === 'function' && define.amd)
