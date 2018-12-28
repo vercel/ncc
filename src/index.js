@@ -139,7 +139,7 @@ module.exports = (
         },
         {
           parser: { amd: false },
-          test: /^(.(?!.*\.node$))*$/,
+          exclude: /\.node$/,
           use: [{
             loader: __dirname + "/loaders/shebang-loader.js"
           }]
