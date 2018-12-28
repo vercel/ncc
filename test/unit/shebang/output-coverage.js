@@ -1,7 +1,7 @@
 #!/bin/user/env node
 module.exports =
 /******/ (function(modules, runtime) { // webpackBootstrap
-/******/"use strict";
+/******/ 	"use strict";
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/

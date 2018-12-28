@@ -1,5 +1,6 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
+const crypto = require("crypto");
 const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
@@ -14,6 +15,14 @@ const FileCachePlugin = require("webpack/lib/cache/FileCachePlugin");
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
+
+const hashOf = name => {
+  return crypto
+		.createHash("md4")
+		.update(name)
+		.digest("hex")
+		.slice(0, 10);
+}
 
 module.exports = (
   entry,
@@ -53,9 +62,8 @@ module.exports = (
     cache: cache === false ? undefined : {
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
-      name: "ncc",
-      version: require('../package.json').version,
-      store: "instant"
+      name: `ncc_${hashOf(entry)}`,
+      version: require('../package.json').version
     },
     optimization: {
       nodeEnv: false,
@@ -78,7 +86,7 @@ module.exports = (
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async (context, request, callback) => {
+    externals: async ({ context, request }, callback) => {
       if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
       if (request[0] === "." && (request[1] === "/" || request[1] === "." && request[2] === "/")) {
         if (request.startsWith("./node_modules/")) request = request.substr(15);
@@ -93,7 +101,7 @@ module.exports = (
       let pkgPath = context + sep + 'node_modules' + sep + request;
       do {
         if (await new Promise((resolve, reject) =>
-          fs.stat(pkgPath, (err, stats) =>
+          compiler.inputFileSystem.stat(pkgPath, (err, stats) =>
             err && err.code !== 'ENOENT' ? reject(err) : resolve(stats ? stats.isDirectory() : false)
           )
         ))
@@ -146,6 +154,11 @@ module.exports = (
           });
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
+            // hack to ensure __webpack_require__ is added to empty context wrapper
+            compilation.hooks.additionalModuleRuntimeRequirements.tap("ncc", (module, runtimeRequirements) => {
+              if(module._contextDependencies)
+                runtimeRequirements.add('__webpack_require__');
+            });
             compilation.moduleTemplates.javascript.hooks.render.tap(
               "ncc",
               (
@@ -154,14 +167,6 @@ module.exports = (
                 options,
                 dependencyTemplates
               ) => {
-                // hack to ensure __webpack_require__ is added to empty context wrapper
-                const getModuleRuntimeRequirements = compilation.chunkGraph.getModuleRuntimeRequirements;
-                compilation.chunkGraph.getModuleRuntimeRequirements = function (module) {
-                  const runtimeRequirements = getModuleRuntimeRequirements.apply(this, arguments);
-                  if (module._contextDependencies)
-                    runtimeRequirements.add('__webpack_require__');
-                  return runtimeRequirements;
-                };
                 if (
                   module._contextDependencies &&
                   moduleSourcePostModule._value.match(
@@ -206,30 +211,15 @@ module.exports = (
       }
     ]
   });
-  compiler.inputFileSystem = fs;
   compiler.outputFileSystem = mfs;
-  // tsconfig-paths-webpack-plugin requires a readJson method on the filesystem
-  compiler.inputFileSystem.readJson = (path, callback) => {
-    compiler.inputFileSystem.readFile(path, (err, data) => {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      try {
-        callback(null, JSON.parse(data));
-      } catch (e) {
-        callback(e);
-      }
-    });
-  };
   if (!watch) {
     return new Promise((resolve, reject) => {
       compiler.run((err, stats) => {
         if (err) return reject(err);
-        if (stats.hasErrors())
-          return reject(new Error(stats.toString()));
-        compiler.close(() => {
+        compiler.close(err => {
+          if (err) return reject(err);
+          if (stats.hasErrors())
+            return reject(new Error(stats.toString()));
           resolve();
         });
       });
@@ -280,8 +270,6 @@ module.exports = (
   }
 
   function finalizeHandler () {
-    if (!watch)
-      FileCachePlugin.purgeMemoryCache();
     const assets = Object.create(null);
     getFlatFiles(mfs.data, assets);
     delete assets[filename];
