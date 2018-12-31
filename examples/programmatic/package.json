@@ -1,0 +1,19 @@
+{
+  "name": "programmatic",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ncc run ./src/__dev__.js --watch",
+    "build": "node ./scripts/build.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.3.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "latest",
+    "bytes": "^3.0.0",
+    "glob": "^7.1.3",
+    "mkdirp": "^0.5.1"
+  }
+}
