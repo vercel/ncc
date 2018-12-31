@@ -1,0 +1,25 @@
+{
+  "name": "multiple-bundles",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "main": "./dist/main/index.js",
+  "bin": {
+    "lucky": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build:cli": "ncc build cli.js -o dist/cli",
+    "build:main": "ncc build main.js -o dist/main",
+    "build": "concurrently 'npm:build:cli' 'npm:build:main'",
+    "test": "node main.test.js"
+  },
+  "dependencies": {
+    "args": "^5.0.0",
+    "chalk": "^2.4.1"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "latest",
+    "concurrently": "^4.1.0",
+    "strip-ansi": "^5.0.0"
+  }
+}
