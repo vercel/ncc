@@ -28,25 +28,21 @@ together with all its dependencies, gcc-style.
 npm i -g @zeit/ncc
 ```
 
-### CLI
+### Usage
 
 ```bash
 $ ncc build input.js -o dist
 ```
 
-For fast rebuilds the watcher can be run with:
+Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
-```bash
-$ ncc build input.js -o dist -w
-```
+### Execution Testing
 
-Outputs the build of `input.js` into `dist/index.js`.
+For testing and debugging, a file can be built into a temporary directory and executed with full source maps support with the command:
 
 ```bash
 $ ncc run input.js
 ```
-
-Build to a temporary folder and run the built JS file through Node.js, with source maps support for debugging.
 
 ### With TypeScript
 
