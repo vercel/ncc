@@ -34,12 +34,26 @@ module.exports =
 /******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(428);
+/******/ 	return __webpack_require__(736);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 428:
+/***/ 589:
+/***/ (function(module) {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 66:
+/***/ (function(module) {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ 736:
 /***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -54,20 +68,6 @@ __webpack_require__.r(__webpack_exports__);
 const join = path__WEBPACK_IMPORTED_MODULE_1__["join"];
 
 console.log(fs__WEBPACK_IMPORTED_MODULE_0___default.a.readFileSync(__dirname + '/asset.txt', 'utf8'));
-
-/***/ }),
-
-/***/ 589:
-/***/ (function(module) {
-
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 66:
-/***/ (function(module) {
-
-module.exports = require("fs");
 
 /***/ })
 

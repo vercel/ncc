@@ -113,12 +113,6 @@ module.exports = (
     module: {
       rules: [
         {
-          parser: { amd: false },
-          use: [{
-            loader: __dirname + "/loaders/shebang-loader.js"
-          }]
-        },
-        {
           test: /\.node$/,
           use: [{
             loader: __dirname + "/loaders/node-loader.js",
@@ -141,6 +135,13 @@ module.exports = (
                 outDir: '//'
               }
             }
+          }]
+        },
+        {
+          parser: { amd: false },
+          exclude: /\.node$/,
+          use: [{
+            loader: __dirname + "/loaders/shebang-loader.js"
           }]
         }
       ]
