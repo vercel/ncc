@@ -32,24 +32,24 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(670);
+/******/ 	return __webpack_require__(657);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 670:
+/***/ 657:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(932);
+var _module_1 = __webpack_require__(898);
 console.log(_module_1["default"]);
 
 
 /***/ }),
 
-/***/ 932:
+/***/ 898:
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
