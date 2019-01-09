@@ -23,8 +23,8 @@ const hashOf = name => {
 		.slice(0, 10);
 }
 
-const nodeLoader = require(__dirname + "/loaders/node-loader.js");
-const relocateLoader = require(__dirname + "/loaders/relocate-loader.js");
+const nodeLoader = eval('require(__dirname + "/loaders/node-loader.js")');
+const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 module.exports = (
   entry,
