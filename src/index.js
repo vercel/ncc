@@ -135,6 +135,9 @@ module.exports = (
         {
           test: /\.tsx?$/,
           use: [{
+            loader: __dirname + "/loaders/uncacheable.js"
+          }, 
+          {
             loader: __dirname + "/loaders/ts-loader.js",
             options: {
               compilerOptions: {

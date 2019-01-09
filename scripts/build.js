@@ -1,5 +1,5 @@
 const ncc = require("../src/index.js");
-const { statSync, writeFileSync } = require("fs");
+const { statSync, writeFileSync, readFileSync } = require("fs");
 const { promisify } = require("util");
 const { relative } = require("path");
 const copy = promisify(require("copy"));
@@ -73,6 +73,7 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js", tsLoader);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/uncacheable.js", readFileSync(__dirname + "/../src/loaders/uncacheable.js"));
 
   // copy typescript types
   await copy(
