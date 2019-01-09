@@ -10,7 +10,6 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
-const FileCachePlugin = require("webpack/lib/cache/FileCachePlugin");
 
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
@@ -24,6 +23,9 @@ const hashOf = name => {
 		.slice(0, 10);
 }
 
+const nodeLoader = eval('require(__dirname + "/loaders/node-loader.js")');
+const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
+
 module.exports = (
   entry,
   {
@@ -35,12 +37,18 @@ module.exports = (
     watch = false
   } = {}
 ) => {
-  const shebangMatch = fs.readFileSync(resolve.sync(entry)).toString().match(shebangRegEx);
+  const resolvedEntry = resolve.sync(entry);
+  const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
-  const assetNames = Object.create(null);
-  const assets = Object.create(null);
   const resolvePlugins = [];
   let tsconfigMatchPath;
+  const assetState = {
+    assets: Object.create(null),
+    assetNames: Object.create(null),
+    assetPermissions: undefined
+  };
+  nodeLoader.setAssetState(assetState);
+  relocateLoader.setAssetState(assetState);
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
@@ -115,15 +123,13 @@ module.exports = (
         {
           test: /\.node$/,
           use: [{
-            loader: __dirname + "/loaders/node-loader.js",
-            options: { assetNames, assets }
+            loader: __dirname + "/loaders/node-loader.js"
           }]
         },
         {
           test: /\.(js|mjs|tsx?)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
-            options: { assetNames, assets }
           }]
         },
         {
@@ -149,12 +155,22 @@ module.exports = (
     plugins: [
       {
         apply(compiler) {
+          /* compiler.hooks.afterCompile.tap("ncc", compilation => {
+            compilation.cache.store('/NccPlugin/' + resolvedEntry, null, JSON.stringify(assetState.assetPermissions.permissions), (err) => {
+              if (err) console.error(err);
+            });
+          }); */
           compiler.hooks.watchRun.tap("ncc", () => {
             if (rebuildHandler)
               rebuildHandler();
           });
           // override "not found" context to try built require first
           compiler.hooks.compilation.tap("ncc", compilation => {
+            assetState.assetPermissions = Object.create(null);
+            /* compilation.cache.get('/NccPlugin/' + resolvedEntry, null, (err, _assetPermissions) => {
+              if (err) console.error(err);
+              assetState.assetPermissions = JSON.parse(_assetPermissions || 'null') || Object.create(null);
+            }); */
             // hack to ensure __webpack_require__ is added to empty context wrapper
             compilation.hooks.additionalModuleRuntimeRequirements.tap("ncc", (module, runtimeRequirements) => {
               if(module._contextDependencies)
@@ -272,7 +288,7 @@ module.exports = (
 
   function finalizeHandler () {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets);
+    getFlatFiles(mfs.data, assets, assetState.assetPermissions);
     delete assets[filename];
     delete assets[filename + ".map"];
     let code = mfs.readFileSync("/index.js", "utf8");
@@ -309,13 +325,18 @@ module.exports = (
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, curBase = "") {
+function getFlatFiles(mfsData, output, assetPermissions, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     const curPath = curBase + "/" + path;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, curPath);
+    if (item[""] === true) getFlatFiles(item, output, assetPermissions, curPath);
     // file
-    else if (!curPath.endsWith("/")) output[curPath.substr(1)] = mfsData[path];
+    else if (!curPath.endsWith("/")) {
+      output[curPath.substr(1)] = {
+        source: mfsData[path],
+        permissions: assetPermissions[curPath.substr(1)]
+      }
+    }
   }
 }

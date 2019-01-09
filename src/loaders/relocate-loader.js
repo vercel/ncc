@@ -7,7 +7,6 @@ const evaluate = require('static-eval');
 const acorn = require('acorn');
 const bindings = require('bindings');
 const getUniqueAssetName = require('../utils/dedupe-names');
-const { getOptions } = require('loader-utils');
 const sharedlibEmit = require('../utils/sharedlib-emit');
 const glob = require('glob');
 const getPackageBase = require('../utils/get-package-base');
@@ -210,7 +209,6 @@ function handleWrappers (ast, scope, magicString, len) {
 
 const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
 
-
 module.exports = function (code) {
   if (this.cacheable)
     this.cacheable();
@@ -220,7 +218,6 @@ module.exports = function (code) {
   if (id.endsWith('.json') || !code.match(relocateRegEx))
     return this.callback(null, code);
 
-  const options = getOptions(this);
   const emitAsset = (assetPath) => {
     // JS assets to support require(assetPath) and not fs-based handling
     // NB package.json is ambiguous here...
@@ -235,25 +232,31 @@ module.exports = function (code) {
         outName = assetPath.substr(pkgBase.length);
       // If the asset is a ".node" binary, then glob for possible shared
       // libraries that should also be included
-      assetEmissionPromises = assetEmissionPromises.then(sharedlibEmit(pkgBase, this.emitFile));
+      assetEmissionPromises = assetEmissionPromises.then(sharedlibEmit(pkgBase, assetState, this.emitFile));
     }
 
-    const name = options.assets[assetPath] ||
-        (options.assets[assetPath] = getUniqueAssetName(outName, assetPath, options.assetNames));
+    const name = assetState.assets[assetPath] ||
+        (assetState.assets[assetPath] = getUniqueAssetName(outName, assetPath, assetState.assetNames));
 
     // console.log('Emitting ' + assetPath + ' for module ' + id);
     assetEmissionPromises = assetEmissionPromises.then(async () => {
-      const source = await new Promise((resolve, reject) =>
-        fs.readFile(assetPath, (err, source) => err ? reject(err) : resolve(source))
-      );
+      const [source, permissions] = await Promise.all([
+        new Promise((resolve, reject) =>
+          fs.readFile(assetPath, (err, source) => err ? reject(err) : resolve(source))
+        ),
+        await new Promise((resolve, reject) => 
+          fs.stat(assetPath, (err, stats) => err ? reject(err) : resolve(stats.mode))
+        )
+      ]);
+      assetState.assetPermissions[name] = permissions;
       this.emitFile(name, source);
     });
     return "__dirname + '/" + JSON.stringify(name).slice(1, -1) + "'";
   };
   const emitAssetDirectory = (assetDirPath) => {
     const dirName = path.basename(assetDirPath);
-    const name = options.assets[assetDirPath] || (options.assets[assetDirPath] = getUniqueAssetName(dirName, assetDirPath, options.assetNames));
-    options.assets[assetDirPath] = name;
+    const name = assetState.assets[assetDirPath] || (assetState.assets[assetDirPath] = getUniqueAssetName(dirName, assetDirPath, assetState.assetNames));
+    assetState.assets[assetDirPath] = name;
 
     assetEmissionPromises = assetEmissionPromises.then(async () => {
       const files = await new Promise((resolve, reject) =>
@@ -263,9 +266,15 @@ module.exports = function (code) {
         // dont emit empty directories or ".js" files
         if (file.endsWith('/') || file.endsWith('.js'))
           return;
-        const source = await new Promise((resolve, reject) =>
-          fs.readFile(file, (err, source) => err ? reject(err) : resolve(source))
-        );
+        const [source, permissions] = await Promise.all([
+          new Promise((resolve, reject) =>
+            fs.readFile(file, (err, source) => err ? reject(err) : resolve(source))
+          ),
+          await new Promise((resolve, reject) => 
+            fs.stat(file, (err, stats) => err ? reject(err) : resolve(stats.mode))
+          )
+        ]);
+        assetState.assetPermissions[name + file.substr(assetDirPath.length)] = permissions;
         this.emitFile(name + file.substr(assetDirPath.length), source);
       }));
     });
@@ -584,4 +593,9 @@ module.exports = function (code) {
   
     this.callback(null, code, map);
   });
+};
+
+let assetState;
+module.exports.setAssetState = function (state) {
+  assetState = state;
 };
