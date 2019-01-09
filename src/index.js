@@ -131,6 +131,7 @@ module.exports = (
           use: [{
             loader: __dirname + "/loaders/ts-loader.js",
             options: {
+              transpileOnly: true,
               compilerOptions: {
                 outDir: '//'
               }
