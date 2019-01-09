@@ -57,7 +57,7 @@ function renderSummary(code, assets, outDir, buildTime) {
   let totalSize = codeSize;
   let maxAssetNameLength = 8; // "index.js".length
   for (const asset of Object.keys(assets)) {
-    const assetSource = assets[asset];
+    const assetSource = assets[asset].source;
     const assetSize = Math.round(
       (assetSource.byteLength || Buffer.byteLength(assetSource, "utf8")) / 1024
     );
@@ -200,7 +200,7 @@ switch (args._[0]) {
       for (const asset of Object.keys(assets)) {
         const assetPath = outDir + "/" + asset;
         mkdirp.sync(dirname(assetPath));
-        fs.writeFileSync(assetPath, assets[asset]);
+        fs.writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
       }
 
       if (!args["--quiet"]) {

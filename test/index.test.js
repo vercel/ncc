@@ -23,7 +23,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         // very simple asset validation in unit tests
         if (unitTest.startsWith("asset-")) {
           expect(Object.keys(assets).length).toBeGreaterThan(0);
-          expect(assets[Object.keys(assets)[0]] instanceof Buffer);
+          expect(assets[Object.keys(assets)[0].source] instanceof Buffer);
         }
         const actual = code
           .trim()
@@ -78,7 +78,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     for (const asset of Object.keys(assets)) {
       const assetPath = tmpDir + asset;
       mkdirp.sync(dirname(assetPath));
-      fs.writeFileSync(assetPath, assets[asset]);
+      fs.writeFileSync(assetPath, assets[asset].source);
     }
     fs.writeFileSync(tmpDir + "index.js", code);
     fs.writeFileSync(tmpDir + "index.js.map", map);
