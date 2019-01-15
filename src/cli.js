@@ -165,8 +165,9 @@ switch (args._[0]) {
 
     let startTime = Date.now();
     let ps;
+    const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
     const ncc = require("./index.js")(
-      eval("require.resolve")(resolve(args._[1] || ".")),
+      buildFile,
       {
         minify: args["--minify"],
         externals: args["--external"],
@@ -218,6 +219,18 @@ switch (args._[0]) {
       }
 
       if (run) {
+        // find node_modules
+        const root = resolve('/node_modules');
+        let nodeModulesDir = dirname(buildFile) + "/node_modules";
+        do {
+          if (nodeModulesDir === root) {
+            nodeModulesDir = undefined;
+            break;
+          }
+          if (fs.existsSync(nodeModulesDir))
+            break;
+        } while (nodeModulesDir = dirname(nodeModulesDir.substr(0, nodeModulesDir.length - 13)) + "/node_modules");
+        fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
         ps = require("child_process").fork(outDir + "/index.js", {
           execArgv: map
             ? ["-r", resolve(__dirname, "sourcemap-register")]
