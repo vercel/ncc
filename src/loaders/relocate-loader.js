@@ -369,6 +369,7 @@ module.exports = function (code) {
   let scope = attachScopes(ast, 'scope');
 
   let pathId, pathImportIds = {};
+  let fsId;
   let pregypId, bindingsId, nbindId;
 
   const shadowDepths = Object.create(null);
@@ -451,6 +452,12 @@ module.exports = function (code) {
     if (pathId) {
       if (shadowDepths[pathId] === 0)
         vars[pathId] = path;
+    }
+    if (fsId) {
+      if (shadowDepths[fsId] === 0)
+        vars[fsId] = {
+          existsSync: fs.existsSync
+        };
     }
     if (pregypId) {
       if (shadowDepths[pregypId] === 0)
@@ -601,6 +608,12 @@ module.exports = function (code) {
               shadowDepths[pathId] = 0;
               return this.skip();
             }
+            // var fs = require('fs')
+            else if (decl.init.arguments[0].value === 'fs') {
+              fsId = decl.id.name;
+              shadowDepths[fsId] = 0;
+              return this.skip();
+            }
             // var binary = require('node-pre-gyp')
             else if (isPregypId(decl.init.arguments[0].value)) {
               pregypId = decl.id.name;
@@ -617,7 +630,6 @@ module.exports = function (code) {
             else if (decl.init.arguments[0].value === 'nbind') {
               nbindId = decl.id.name;
               shadowDepths[nbindId] = 0;
-              return this.skip();
             }
           }
           // var { join } = path | require('path');
@@ -673,7 +685,7 @@ module.exports = function (code) {
       // -> compute and backtrack
       if (staticChildNode) {
         const curStaticValue = computeStaticValue(node, false);
-        if (curStaticValue) {
+        if (curStaticValue !== undefined) {
           staticChildValue = curStaticValue;
           staticChildNode = node;
           staticChildValueBindingsInstance = staticBindingsInstance;
@@ -690,6 +702,11 @@ module.exports = function (code) {
             stats = fs.statSync(staticChildValue);
           }
           catch (e) {}
+        }
+        // Boolean inlining
+        else if (typeof staticChildValue === 'boolean') {
+          transformed = true;
+          magicString.overwrite(staticChildNode.start, staticChildNode.end, String(staticChildValue));
         }
         if (stats && stats.isFile()) {
           let replacement = emitAsset(path.resolve(staticChildValue));
