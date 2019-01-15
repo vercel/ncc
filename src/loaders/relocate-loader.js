@@ -34,6 +34,70 @@ const pregyp = {
   }
 };
 
+function getNbind () {
+  // Adapted from nbind.js
+  function makeModulePathList(root, name) {
+    return ([
+      [root, name],
+      [root, 'build', name],
+      [root, 'build', 'Debug', name],
+      [root, 'build', 'Release', name],
+      [root, 'out', 'Debug', name],
+      [root, 'Debug', name],
+      [root, 'out', 'Release', name],
+      [root, 'Release', name],
+      [root, 'build', 'default', name],
+      [
+          root,
+          process.env['NODE_BINDINGS_COMPILED_DIR'] || 'compiled',
+          process.versions.node,
+          process.platform,
+          process.arch,
+          name
+      ]
+    ]);
+  }
+  function findCompiledModule(basePath, specList) {
+    var resolvedList = [];
+    var ext = path.extname(basePath);
+    for (var _i = 0, specList_1 = specList; _i < specList_1.length; _i++) {
+      var spec = specList_1[_i];
+      if (ext == spec.ext) {
+        try {
+          spec.path = eval('require.resolve(basePath)');
+          return spec;
+        }
+        catch (err) {
+          resolvedList.push(basePath);
+        }
+      }
+    }
+    for (var _a = 0, specList_2 = specList; _a < specList_2.length; _a++) {
+      var spec = specList_2[_a];
+      for (var _b = 0, _c = makeModulePathList(basePath, spec.name); _b < _c.length; _b++) {
+        var pathParts = _c[_b];
+        var resolvedPath = path.resolve.apply(path, pathParts);
+        try {
+          spec.path = eval('require.resolve(resolvedPath)');
+        }
+        catch (err) {
+          resolvedList.push(resolvedPath);
+          continue;
+        }
+        return spec;
+      }
+    }
+    return null;
+  }
+  function find(basePath = process.cwd()) {
+    return findCompiledModule(basePath, [
+      { ext: '.node', name: 'nbind.node', type: 'node' },
+      { ext: '.js', name: 'nbind.js', type: 'emcc' }
+    ]);
+  }
+  return { init: find, find: find };
+}
+
 function isExpressionReference(node, parent) {
 	if (parent.type === 'MemberExpression') return parent.computed || node === parent.object;
 
@@ -300,7 +364,7 @@ module.exports = function (code) {
   let scope = attachScopes(ast, 'scope');
 
   let pathId, pathImportIds = {};
-  let pregypId, bindingsId;
+  let pregypId, bindingsId, nbindId;
 
   const shadowDepths = Object.create(null);
   shadowDepths.__filename = 0;
@@ -391,6 +455,10 @@ module.exports = function (code) {
       if (shadowDepths[bindingsId] === 0)
         vars[bindingsId] = createBindings();
     }
+    if (nbindId) {
+      if (shadowDepths[nbindId] === 0)
+        vars[nbindId] = getNbind();
+    }
     for (const pathFn of Object.keys(pathImportIds)) {
       if (shadowDepths[pathFn] === 0)
         vars[pathFn] = path[pathImportIds[pathFn]];
@@ -439,15 +507,16 @@ module.exports = function (code) {
       // __dirname,  __filename, binary only currently as well as require('bindings')(...)
       // Can add require.resolve, import.meta.url, even path-like environment variables
       if (node.type === 'Identifier' && isExpressionReference(node, parent)) {
-        if (!shadowDepths[node.name] &&
-            (node.name === '__dirname' || node.name === '__filename' ||
-            node.name === pregypId || node.name === bindingsId)) {
-          staticChildValue = computeStaticValue(node, false);
-          // if it computes, then we start backtracking
-          if (staticChildValue) {
-            staticChildNode = node;
-            staticChildValueBindingsInstance = staticBindingsInstance;
-            return this.skip();
+        if (!shadowDepths[node.name]) {
+          if (node.name === '__dirname' || node.name === '__filename' ||
+              node.name === pregypId || node.name === bindingsId) {
+            staticChildValue = computeStaticValue(node, false);
+            // if it computes, then we start backtracking
+            if (staticChildValue) {
+              staticChildNode = node;
+              staticChildValueBindingsInstance = staticBindingsInstance;
+              return this.skip();
+            }
           }
         }
       }
@@ -459,6 +528,21 @@ module.exports = function (code) {
         if (staticChildValue) {
           staticChildNode = node;
           staticChildValueBindingsInstance = staticBindingsInstance;
+          return this.skip();
+        }
+      }
+      // nbind.init(...) -> require('./resolved.node')
+      else if (nbindId && node.type === 'CallExpression' &&
+          node.callee.type === 'MemberExpression' &&
+          node.callee.object.type === 'Identifier' &&
+          node.callee.object.name === nbindId &&
+          node.callee.property.type === 'Identifier' &&
+          node.callee.property.name === 'init') {
+        const bindingInfo = computeStaticValue(node, false);
+        if (bindingInfo) {
+          bindingInfo.path = path.relative(path.dirname(id), bindingInfo.path);
+          transformed = true;
+          magicString.overwrite(node.start, node.end, `({ bind: require("${bindingInfo.path}").NBind.bind_value, lib: require("${bindingInfo.path}") })`);
           return this.skip();
         }
       }
@@ -499,6 +583,12 @@ module.exports = function (code) {
             else if (decl.init.arguments[0].value === 'bindings') {
               bindingsId = decl.id.name;
               shadowDepths[bindingsId] = 0;
+              return this.skip();
+            }
+            // var nbind = require('nbind')
+            else if (decl.init.arguments[0].value === 'nbind') {
+              nbindId = decl.id.name;
+              shadowDepths[nbindId] = 0;
               return this.skip();
             }
           }
