@@ -10,6 +10,7 @@ const getUniqueAssetName = require('../utils/dedupe-names');
 const sharedlibEmit = require('../utils/sharedlib-emit');
 const glob = require('glob');
 const getPackageBase = require('../utils/get-package-base');
+const { getOptions } = require('loader-utils');
 
 // binary support for inlining logic from - node-pre-gyp/lib/pre-binding.js
 function isPregypId (id) {
@@ -112,6 +113,9 @@ function isExpressionReference(node, parent) {
 
   // disregard the `bar` in var bar = asdf
   if (parent.type === 'VariableDeclarator' && node.id === node) return false;
+
+  // disregard the `x` in import/export 'x';
+  if (parent.type === 'ImportDeclaration' || parent.type === 'ExportNamedDeclaration' || parent.type === 'ExportAllDeclaration') return false;
 
 	return true;
 }
@@ -271,13 +275,14 @@ function handleWrappers (ast, scope, magicString, len) {
   return { ast, scope, transformed };
 }
 
-const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
+const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define|['"]\.\.?\//;
 
 module.exports = function (code) {
   if (this.cacheable)
     this.cacheable();
   this.async();
   const id = this.resourcePath;
+  const { cwd } = getOptions(this);
 
   if (id.endsWith('.json') || !code.match(relocateRegEx))
     return this.callback(null, code);
@@ -488,6 +493,20 @@ module.exports = function (code) {
         node.arguments[0].type === 'Literal';
   }
 
+  // detect require(...) || require.resolve(...);
+  function isRequire (node) {
+    return node &&
+        node.type === 'CallExpression' &&
+        (node.callee.type === 'Identifier' &&
+          node.callee.name === 'require' &&
+          shadowDepths.require === 0 ||
+          node.callee.type === 'MemberExpression' &&
+          node.callee.object.type === 'Identifier' &&
+          node.callee.object.name === 'require' &&
+          node.callee.property.type === 'Identifier' &&
+          node.callee.property.name === 'resolve');
+  }
+
   ({ ast, scope, transformed } = handleWrappers(ast, scope, magicString, code.length));
 
   walk(ast, {
@@ -519,6 +538,15 @@ module.exports = function (code) {
             }
           }
         }
+      }
+      // special trigger for './asset.txt' references
+      else if (node.type === 'Literal' && typeof node.value === 'string' &&
+               (node.value.startsWith('./') || node.value.startsWith('../')) &&
+               isExpressionReference(node, parent)) {
+        staticChildValue = node.value;
+        staticChildNode = node;
+        staticChildValueBindingsInstance = staticBindingsInstance;
+        return this.skip();
       }
       // require('bindings')('asdf')
       else if (node.type === 'CallExpression' &&  
@@ -642,9 +670,12 @@ module.exports = function (code) {
           return;
         }
         // no static value -> see if we should emit the asset if it exists
-        // Currently we only handle files. In theory whole directories could also be emitted if necessary.
+        // never inline an asset path into a require statement though
         let stats;
-        if (typeof staticChildValue === 'string') {
+        if (typeof staticChildValue === 'string' && !isRequire(node)) {
+          if (staticChildValue.startsWith('./') || staticChildValue.startsWith('../')) {
+            staticChildValue = path.resolve(cwd, staticChildValue);
+          }
           try {
             stats = fs.statSync(staticChildValue);
           }
