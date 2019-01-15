@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep } = require("path");
+const { dirname, sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -130,6 +130,7 @@ module.exports = (
           test: /\.(js|mjs|tsx?)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
+            options: { cwd: dirname(resolvedEntry) }
           }]
         },
         {

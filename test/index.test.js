@@ -1,5 +1,5 @@
 const fs = require("fs");
-const ncc = global.coverage ? require("../src/index") : require("../");
+const ncc = global.coverage ? require("../src/index") : require("../src");
 const mkdirp = require("mkdirp");
 const rimraf = require("rimraf");
 const { dirname } = require("path");

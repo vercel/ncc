@@ -32,12 +32,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(32);
+/******/ 	return __webpack_require__(962);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 32:
+/***/ 962:
 /***/ (function() {
 
 console.log(function (a, b) {
