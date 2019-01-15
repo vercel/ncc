@@ -649,13 +649,23 @@ module.exports = function (code) {
           }
         }
       }
+      else if (node.type === 'AssignmentExpression') {
+        // path = require('path')
+        if (isStaticRequire(node.right) && node.right.arguments[0].value === 'path' &&
+            node.left.type === 'Identifier' && scope.declarations[node.left.name]) {
+          pathId = node.left.name;
+          shadowDepths[pathId] = 0;
+          return this.skip(); 
+        }
+      }
     },
     leave (node, parent) {
       if (node.scope) {
         scope = scope.parent;
         for (const id in node.scope.declarations) {
-          if (id in shadowDepths)
+          if (id in shadowDepths) {
             shadowDepths[id]--;
+          }
         }
       }
 
