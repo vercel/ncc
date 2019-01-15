@@ -172,7 +172,7 @@ switch (args._[0]) {
         minify: args["--minify"],
         externals: args["--external"],
         sourceMap: args["--source-map"] || run && args["--minify"],
-        cacheDirectory: args["--no-cache"] ? false : undefined,
+        cache: args["--no-cache"] ? false : undefined,
         watch: args["--watch"]
       }
     );
