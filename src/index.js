@@ -295,8 +295,8 @@ module.exports = (
     getFlatFiles(mfs.data, assets, assetState.assetPermissions);
     delete assets[filename];
     delete assets[filename + ".map"];
-    let code = mfs.readFileSync("/index.js", "utf8");
-    let map = sourceMap ? mfs.readFileSync("/index.js.map", "utf8") : null;
+    let code = mfs.readFileSync("/" + filename, "utf8");
+    let map = sourceMap ? mfs.readFileSync("/" + filename + ".map", "utf8") : null;
 
     if (minify) {
       const result = terser.minify(code, {
