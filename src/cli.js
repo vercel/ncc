@@ -236,7 +236,13 @@ switch (args._[0]) {
             ? ["-r", resolve(__dirname, "sourcemap-register")]
             : []
         });
-        ps.on("close", () => require("rimraf").sync(outDir));
+        function exit () {
+          require("rimraf").sync(outDir);
+          process.exit();
+        }
+        ps.on("exit", exit);
+        process.on("SIGTERM", exit);
+        process.on("SIGINT", exit);
       }
     }
     if (args["--watch"]) {
