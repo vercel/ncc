@@ -11689,6 +11689,11 @@ vlq@^0.2.2:
   resolved "https://registry.yarnpkg.com/vlq/-/vlq-0.2.3.tgz#8f3e4328cf63b1540c0d67e1b2778386f8975b26"
   integrity sha512-DRibZL6DsNhIgYQ+wNdWDL2SL3bKPlVrRiBqV5yuMm++op8W4kGFtaQfCs4KEJn0wBZcHVHJ3eoywX8983k1ow==
 
+vm2@^3.6.6:
+  version "3.6.6"
+  resolved "https://registry.yarnpkg.com/vm2/-/vm2-3.6.6.tgz#169048f0139cf0d0e7c26597ba6ae78af72b28a8"
+  integrity sha512-SXC941SEoL0c8+qe+N/PVYsck6vN6fzdkObISlF+YlCHeMCHhHsFD4yuydr1azEYqE8qgxHHkGPOd+iiV9sUyA==
+
 vue-server-renderer@^2.5.17:
   version "2.5.17"
   resolved "https://registry.yarnpkg.com/vue-server-renderer/-/vue-server-renderer-2.5.17.tgz#c1f24815a4b12a2797c154549b29b44b6be004b5"
