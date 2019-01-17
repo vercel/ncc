@@ -20,11 +20,6 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
     await ncc(`${testDir}/${inputFile}`).then(
       async ({ code, assets }) => {
-        // very simple asset validation in unit tests
-        if (unitTest.startsWith("asset-")) {
-          expect(Object.keys(assets).length).toBeGreaterThan(0);
-          expect(assets[Object.keys(assets)[0].source] instanceof Buffer);
-        }
         const actual = code
           .trim()
           // Windows support
@@ -35,6 +30,12 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
           // useful for updating fixtures
           fs.writeFileSync(`${testDir}/actual.js`, actual);
           throw e;
+        }
+
+        // very simple asset validation in unit tests
+        if (unitTest.startsWith("asset-")) {
+          expect(Object.keys(assets).length).toBeGreaterThan(0);
+          expect(assets[Object.keys(assets)[0].source] instanceof Buffer);
         }
       }
     );

@@ -271,7 +271,7 @@ function handleWrappers (ast, scope, magicString, len) {
   return { ast, scope, transformed };
 }
 
-const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define/;
+const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define|require\(\s*[^'"]/;
 
 module.exports = function (code) {
   if (this.cacheable)
@@ -495,6 +495,28 @@ module.exports = function (code) {
         node.arguments[0].type === 'Literal';
   }
 
+  // detect require(...)
+  function isRequire (node, requireResolve) {
+    return node &&
+        node.type === 'CallExpression' &&
+        (node.callee.type === 'Identifier' &&
+          node.callee.name === 'require' &&
+          shadowDepths.require === 0 ||
+          node.callee.type === 'MemberExpression' &&
+          node.callee.object.type === 'Identifier' &&
+          node.callee.object.name === 'require' &&
+          (!requireResolve ||
+          node.callee.property.type === 'Identifier' &&
+          node.callee.property.name === 'resolve'));
+  }
+
+  function isAnalyzableRequire (expression) {
+    if (expression.type === 'Identifier' || expression.type === 'MemberExpression')
+      return false;
+    // "possibly" analyzable (this can be further restricted over time)
+    return true;
+  }
+
   ({ ast, scope, transformed } = handleWrappers(ast, scope, magicString, code.length));
 
   walk(ast, {
@@ -528,8 +550,8 @@ module.exports = function (code) {
         }
       }
       // require('bindings')('asdf')
-      else if (node.type === 'CallExpression' &&  
-          !isESM && isStaticRequire(node.callee) &&
+      else if (node.type === 'CallExpression' && !isESM &&
+          isStaticRequire(node.callee) &&
           node.callee.arguments[0].value === 'bindings') {
         staticChildValue = computeStaticValue(node, true);
         if (staticChildValue) {
@@ -537,6 +559,12 @@ module.exports = function (code) {
           staticChildValueBindingsInstance = staticBindingsInstance;
           return this.skip();
         }
+      }
+      // require(dynamic) -> __non_webpack_require__(dynamic)
+      else if (isRequire(node) && !isAnalyzableRequire(node.arguments[0])) {
+        transformed = true;
+        magicString.overwrite(node.callee.start, node.callee.end, "__non_webpack_require__");
+        return this.skip();
       }
       // nbind.init(...) -> require('./resolved.node')
       else if (nbindId && node.type === 'CallExpression' &&

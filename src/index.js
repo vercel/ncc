@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep } = require("path");
+const { sep, dirname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -126,23 +126,25 @@ module.exports = (
         {
           test: /\.node$/,
           use: [{
-            loader: __dirname + "/loaders/node-loader.js"
+            loader: eval('__dirname + "/loaders/node-loader.js"')
           }]
         },
         {
           test: /\.(js|mjs|tsx?)$/,
           use: [{
-            loader: __dirname + "/loaders/relocate-loader.js",
+            loader: eval('__dirname + "/loaders/relocate-loader.js"'),
+            options: { cwd: dirname(resolvedEntry) }
           }]
         },
         {
           test: /\.tsx?$/,
           use: [{
-            loader: __dirname + "/loaders/uncacheable.js"
-          }, 
+            loader: eval('__dirname + "/loaders/uncacheable.js"')
+          },
           {
-            loader: __dirname + "/loaders/ts-loader.js",
+            loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
+              compiler: eval('__dirname + "/typescript"'),
               compilerOptions: {
                 outDir: '//'
               }
@@ -153,7 +155,7 @@ module.exports = (
           parser: { amd: false },
           exclude: /\.node$/,
           use: [{
-            loader: __dirname + "/loaders/shebang-loader.js"
+            loader: eval('__dirname + "/loaders/shebang-loader.js"')
           }]
         }
       ]
