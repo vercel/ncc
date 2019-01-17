@@ -179,36 +179,6 @@ module.exports = (
               if (err) console.error(err);
               assetState.assetPermissions = JSON.parse(_assetPermissions || 'null') || Object.create(null);
             }); */
-            // hack to ensure __webpack_require__ is added to empty context wrapper
-            compilation.hooks.additionalModuleRuntimeRequirements.tap("ncc", (module, runtimeRequirements) => {
-              if(module._contextDependencies)
-                runtimeRequirements.add('__webpack_require__');
-            });
-            compilation.moduleTemplates.javascript.hooks.render.tap(
-              "ncc",
-              (
-                moduleSourcePostModule,
-                module,
-                options,
-                dependencyTemplates
-              ) => {
-                if (
-                  module._contextDependencies &&
-                  moduleSourcePostModule._value.match(
-                    /webpackEmptyAsyncContext|webpackEmptyContext/
-                  )
-                ) {
-                  return moduleSourcePostModule._value.replace(
-                    "var e = new Error",
-                    `if (typeof req === 'number')\n` +
-                    `  return __webpack_require__(req);\n` +
-                    `try { return require(req) }\n` +
-                    `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
-                    `var e = new Error`
-                  );
-                }
-              }
-            );
           });
 
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
