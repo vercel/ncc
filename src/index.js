@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { dirname, sep } = require("path");
+const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -10,6 +10,9 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
+
+// support glob graceful-fs
+fs.gracefulify(require("fs"));
 
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
@@ -130,7 +133,6 @@ module.exports = (
           test: /\.(js|mjs|tsx?)$/,
           use: [{
             loader: __dirname + "/loaders/relocate-loader.js",
-            options: { cwd: dirname(resolvedEntry) }
           }]
         },
         {

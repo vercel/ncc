@@ -34,7 +34,7 @@ module.exports =
 /******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(954);
+/******/ 	return __webpack_require__(824);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -53,7 +53,7 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ 954:
+/***/ 824:
 /***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
