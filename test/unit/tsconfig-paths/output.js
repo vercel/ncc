@@ -43,20 +43,16 @@ module.exports =
 "use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(637);
+var _module_1 = __webpack_require__(816);
 console.log(_module_1["default"]);
 
 
 /***/ }),
 
-/***/ 637:
-/***/ (function(__unusedmodule, exports) {
+/***/ 816:
+/***/ (function(module) {
 
-"use strict";
-
-exports.__esModule = true;
-exports["default"] = {};
-
+module.exports = require("@module");
 
 /***/ })
 
