@@ -70,6 +70,14 @@ async function main() {
     Object.keys(sourcemapAssets).length ||
     Object.keys(typescriptAssets).some(asset => !asset.startsWith('lib/'))
   ) {
+    console.log(Object.keys(cliAssets));
+    console.log(Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/')));
+    console.log(Object.keys(nodeLoaderAssets));
+    console.log(Object.keys(relocateLoaderAssets));
+    console.log(Object.keys(shebangLoaderAssets));
+    console.log(Object.keys(tsLoaderAssets));
+    console.log(Object.keys(sourcemapAssets));
+    console.log(Object.keys(typescriptAssets).filter(asset => !asset.startsWith('lib/')));
     console.error("New assets are being emitted by the core build");
   }
 
