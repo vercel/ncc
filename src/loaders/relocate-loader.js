@@ -88,7 +88,7 @@ module.exports = function (code) {
     const name = assetState.assets[assetPath] ||
         (assetState.assets[assetPath] = getUniqueAssetName(outName, assetPath, assetState.assetNames));
 
-    console.log('Emitting ' + assetPath + ' for module ' + id);
+    // console.log('Emitting ' + assetPath + ' for module ' + id);
     assetEmissionPromises = assetEmissionPromises.then(async () => {
       const [source, permissions] = await Promise.all([
         new Promise((resolve, reject) =>

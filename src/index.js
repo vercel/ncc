@@ -37,17 +37,24 @@ module.exports = (
     filename = "index.js",
     minify = false,
     sourceMap = false,
-    watch = false
+    watch = false,
+    v8cache = false
   } = {}
 ) => {
   const resolvedEntry = resolve.sync(entry);
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
+  const assetNames = Object.create(null);
+  assetNames[filename] = true;
+  if (sourceMap)
+    assetNames[filename + '.map'] = true;
+  if (v8cache)
+    assetNames[filename + '.cache'] = assetNames[filename + '.cache.js'] = true;
   const resolvePlugins = [];
   let tsconfigMatchPath;
   const assetState = {
     assets: Object.create(null),
-    assetNames: Object.create(null),
+    assetNames,
     assetPermissions: undefined
   };
   assetState.assetNames[filename] = true;
@@ -272,8 +279,8 @@ module.exports = (
     getFlatFiles(mfs.data, assets, assetState.assetPermissions);
     delete assets[filename];
     delete assets[filename + ".map"];
-    let code = mfs.readFileSync("/" + filename, "utf8");
-    let map = sourceMap ? mfs.readFileSync("/" + filename + ".map", "utf8") : null;
+    let code = mfs.readFileSync(`/${filename}`, "utf8");
+    let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
 
     if (minify) {
       const result = terser.minify(code, {
@@ -292,6 +299,18 @@ module.exports = (
       // custom terser phase used over Webpack integration for this reason
       if (result.code !== undefined)
         ({ code, map } = { code: result.code, map: result.map });
+    }
+
+    if (v8cache) {
+      const { Script } = require('vm');
+      assets[filename + '.cache'] = new Script(code).createCachedData();
+      assets[filename + '.cache.js'] = code;
+      if (map)
+        assets[filename + '.map'] = map;
+      code = `const { readFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
+          `const source = readFileSync(__dirname + '/${filename}.cache.js').toString(), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
+          `(new Script(wrap(source), { cachedData }).runInThisContext())(exports, require, module, __filename, __dirname);\n`;
+      if (map) map = {};
     }
 
     if (shebangMatch) {
