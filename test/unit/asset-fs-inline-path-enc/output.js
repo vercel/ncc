@@ -32,19 +32,10 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(366);
+/******/ 	return __webpack_require__(660);
 /******/ })
 /************************************************************************/
 /******/ ({
-
-/***/ 366:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
-
-const fs = __webpack_require__(66);
-const { join } = __webpack_require__(589);
-console.log(fs.readFileSync(__dirname + '/asset.txt', 'utf8'));
-
-/***/ }),
 
 /***/ 589:
 /***/ (function(module) {
@@ -57,6 +48,15 @@ module.exports = require("path");
 /***/ (function(module) {
 
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 660:
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+
+const fs = __webpack_require__(66);
+const { join } = __webpack_require__(589);
+console.log(fs.readFileSync(__dirname + '/asset.txt', 'utf8'));
 
 /***/ })
 

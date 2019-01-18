@@ -28,9 +28,7 @@ async function main() {
 
   const { code: nodeLoader, assets: nodeLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/node-loader",
-    {
-      minify: true
-    }
+    { minify: true }
   );
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
@@ -45,12 +43,20 @@ async function main() {
 
   const { code: tsLoader, assets: tsLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/ts-loader",
-    { minify: true }
+    {
+      externals: ["typescript"],
+      minify: true
+    }
   );
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
     { minfiy: true }
+  );
+
+  const { code: typescript, assets: typescriptAssets } = await ncc(
+    "typescript",
+    { minify: true }
   );
 
   // detect unexpected asset emissions from core build
@@ -60,15 +66,25 @@ async function main() {
     Object.keys(nodeLoaderAssets).length ||
     Object.keys(relocateLoaderAssets).length ||
     Object.keys(shebangLoaderAssets).length ||
-    Object.keys(tsLoaderAssets).some(asset => !asset.startsWith('lib/')) ||
-    Object.keys(sourcemapAssets).length
+    Object.keys(tsLoaderAssets).length ||
+    Object.keys(sourcemapAssets).length ||
+    Object.keys(typescriptAssets).some(asset => !asset.startsWith('lib/'))
   ) {
     console.error("New assets are being emitted by the core build");
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
+  writeFileSync(__dirname + "/../dist/ncc/typescript/index.js", `
+try {
+  module.exports = require('typescript');
+}
+catch (e) {
+  module.exports = require('./typescript.js');
+}
+`);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
+  writeFileSync(__dirname + "/../dist/ncc/typescript/typescript.js", typescript);
   writeFileSync(__dirname + "/../dist/ncc/loaders/node-loader.js", nodeLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
