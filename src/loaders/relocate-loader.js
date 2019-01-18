@@ -290,9 +290,6 @@ module.exports = function (code) {
   const emitAsset = (assetPath) => {
     // JS assets to support require(assetPath) and not fs-based handling
     // NB package.json is ambiguous here...
-    if (assetPath.endsWith('.js') || assetPath.endsWith('.mjs'))
-      return;
-
     let outName = path.basename(assetPath);
 
     if (assetPath.endsWith('.node')) {
@@ -583,6 +580,7 @@ module.exports = function (code) {
       }
 
       // require.main -> __non_webpack_require__.main
+      // (unless it is a require.main === module check)
       else if (!isESM && node.type === 'MemberExpression' &&
                node.object.type === 'Identifier' &&
                node.object.name === 'require' &&
@@ -590,7 +588,18 @@ module.exports = function (code) {
                node.property.type === 'Identifier' &&
                node.property.name === 'main' &&
                !node.computed) {
+        if (parent && parent.type === 'BinaryExpression' && (parent.operator === '==' || parent.operator === '===')) {
+          let other;
+          other = parent.right === node ? parent.left : parent.right;
+          if (other.type === 'Identifier' && other.name === 'module')
+            return;
+        }
         magicString.overwrite(node.object.start, node.object.end, '__non_webpack_require__');
+        transformed = true;
+      }
+      else if (!isESM && node.type === 'Property' && node.value.type === 'Identifier' &&
+               node.value.name === 'require' && !shadowDepths.require) {
+        magicString.overwrite(node.value.start, node.value.end, '__non_webpack_require__');
         transformed = true;
       }
 

@@ -47,6 +47,9 @@ module.exports = (
     assetNames: Object.create(null),
     assetPermissions: undefined
   };
+  assetState.assetNames[filename] = true;
+  if (sourceMap)
+    assetState.assetNames[filename + '.map'] = true;
   nodeLoader.setAssetState(assetState);
   relocateLoader.setAssetState(assetState);
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
