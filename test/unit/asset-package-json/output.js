@@ -32,25 +32,25 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(607);
+/******/ 	return __webpack_require__(540);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 589:
-/***/ (function(module) {
-
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 607:
+/***/ 540:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const path = __webpack_require__(589);
 
 var binding_path =
     binary.find(__dirname + '/package.json');
+
+/***/ }),
+
+/***/ 589:
+/***/ (function(module) {
+
+module.exports = require("path");
 
 /***/ })
 

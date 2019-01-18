@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { dirname, sep } = require("path");
+const { sep, dirname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -10,6 +10,9 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
+
+// support glob graceful-fs
+fs.gracefulify(require("fs"));
 
 const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
@@ -126,24 +129,25 @@ module.exports = (
         {
           test: /\.node$/,
           use: [{
-            loader: __dirname + "/loaders/node-loader.js"
+            loader: eval('__dirname + "/loaders/node-loader.js"')
           }]
         },
         {
           test: /\.(js|mjs|tsx?)$/,
           use: [{
-            loader: __dirname + "/loaders/relocate-loader.js",
+            loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: { cwd: dirname(resolvedEntry) }
           }]
         },
         {
           test: /\.tsx?$/,
           use: [{
-            loader: __dirname + "/loaders/uncacheable.js"
-          }, 
+            loader: eval('__dirname + "/loaders/uncacheable.js"')
+          },
           {
-            loader: __dirname + "/loaders/ts-loader.js",
+            loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
+              compiler: eval('__dirname + "/typescript"'),
               compilerOptions: {
                 outDir: '//'
               }
@@ -154,7 +158,7 @@ module.exports = (
           parser: { amd: false },
           exclude: /\.node$/,
           use: [{
-            loader: __dirname + "/loaders/shebang-loader.js"
+            loader: eval('__dirname + "/loaders/shebang-loader.js"')
           }]
         }
       ]
@@ -178,36 +182,6 @@ module.exports = (
               if (err) console.error(err);
               assetState.assetPermissions = JSON.parse(_assetPermissions || 'null') || Object.create(null);
             }); */
-            // hack to ensure __webpack_require__ is added to empty context wrapper
-            compilation.hooks.additionalModuleRuntimeRequirements.tap("ncc", (module, runtimeRequirements) => {
-              if(module._contextDependencies)
-                runtimeRequirements.add('__webpack_require__');
-            });
-            compilation.moduleTemplates.javascript.hooks.render.tap(
-              "ncc",
-              (
-                moduleSourcePostModule,
-                module,
-                options,
-                dependencyTemplates
-              ) => {
-                if (
-                  module._contextDependencies &&
-                  moduleSourcePostModule._value.match(
-                    /webpackEmptyAsyncContext|webpackEmptyContext/
-                  )
-                ) {
-                  return moduleSourcePostModule._value.replace(
-                    "var e = new Error",
-                    `if (typeof req === 'number')\n` +
-                    `  return __webpack_require__(req);\n` +
-                    `try { return require(req) }\n` +
-                    `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
-                    `var e = new Error`
-                  );
-                }
-              }
-            );
           });
 
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
