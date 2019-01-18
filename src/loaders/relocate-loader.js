@@ -88,7 +88,7 @@ module.exports = function (code) {
     const name = assetState.assets[assetPath] ||
         (assetState.assets[assetPath] = getUniqueAssetName(outName, assetPath, assetState.assetNames));
 
-    // console.log('Emitting ' + assetPath + ' for module ' + id);
+    console.log('Emitting ' + assetPath + ' for module ' + id);
     assetEmissionPromises = assetEmissionPromises.then(async () => {
       const [source, permissions] = await Promise.all([
         new Promise((resolve, reject) =>
@@ -433,6 +433,13 @@ module.exports = function (code) {
           staticChildValue = curStaticValue;
           staticChildNode = node;
           staticChildValueBindingsInstance = staticBindingsInstance;
+          return;
+        }
+        // Filter out emitting assets for a __filename call on its own
+        if (staticChildNode.type === 'Identifier' && staticChildNode.name === '__filename' ||
+            staticChildNode.type === 'ReturnStatement' && staticChildNode.argument.type === 'Identifier' &&
+            staticChildNode.argument.name === '__filename') {
+          staticChildNode = staticChilValue = undefined;
           return;
         }
         // no static value -> see if we should emit the asset if it exists
