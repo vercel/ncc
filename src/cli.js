@@ -23,6 +23,7 @@ Options:
   -e, --external [mod]  Skip bundling 'mod'. Can be used many times
   -q, --quiet           Disable build summaries / non-error outputs
   -w, --watch           Start a watched build
+  --v8-cache            Emit a build using the v8 compile cache
 `;
 
 let args;
@@ -42,7 +43,8 @@ try {
     "--quiet": Boolean,
     "-q": "--quiet",
     "--watch": Boolean,
-    "-w": "--watch"
+    "-w": "--watch",
+    "--v8-cache": Boolean
   });
 } catch (e) {
   if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
@@ -173,7 +175,8 @@ switch (args._[0]) {
         externals: args["--external"],
         sourceMap: args["--source-map"] || run,
         cache: args["--no-cache"] ? false : undefined,
-        watch: args["--watch"]
+        watch: args["--watch"],
+        v8cache: args["--v8-cache"]
       }
     );
 
