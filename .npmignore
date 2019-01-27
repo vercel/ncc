@@ -1,4 +1,5 @@
 *
 !scripts/cli.js
 !dist/**/*.js
+!dist/**/*.cache
 !dist/**/*.ts
