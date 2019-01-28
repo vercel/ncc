@@ -31,14 +31,19 @@ module.exports =
 /******/
 /******/
 /******/
+/******/ 	// the startup function
+/******/ 	function startup() {
+/******/ 		// Load entry module and return exports
+/******/ 		return __webpack_require__(860);
+/******/ 	};
 /******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(801);
+/******/ 	// run startup
+/******/ 	return startup();
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 801:
+/***/ 860:
 /***/ (function(module) {
 
 module.exports = 'asdf';

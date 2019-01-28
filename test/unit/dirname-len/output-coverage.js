@@ -30,14 +30,19 @@ module.exports =
 /******/
 /******/
 /******/
+/******/ 	// the startup function
+/******/ 	function startup() {
+/******/ 		// Load entry module and return exports
+/******/ 		return __webpack_require__(227);
+/******/ 	};
 /******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(962);
+/******/ 	// run startup
+/******/ 	return startup();
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 962:
+/***/ 227:
 /***/ (function() {
 
 console.log(function (a, b) {

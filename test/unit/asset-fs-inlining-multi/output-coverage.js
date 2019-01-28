@@ -30,9 +30,14 @@ module.exports =
 /******/
 /******/
 /******/
+/******/ 	// the startup function
+/******/ 	function startup() {
+/******/ 		// Load entry module and return exports
+/******/ 		return __webpack_require__(390);
+/******/ 	};
 /******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(918);
+/******/ 	// run startup
+/******/ 	return startup();
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -44,7 +49,7 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ 918:
+/***/ 390:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const fs = __webpack_require__(66);

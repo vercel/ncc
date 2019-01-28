@@ -30,16 +30,28 @@ module.exports =
 /******/
 /******/
 /******/
+/******/ 	// the startup function
+/******/ 	function startup() {
+/******/ 		// Load entry module and return exports
+/******/ 		return __webpack_require__(422);
+/******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
 /******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(545);
+/******/ 	// run startup
+/******/ 	return startup();
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 545:
+/***/ 66:
+/***/ (function(module) {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ 422:
 /***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -59,13 +71,6 @@ console.log(fs__WEBPACK_IMPORTED_MODULE_0___default.a.readFileSync(__dirname + '
 /***/ (function(module) {
 
 module.exports = require("path");
-
-/***/ }),
-
-/***/ 66:
-/***/ (function(module) {
-
-module.exports = require("fs");
 
 /***/ })
 

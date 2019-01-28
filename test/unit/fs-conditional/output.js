@@ -30,29 +30,34 @@ module.exports =
 /******/
 /******/
 /******/
+/******/ 	// the startup function
+/******/ 	function startup() {
+/******/ 		// Load entry module and return exports
+/******/ 		return __webpack_require__(339);
+/******/ 	};
 /******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(535);
+/******/ 	// run startup
+/******/ 	return startup();
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 535:
+/***/ 66:
+/***/ (function(module) {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ 339:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const fs = __webpack_require__(66);
 if (false)
   {}
 else if (fs.existsSync(__dirname + '/input.js'))
-  __webpack_require__(535);
+  __webpack_require__(339);
 
-
-/***/ }),
-
-/***/ 66:
-/***/ (function(module) {
-
-module.exports = require("fs");
 
 /***/ })
 
