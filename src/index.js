@@ -307,9 +307,11 @@ module.exports = (
       assets[filename + '.cache.js'] = code;
       if (map)
         assets[filename + '.map'] = map;
-      code = `const { readFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
-          `const source = readFileSync(__dirname + '/${filename}.cache.js').toString(), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
-          `(new Script(wrap(source), { cachedData }).runInThisContext())(exports, require, module, __filename, __dirname);\n`;
+      code = `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
+          `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
+          `const script = new Script(wrap(source), { cachedData });\n` +
+          `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
+          `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });`;
       if (map) map = {};
     }
 
