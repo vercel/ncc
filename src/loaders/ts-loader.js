@@ -18,11 +18,12 @@ logger.makeLogger = function (loaderOptions, colors) {
 
 const { getOptions } = require("loader-utils");
 const loader = require("ts-loader");
-const tsId = require.resolve("typescript");
 module.exports = function () {
   const options = getOptions(this);
   if (!options.compiler)
-    options.compiler = tsId;
+    options.compiler = eval('__dirname + "/../typescript"');
   
   return loader.apply(this, arguments);
 };
+
+module.exports.typescript = require("typescript");

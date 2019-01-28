@@ -53,7 +53,6 @@ async function main() {
   const { code: tsLoader, assets: tsLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/ts-loader",
     {
-      externals: ["typescript"],
       filename: "ts-loader.js",
       minify: true,
       v8cache: true
@@ -62,12 +61,7 @@ async function main() {
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
-    { filename: "source-register.js", minfiy: true, v8cache: true }
-  );
-
-  const { code: typescript, assets: typescriptAssets } = await ncc(
-    "typescript",
-    { minify: true }
+    { filename: "sourcemap-register.js", minfiy: true, v8cache: true }
   );
 
   // detect unexpected asset emissions from core build
@@ -78,8 +72,7 @@ async function main() {
     ...Object.keys(relocateLoaderAssets),
     ...Object.keys(shebangLoaderAssets),
     ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/')),
-    ...Object.keys(sourcemapAssets),
-    ...Object.keys(typescriptAssets).filter(asset => !asset.startsWith('lib/'))
+    ...Object.keys(sourcemapAssets)
   ].filter(asset => !asset.endsWith('.js.cache') && !asset.endsWith('.cache.js'));
   
   if (unknownAssets.length) {
@@ -105,16 +98,20 @@ async function main() {
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli);
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
-  writeFileSync(__dirname + "/../dist/ncc/typescript/index.js", `
+  writeFileSync(__dirname + "/../dist/ncc/typescript.js", `
+let typescript;
 try {
-  module.exports = require('typescript');
+  typescript = require('typescript');
+  console.log("ncc: Using typescript@" + typescript.version + " (local user-provided)");
 }
 catch (e) {
-  module.exports = require('./typescript.js');
+  typescript = require('./loaders/ts-loader.js').typescript;
+  console.log("ncc: Using typescript@" + typescript.version + " (ncc built-in)");
 }
+
+module.exports = typescript;
 `);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
-  writeFileSync(__dirname + "/../dist/ncc/typescript/typescript.js", typescript);
   writeFileSync(__dirname + "/../dist/ncc/loaders/node-loader.js", nodeLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
