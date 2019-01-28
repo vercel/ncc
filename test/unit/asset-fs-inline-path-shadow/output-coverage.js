@@ -30,19 +30,17 @@ module.exports =
 /******/
 /******/
 /******/
+/******/ 	// the startup function
+/******/ 	function startup() {
+/******/ 		// Load entry module and return exports
+/******/ 		return __webpack_require__(430);
+/******/ 	};
 /******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(873);
+/******/ 	// run startup
+/******/ 	return startup();
 /******/ })
 /************************************************************************/
 /******/ ({
-
-/***/ 589:
-/***/ (function(module) {
-
-module.exports = require("path");
-
-/***/ }),
 
 /***/ 66:
 /***/ (function(module) {
@@ -51,7 +49,7 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ 873:
+/***/ 430:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const fs = __webpack_require__(66);
@@ -63,6 +61,13 @@ console.log(fs.readFileSync(__dirname + '/asset.txt', 'utf8'));
   var join = () => 'nope';
   console.log(fs.readFileSync(join(__dirname + '/asset-fs-inline-path-shadow', 'asset.txt'), 'utf8'));
 })();
+
+/***/ }),
+
+/***/ 589:
+/***/ (function(module) {
+
+module.exports = require("path");
 
 /***/ })
 
