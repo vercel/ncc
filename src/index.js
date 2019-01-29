@@ -42,6 +42,7 @@ module.exports = (
   } = {}
 ) => {
   const resolvedEntry = resolve.sync(entry);
+  process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
   const assetNames = Object.create(null);
@@ -154,7 +155,7 @@ module.exports = (
           {
             loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
-              compiler: eval('__dirname + "/typescript"'),
+              compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
                 outDir: '//'
               }
