@@ -16,14 +16,9 @@ logger.makeLogger = function (loaderOptions, colors) {
   return instance;
 };
 
-const { getOptions } = require("loader-utils");
-const loader = require("ts-loader");
-module.exports = function () {
-  const options = getOptions(this);
-  if (!options.compiler)
-    options.compiler = eval('__dirname + "/../typescript"');
-  
-  return loader.apply(this, arguments);
-};
+module.exports = require("ts-loader");
 
+// ts-loader internally has a require("typescript") that applies
+// regardless of "compiler".
+// We could remap this too, as soon as ncc supports aliased externals
 module.exports.typescript = require("typescript");
