@@ -1,5 +1,5 @@
 const ncc = require("../src/index.js");
-const { statSync, writeFileSync, readFileSync } = require("fs");
+const { statSync, writeFileSync, readFileSync, unlinkSync } = require("fs");
 const { promisify } = require("util");
 const { relative } = require("path");
 const copy = promisify(require("copy"));
@@ -7,6 +7,10 @@ const glob = promisify(require("glob"));
 const bytes = require("bytes");
 
 async function main() {
+  for (const file of await glob(__dirname + "/../dist/**/*.@(js|cache|ts)")) {
+    unlinkSync(file);
+  }
+
   const { code: cli, assets: cliAssets } = await ncc(
     __dirname + "/../src/cli",
     {
