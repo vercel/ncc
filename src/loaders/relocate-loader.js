@@ -3,7 +3,7 @@ const { readFile, stat, statSync, existsSync } = require('graceful-fs');
 const { walk } = require('estree-walker');
 const MagicString = require('magic-string');
 const { attachScopes } = require('rollup-pluginutils');
-const evaluate = require('static-eval');
+const evaluate = require('../utils/static-eval');
 const acorn = require('acorn');
 const bindings = require('bindings');
 const getUniqueAssetName = require('../utils/dedupe-names');
@@ -305,8 +305,12 @@ module.exports = function (code) {
       else if (node.type === 'CallExpression' && !isESM &&
           isStaticRequire(node.callee) &&
           node.callee.arguments[0].value === 'bindings') {
-        staticChildValue = createBindings()(computeStaticValue(node.arguments[0], true));
-        if (staticChildValue) {
+        let staticValue = computeStaticValue(node.arguments[0], true);
+        let bindingsValue;
+        if (staticValue && 'value' in staticValue)
+          bindingsValue = createBindings()(staticValue.value);
+        if (bindingsValue) {
+          staticChildValue = { value: bindingsValue };
           staticChildNode = node;
           staticChildValueBindingsInstance = staticBindingsInstance;
           return this.skip();
@@ -325,7 +329,10 @@ module.exports = function (code) {
           node.callee.object.name === nbindId &&
           node.callee.property.type === 'Identifier' &&
           node.callee.property.name === 'init') {
-        const bindingInfo = computeStaticValue(node, false);
+        const staticValue = computeStaticValue(node, false);
+        let bindingInfo;
+        if (staticValue && 'value' in staticValue)
+          bindingInfo = staticValue.value;
         if (bindingInfo) {
           bindingInfo.path = path.relative(path.dirname(id), bindingInfo.path);
           transformed = true;
@@ -443,7 +450,7 @@ module.exports = function (code) {
       // -> compute and backtrack
       if (staticChildNode) {
         const curStaticValue = computeStaticValue(node, false);
-        if (curStaticValue !== undefined) {
+        if (curStaticValue) {
           staticChildValue = curStaticValue;
           staticChildNode = node;
           staticChildValueBindingsInstance = staticBindingsInstance;
@@ -453,40 +460,59 @@ module.exports = function (code) {
         if (staticChildNode.type === 'Identifier' && staticChildNode.name === '__filename' ||
             staticChildNode.type === 'ReturnStatement' && staticChildNode.argument.type === 'Identifier' &&
             staticChildNode.argument.name === '__filename') {
-          staticChildNode = staticChilValue = undefined;
+          staticChildNode = staticChildValue = undefined;
           return;
         }
         // no static value -> see if we should emit the asset if it exists
         // Currently we only handle files. In theory whole directories could also be emitted if necessary.
-        let stats;
-        if (typeof staticChildValue === 'string') {
-          try {
-            stats = statSync(staticChildValue);
-          }
-          catch (e) {}
-        }
-        // Boolean inlining
-        else if (typeof staticChildValue === 'boolean') {
-          transformed = true;
-          magicString.overwrite(staticChildNode.start, staticChildNode.end, String(staticChildValue));
-        }
-        if (stats && stats.isFile()) {
-          let replacement = emitAsset(path.resolve(staticChildValue));
-          // require('bindings')(...)
-          // -> require(require('bindings')(...))
-          if (staticChildValueBindingsInstance) {
-            replacement = '__non_webpack_require__(' + replacement + ')';
-          }
-          if (replacement) {
+        if ('value' in staticChildValue) {
+          const inlineString = getInlined(inlineType(staticChildValue.value), staticChildValue.value);
+          if (inlineString) {
+            magicString.overwrite(staticChildNode.start, staticChildNode.end, inlineString);
             transformed = true;
-            magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
           }
         }
-        else if (stats && stats.isDirectory()) {
-          let replacement = emitAssetDirectory(path.resolve(staticChildValue));
-          if (replacement) {
+        else {
+          const thenInlineType = inlineType(staticChildValue.then);
+          const elseInlineType = inlineType(staticChildValue.else);
+          // only inline conditionals when both branches are known inlinings
+          if (thenInlineType && elseInlineType) {
+            const thenInlineString = getInlined(thenInlineType, staticChildValue.then);
+            const elseInlineString = getInlined(elseInlineType, staticChildValue.else);
+            magicString.overwrite(
+              staticChildNode.start, staticChildNode.end,
+              `${code.substring(staticChildValue.test.start, staticChildValue.test.end)} ? ${thenInlineString} : ${elseInlineString}`
+            );
             transformed = true;
-            magicString.overwrite(staticChildNode.start, staticChildNode.end, replacement);
+          }
+        }
+        function inlineType (value) {
+          let stats;
+          if (typeof value === 'string') {
+            try {
+              stats = statSync(value);
+            }
+            catch (e) {}
+          }
+          else if (typeof value === 'boolean')
+            return 'value';
+          if (stats && stats.isFile())
+            return 'file';
+          else if (stats && stats.isDirectory())
+            return 'directory';
+        }
+        function getInlined (inlineType, value) {
+          switch (inlineType) {
+            case 'value': return String(value);
+            case 'file':
+              let replacement = emitAsset(path.resolve(value));
+              // require('bindings')(...)
+              // -> require(require('bindings')(...))
+              if (staticChildValueBindingsInstance)
+                replacement = '__non_webpack_require__(' + replacement + ')';
+              return replacement;
+            case 'directory':
+              return emitAssetDirectory(path.resolve(value));
           }
         }
         staticChildNode = staticChildValue = undefined;
