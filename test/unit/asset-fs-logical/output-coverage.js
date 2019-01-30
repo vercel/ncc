@@ -33,7 +33,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(858);
+/******/ 		return __webpack_require__(3);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -42,22 +42,19 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 15:
-/***/ (function() {
+/***/ 3:
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-// this is a dep main check, so it is known to be false
-console.log(false);
+const fs = __webpack_require__(66);
+console.log(fs.readFileSync(unknown ? __dirname + '/asset1.txt' : __dirname + '/asset2.txt'));
 
 
 /***/ }),
 
-/***/ 858:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ 66:
+/***/ (function(module) {
 
-__webpack_require__(15);
-// this is the entry main check, so it becomes an outer main check
-console.log(require.main === require.cache[eval('__filename')]);
-
+module.exports = require("fs");
 
 /***/ })
 

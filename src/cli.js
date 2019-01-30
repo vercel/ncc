@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
@@ -26,30 +28,19 @@ Options:
   --v8-cache            Emit a build using the v8 compile cache
 `;
 
-let args;
-
-try {
-  args = require("arg")({
-    "--external": [String],
-    "-e": "--external",
-    "--out": String,
-    "-o": "--out",
-    "--minify": Boolean,
-    "-m": "--minify",
-    "--source-map": Boolean,
-    "-s": "--source-map",
-    "--no-cache": Boolean,
-    "-C": "--no-cache",
-    "--quiet": Boolean,
-    "-q": "--quiet",
-    "--watch": Boolean,
-    "-w": "--watch",
-    "--v8-cache": Boolean
+// support an API mode for CLI testing
+let api = false;
+if (require.main === module) {
+  runCmd(process.argv.slice(2), process.stdout, process.stderr)
+  .catch(e => {
+    if (!e.silent)
+      console.error(e.nccError ? e.message : e);
+    process.exit(e.exitCode || 1);
   });
-} catch (e) {
-  if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
-  console.error(e.message + `\n${usage}`);
-  process.exit(1);
+}
+else {
+  module.exports = runCmd;
+  api = true;
 }
 
 function renderSummary(code, assets, outDir, buildTime) {
@@ -98,201 +89,245 @@ function renderSummary(code, assets, outDir, buildTime) {
   return output;
 }
 
-if (args._.length === 0) {
-  console.error(`Error: No command specified\n${usage}`);
-  process.exit(1);
+function nccError(msg, exitCode = 1) {
+  const err = new Error(msg);
+  err.nccError = true;
+  err.exitCode = exitCode;
+  throw err;
 }
 
-let run = false;
-let outDir = args["--out"];
+async function runCmd (argv, stdout, stderr) {
+  let args;
+  try {
+    args = require("arg")({
+      "--external": [String],
+      "-e": "--external",
+      "--force": Boolean,
+      "-f": "--force",
+      "--out": String,
+      "-o": "--out",
+      "--minify": Boolean,
+      "-m": "--minify",
+      "--source-map": Boolean,
+      "-s": "--source-map",
+      "--no-cache": Boolean,
+      "-C": "--no-cache",
+      "--quiet": Boolean,
+      "-q": "--quiet",
+      "--watch": Boolean,
+      "-w": "--watch",
+      "--v8-cache": Boolean
+    }, {
+      permissive: false,
+      argv
+    });
+  } catch (e) {
+    if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
+    nccError(e.message + `\n${usage}`);
+  }
 
-switch (args._[0]) {
-  case "cache":
-    if (args._.length > 2)
-      errTooManyArguments("cache");
+  if (args._.length === 0)
+    nccError(`Error: No command specified\n${usage}`);
 
-    const flags = Object.keys(args).filter(arg => arg.startsWith("--"));
-    if (flags.length)
-      errFlagNotCompatible(flags[0], "cache");
+  let run = false;
+  let outDir = args["--out"];
 
-    const cacheDir = require("./utils/ncc-cache-dir");
-    switch (args._[1]) {
-      case "clean":
-        rimraf.sync(cacheDir);
-      break;
-      case "dir":
-        console.log(cacheDir);
-      break;
-      case "size":
-        require("get-folder-size")(cacheDir, (err, size) => {
-          if (err) {
-            if (err.code === 'ENOENT') {
-              console.log("0MB");
-              return;
+  switch (args._[0]) {
+    case "cache":
+      if (args._.length > 2)
+        errTooManyArguments("cache");
+
+      const flags = Object.keys(args).filter(arg => arg.startsWith("--"));
+      if (flags.length)
+        errFlagNotCompatible(flags[0], "cache");
+
+      const cacheDir = require("./utils/ncc-cache-dir");
+      switch (args._[1]) {
+        case "clean":
+          rimraf.sync(cacheDir);
+        break;
+        case "dir":
+          stdout.write(cacheDir + '\n');
+        break;
+        case "size":
+          require("get-folder-size")(cacheDir, (err, size) => {
+            if (err) {
+              if (err.code === 'ENOENT') {
+                stdout.write("0MB\n");
+                return;
+              }
+              throw err;
             }
-            throw err;
-          }
-          console.log(`${(size / 1024 / 1024).toFixed(2)}MB`);
-        });
-      break;
-      default:
-        errInvalidCommand("cache " + args._[1]);
-    }
+            stdout.write(`${(size / 1024 / 1024).toFixed(2)}MB\n`);
+          });
+        break;
+        default:
+          errInvalidCommand("cache " + args._[1]);
+      }
 
-  break;
-  case "run":
-    if (args._.length > 2)
-      errTooManyArguments("run");
+    break;
+    case "run":
+      if (args._.length > 2)
+        errTooManyArguments("run");
 
-    if (args["--out"])
-      errFlagNotCompatible("--out", "run");
+      if (args["--out"])
+        errFlagNotCompatible("--out", "run");
 
-    outDir = resolve(
-      require("os").tmpdir(),
-      crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
-    );
-    if (fs.existsSync(outDir)) {
-      console.error(
-        `Error: Application at ${args._[1] || "."} is already running or didn't cleanup after previous run.` +
-        `To manually clear the last run build, try running "rm -rf ${outDir}".`
+      outDir = resolve(
+        require("os").tmpdir(),
+        crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
       );
-      process.exit(1);
-    }
-    run = true;
-
-  // fallthrough
-  case "build":
-    if (args._.length > 2)
-      errTooManyArguments("build");
-
-    let startTime = Date.now();
-    let ps;
-    const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-    const ncc = require("./index.js")(
-      buildFile,
-      {
-        minify: args["--minify"],
-        externals: args["--external"],
-        sourceMap: args["--source-map"] || run,
-        cache: args["--no-cache"] ? false : undefined,
-        watch: args["--watch"],
-        v8cache: args["--v8-cache"]
-      }
-    );
-
-    async function handler ({ err, code, map, assets }) {
-      // handle watch errors
-      if (err) {
-        console.error(err);
-        console.log('Watching for changes...');
-        return;
-      }
-
-      outDir = outDir || resolve("dist");
-      mkdirp.sync(outDir);
-      // remove all existing ".js" files in the out directory
-      await Promise.all(
-        (await new Promise((resolve, reject) =>
-          glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
-        )).map(file =>
-          new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
-        ))
-      );
-      fs.writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
-      if (map) fs.writeFileSync(outDir + "/index.js.map", map);
-
-      for (const asset of Object.keys(assets)) {
-        const assetPath = outDir + "/" + asset;
-        mkdirp.sync(dirname(assetPath));
-        fs.writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
-      }
-
-      if (!args["--quiet"]) {
-        console.log( 
-          renderSummary(
-            code,
-            assets,
-            run ? "" : relative(process.cwd(), outDir),
-            Date.now() - startTime,
-          )
-        );
-
-        if (args["--watch"])
-          console.log('Watching for changes...');
-      }
-
-      if (run) {
-        // find node_modules
-        const root = resolve('/node_modules');
-        let nodeModulesDir = dirname(buildFile) + "/node_modules";
-        do {
-          if (nodeModulesDir === root) {
-            nodeModulesDir = undefined;
-            break;
-          }
-          if (fs.existsSync(nodeModulesDir))
-            break;
-        } while (nodeModulesDir = dirname(nodeModulesDir.substr(0, nodeModulesDir.length - 13)) + "/node_modules");
-        fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
-        ps = require("child_process").fork(outDir + "/index.js", {
-          execArgv: map
-            ? ["-r", resolve(__dirname, "sourcemap-register")]
-            : []
-        });
-        function exit () {
-          require("rimraf").sync(outDir);
-          process.exit();
+      if (fs.existsSync(outDir)) {
+        if (args["--force"]) {
+          rimraf.sync(outDir);
         }
-        ps.on("exit", exit);
-        process.on("SIGTERM", exit);
-        process.on("SIGINT", exit);
+        else {
+          nccError(
+            `Error: Application at ${args._[1] || "."} is already running or didn't cleanup after previous run.\n` +
+            `To force clear the last run build, try running the "ncc run -f" flag.`
+          );
+        }
       }
-    }
-    if (args["--watch"]) {
-      ncc.handler(handler);
-      ncc.rebuild(() => {
-        if (ps)
-          ps.kill();
-        startTime = Date.now();
-        console.log('File change, rebuilding...');
-      });
-    } else {
-      ncc.then(handler)
-      .catch(err => {
-        console.error(err.stack);
-        process.exit(1);
-      });
-    }
-    break;
+      run = true;
 
-  case "help":
-    console.error(usage);
-    process.exit(2);
+    // fallthrough
+    case "build":
+      if (args._.length > 2)
+        errTooManyArguments("build");
 
-  case "version":
-    console.log(require("../package.json").version);
-    break;
+      let startTime = Date.now();
+      let ps;
+      const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
+      const ncc = require("./index.js")(
+        buildFile,
+        {
+          minify: args["--minify"],
+          externals: args["--external"],
+          sourceMap: args["--source-map"] || run,
+          cache: args["--no-cache"] ? false : undefined,
+          watch: args["--watch"],
+          v8cache: args["--v8-cache"]
+        }
+      );
 
-  default:
-    errInvalidCommand(args._[0]);
+      async function handler ({ err, code, map, assets }) {
+        // handle watch errors
+        if (err) {
+          stderr.write(err + '\n');
+          stdout.write('Watching for changes...\n');
+          return;
+        }
+
+        outDir = outDir || resolve("dist");
+        mkdirp.sync(outDir);
+        // remove all existing ".js" files in the out directory
+        await Promise.all(
+          (await new Promise((resolve, reject) =>
+            glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
+          )).map(file =>
+            new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
+          ))
+        );
+        fs.writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
+        if (map) fs.writeFileSync(outDir + "/index.js.map", map);
+
+        for (const asset of Object.keys(assets)) {
+          const assetPath = outDir + "/" + asset;
+          mkdirp.sync(dirname(assetPath));
+          fs.writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
+        }
+
+        if (!args["--quiet"]) {
+          stdout.write( 
+            renderSummary(
+              code,
+              assets,
+              run ? "" : relative(process.cwd(), outDir),
+              Date.now() - startTime,
+            ) + '\n'
+          );
+
+          if (args["--watch"])
+            stdout.write('Watching for changes...\n');
+        }
+
+        if (run) {
+          // find node_modules
+          const root = resolve('/node_modules');
+          let nodeModulesDir = dirname(buildFile) + "/node_modules";
+          do {
+            if (nodeModulesDir === root) {
+              nodeModulesDir = undefined;
+              break;
+            }
+            if (fs.existsSync(nodeModulesDir))
+              break;
+          } while (nodeModulesDir = dirname(nodeModulesDir.substr(0, nodeModulesDir.length - 13)) + "/node_modules");
+          fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
+          ps = require("child_process").fork(outDir + "/index.js", {
+            execArgv: map
+              ? ["-r", resolve(__dirname, "sourcemap-register")]
+              : [],
+            stdio: api ? 'pipe' : 'inherit'
+          });
+          if (api) {
+            ps.stdout.pipe(stdout);
+            ps.stderr.pipe(stderr);
+          }
+          return new Promise((resolve, reject) => {
+            function exit (code) {
+              require("rimraf").sync(outDir);
+              if (code === 0)
+                resolve();
+              else
+                reject({ silent: true, exitCode: code });
+              process.off("SIGTERM", exit);
+              process.off("SIGINT", exit);
+            }
+            ps.on("exit", exit);
+            process.on("SIGTERM", exit);
+            process.on("SIGINT", exit);
+          });
+        }
+      }
+      if (args["--watch"]) {
+        ncc.handler(handler);
+        ncc.rebuild(() => {
+          if (ps)
+            ps.kill();
+          startTime = Date.now();
+          stdout.write('File change, rebuilding...\n');
+        });
+      } else {
+        return ncc.then(handler);
+      }
+      break;
+
+    case "help":
+      nccError(usage, 2);
+
+    case "version":
+      stdout.write(require("../package.json").version + '\n');
+      break;
+
+    default:
+      errInvalidCommand(args._[0]);
+  }
+
+  function errTooManyArguments (cmd) {
+    nccError(`Error: Too many ${cmd} arguments provided\n${usage}`);
+  }
+
+  function errFlagNotCompatible (flag, cmd) {
+    nccError(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`);
+  }
+
+  function errInvalidCommand (cmd) {
+    nccError(`Error: Invalid command "${cmd}"\n${usage}`);
+  }
+
+  // remove me when node.js makes this the default behavior
+  process.on("unhandledRejection", e => {
+    throw e;
+  });
 }
-
-function errTooManyArguments (cmd) {
-  console.error(`Error: Too many ${cmd} arguments provided\n${usage}`);
-  process.exit(1);
-}
-
-function errFlagNotCompatible (flag, cmd) {
-  console.error(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`);
-  process.exit(1);
-}
-
-function errInvalidCommand (cmd) {
-  console.error(`Error: Invalid command "${cmd}"\n${usage}`);
-  process.exit(1);
-}
-
-// remove me when node.js makes this the default behavior
-process.on("unhandledRejection", e => {
-  throw e;
-});

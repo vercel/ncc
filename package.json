@@ -5,7 +5,7 @@
   "license": "MIT",
   "main": "./dist/ncc/index.js",
   "bin": {
-    "ncc": "./scripts/cli.js"
+    "ncc": "./dist/ncc/cli.js"
   },
   "scripts": {
     "build": "node scripts/build",
