@@ -144,7 +144,10 @@ module.exports = (
           test: /\.(js|mjs|tsx?)$/,
           use: [{
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
-            options: { cwd: dirname(resolvedEntry) }
+            options: {
+              cwd: dirname(resolvedEntry),
+              entryId: resolvedEntry
+            }
           }]
         },
         {

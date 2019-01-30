@@ -1,8 +1,5 @@
 const fs = require("fs");
 const ncc = global.coverage ? require("../src/index") : require("../");
-const mkdirp = require("mkdirp");
-const rimraf = require("rimraf");
-const { dirname } = require("path");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
@@ -45,13 +42,12 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 // the twilio test can take a while (large codebase)
 jest.setTimeout(200000);
 
-function clearDir (dir) {
-  try {
-    rimraf.sync(dir);
-  }
-  catch (e) {
-    if (e.code !== "ENOENT") throw e;
-  }
+let nccRun;
+if (global.coverage) {
+  nccRun = require(__dirname + "/../src/cli.js");
+}
+else {
+  nccRun = require(__dirname + "/../dist/ncc/cli.js");
 }
 
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
@@ -61,42 +57,39 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // disabled pending https://github.com/zeit/ncc/issues/141
   if (integrationTest.endsWith('loopback.js')) continue;
 
-  it(`should evaluate ${integrationTest} without errors`, async () => {
-    if (global.gc) {
-      global.gc();
-      console.log(`GC Completed, Heap Size: ${process.memoryUsage().heapUsed / 1024 ** 2} MB`);
+  const { Writable } = require('stream');
+  class StoreStream extends Writable {
+    constructor (options) {
+      super(options);
+      this.data = [];
     }
+    _write(chunk, encoding, callback) {
+      this.data.push(chunk);
+      callback();
+    }
+  }
 
-    const { code, map, assets } = await ncc(
-      __dirname + "/integration/" + integrationTest,
-      {
-        cache: false,
-        sourceMap: true
-      }
-    );
-    const tmpDir = `${__dirname}/tmp/${integrationTest}/`;
-    clearDir(tmpDir);
-    mkdirp.sync(tmpDir);
-    for (const asset of Object.keys(assets)) {
-      const assetPath = tmpDir + asset;
-      mkdirp.sync(dirname(assetPath));
-      fs.writeFileSync(assetPath, assets[asset].source);
+  it(`should execute "ncc run ${integrationTest}"`, async () => {
+    if (global.gc) global.gc();
+    const stdout = new StoreStream();
+    const stderr = new StoreStream();
+    try {
+      await nccRun(["run", "-f", `${__dirname}/integration/${integrationTest}`], stdout, stderr);
     }
-    fs.writeFileSync(tmpDir + "index.js", code);
-    fs.writeFileSync(tmpDir + "index.js.map", map);
-    await new Promise((resolve, reject) => {
-      const ps = require("child_process").fork(tmpDir + "index.js", {
-        stdio: "inherit",
-        execArgv: ["-r", "source-map-support/register.js"]
-      });
-      ps.on("close", (code, signal) => {
-        if (code === 0)
-          resolve();
+    catch (e) {
+      if (e.silent) {
+        let lastErr = stderr.data[stderr.data.length - 1];
+        if (lastErr)
+          throw new Error(lastErr);
         else
-          reject(new Error(`Test failed with code ${code} - ${signal}.`));
-      });
+          throw new Error('Process exited with code ' + e.exitCode);
+      }
+      throw e;
+    }
+    stderr.data.forEach(chunk => {
+      if (chunk.toString().startsWith('(node:')) return;
+      throw new Error(chunk.toString());
     });
-    clearDir(tmpDir);
   });
 }
 

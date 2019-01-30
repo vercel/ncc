@@ -12,6 +12,7 @@ const glob = require('glob');
 const getPackageBase = require('../utils/get-package-base');
 const { pregyp, nbind } = require('../utils/binary-locators');
 const handleWrappers = require('../utils/wrappers');
+const { getOptions } = require("loader-utils");
 
 const staticPath = Object.assign({ default: path }, path);
 const staticFs = { default: { existsSync }, existsSync };
@@ -41,6 +42,8 @@ module.exports = function (code) {
     this.cacheable();
   this.async();
   const id = this.resourcePath;
+  const options = getOptions(this);
+  const entryId = options.entryId;
 
   if (id.endsWith('.json') || !code.match(relocateRegEx))
     return this.callback(null, code);
@@ -332,7 +335,6 @@ module.exports = function (code) {
       }
 
       // require.main -> __non_webpack_require__.main
-      // (unless it is a require.main === module check)
       else if (!isESM && node.type === 'MemberExpression' &&
                node.object.type === 'Identifier' &&
                node.object.name === 'require' &&
@@ -343,8 +345,20 @@ module.exports = function (code) {
         if (parent && parent.type === 'BinaryExpression' && (parent.operator === '==' || parent.operator === '===')) {
           let other;
           other = parent.right === node ? parent.left : parent.right;
-          if (other.type === 'Identifier' && other.name === 'module')
-            return;
+          if (other.type === 'Identifier' && other.name === 'module') {
+            // inline the require.main check to be the target require.main check if this is the entry,
+            // and false otherwise
+            if (id === entryId) {
+              // require.main === module -> __non_webpack_require__.main == __non_webpack_require__.cache[eval('__filename')]
+              // can be simplified if we get a way to get outer "module" in Webpack
+              magicString.overwrite(other.start, other.end, "__non_webpack_require__.cache[eval('__filename')]");
+            }
+            else {
+              magicString.overwrite(parent.start, parent.end, "false");
+              transformed = true;
+              return;
+            }
+          }
         }
         magicString.overwrite(node.object.start, node.object.end, '__non_webpack_require__');
         transformed = true;
