@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { fork } = require("child_process");
 const ncc = global.coverage ? require("../src/index") : require("../");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
@@ -36,6 +37,17 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         }
       }
     );
+  });
+}
+for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
+  it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
+    const ps = fork(__dirname + (global.coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
+      stdio: "pipe"
+    });
+    const expected = cliTest.expect || { code: 0 };
+    const code = await new Promise(resolve => ps.on("close", resolve));
+    if ('code' in expected)
+      expect(code).toBe(expected.code);
   });
 }
 
