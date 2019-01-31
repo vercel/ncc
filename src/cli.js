@@ -283,10 +283,14 @@ async function runCmd (argv, stdout, stderr) {
                 reject({ silent: true, exitCode: code });
               process.off("SIGTERM", exit);
               process.off("SIGINT", exit);
+              process.off("SIGUSR1", exit);
+              process.off("SIGUSR2", exit);
             }
             ps.on("exit", exit);
             process.on("SIGTERM", exit);
             process.on("SIGINT", exit);
+            process.on("SIGUSR1", exit);
+            process.on("SIGUSR2", exit);
           });
         }
       }
