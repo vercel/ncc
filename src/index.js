@@ -160,7 +160,8 @@ module.exports = (
             options: {
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
-                outDir: '//'
+                outDir: '//',
+                noEmit: false
               }
             }
           }]
