@@ -262,8 +262,9 @@ async function runCmd (argv, stdout, stderr) {
             }
             if (fs.existsSync(nodeModulesDir))
               break;
-          } while (nodeModulesDir = dirname(nodeModulesDir.substr(0, nodeModulesDir.length - 13)) + "/node_modules");
-          fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
+          } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
+          if (nodeModulesDir)
+            fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
           ps = require("child_process").fork(outDir + "/index.js", {
             execArgv: map
               ? ["-r", resolve(__dirname, "sourcemap-register")]
