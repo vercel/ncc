@@ -14,5 +14,9 @@
   {
     args: ["run", "test/fixtures/does-not-exist.js"],
     expect: { code: 1 }
+  },
+  {
+    args: ["run", "--watch", "test/integration/test.ts"],
+    expect: { code: 2 }
   }
 ]
