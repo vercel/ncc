@@ -287,6 +287,23 @@ module.exports = (
     let code = mfs.readFileSync(`/${filename}`, "utf8");
     let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
 
+    if (map) {
+      map = JSON.parse(map);
+      map.sources = map.sources.map(source => {
+        if (source.startsWith('webpack:///'))
+          source = source.substr(11);
+        // webpack:///webpack:/// happens too for some reason
+        if (source.startsWith('webpack:///'))
+          source = source.substr(11);
+        if (source.startsWith('./'))
+          source = source.substr(2);
+        if (source.startsWith('webpack/'))
+          return '/webpack:' + source.substr(8);
+        return '/' + source;
+      });
+      map = JSON.stringify(map);
+    }
+
     if (minify) {
       const result = terser.minify(code, {
         compress: false,
