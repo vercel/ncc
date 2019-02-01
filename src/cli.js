@@ -117,8 +117,6 @@ async function runCmd (argv, stdout, stderr) {
     args = require("arg")({
       "--external": [String],
       "-e": "--external",
-      "--force": Boolean,
-      "-f": "--force",
       "--out": String,
       "-o": "--out",
       "--minify": Boolean,
@@ -195,17 +193,8 @@ async function runCmd (argv, stdout, stderr) {
         require("os").tmpdir(),
         crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
       );
-      if (fs.existsSync(outDir)) {
-        if (args["--force"]) {
-          rimraf.sync(outDir);
-        }
-        else {
-          nccError(
-            `Error: Application at ${args._[1] || "."} is already running or didn't cleanup after previous run.\n` +
-            `To force clear the last run build, try running the "ncc run -f" flag.`
-          );
-        }
-      }
+      if (fs.existsSync(outDir))
+        rimraf.sync(outDir);
       run = true;
 
     // fallthrough
