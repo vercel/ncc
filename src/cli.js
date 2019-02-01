@@ -46,12 +46,13 @@ else {
   api = true;
 }
 
-function renderSummary(code, assets, outDir, buildTime) {
+function renderSummary(code, map, assets, outDir, buildTime) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
   const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
+  const mapSize = map ? Math.round(Buffer.byteLength(map, "utf8") / 1024) : 0;
   const assetSizes = Object.create(null);
   let totalSize = codeSize;
-  let maxAssetNameLength = 8; // "index.js".length
+  let maxAssetNameLength = 8 + (map ? 4 : 0); // length of index.js(.map)?
   for (const asset of Object.keys(assets)) {
     const assetSource = assets[asset].source;
     const assetSize = Math.round(
@@ -70,6 +71,9 @@ function renderSummary(code, assets, outDir, buildTime) {
   let indexRender = `${codeSize
     .toString()
     .padStart(sizePadding, " ")}kB  ${outDir}${"index.js"}`;
+  let indexMapRender = map ? `${mapSize
+    .toString()
+    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js.map"}` : '';
 
   let output = "",
     first = true;
@@ -80,12 +84,20 @@ function renderSummary(code, assets, outDir, buildTime) {
       output += indexRender + "\n";
       indexRender = null;
     }
+    if (mapSize && mapSize < assetSizes[asset] && indexMapRender) {
+      output += indexMapRender + "\n";
+      indexMapRender = null;
+    }
     output += `${assetSizes[asset]
       .toString()
       .padStart(sizePadding, " ")}kB  ${outDir}${asset}`;
   }
 
-  if (indexRender) output += (first ? "" : "\n") + indexRender;
+  if (indexRender) {
+    output += (first ? "" : "\n") + indexRender;
+    first = false;
+  }
+  if (indexMapRender) output += (first ? "" : "\n") + indexMapRender;
 
   output += `\n${totalSize}kB  [${buildTime}ms]`;
 
@@ -247,6 +259,7 @@ async function runCmd (argv, stdout, stderr) {
           stdout.write( 
             renderSummary(
               code,
+              map,
               assets,
               run ? "" : relative(process.cwd(), outDir),
               Date.now() - startTime,
