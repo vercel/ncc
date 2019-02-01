@@ -285,9 +285,6 @@ async function runCmd (argv, stdout, stderr) {
           if (nodeModulesDir)
             fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
           ps = require("child_process").fork(outDir + "/index.js", {
-            execArgv: map
-              ? ["-r", resolve(__dirname, "sourcemap-register")]
-              : [],
             stdio: api ? 'pipe' : 'inherit'
           });
           if (api) {

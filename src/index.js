@@ -59,8 +59,10 @@ module.exports = (
     assetPermissions: undefined
   };
   assetState.assetNames[filename] = true;
-  if (sourceMap)
+  if (sourceMap) {
     assetState.assetNames[filename + '.map'] = true;
+    assetState.assetNames['sourcemap-register.js'] = true;
+  }
   nodeLoader.setAssetState(assetState);
   relocateLoader.setAssetState(assetState);
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
@@ -342,6 +344,11 @@ module.exports = (
       // add a line offset to the sourcemap
       if (map)
         map.mappings = ";" + map.mappings;
+    }
+
+    if (map) {
+      code = `require('./sourcemap-register.js');` + code;
+      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: 0o666 };
     }
 
     return { code, map, assets };
