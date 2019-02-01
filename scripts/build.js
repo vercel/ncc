@@ -100,7 +100,7 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache.js", shebangLoaderAssets["shebang-loader.js.cache.js"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache.js", tsLoaderAssets["ts-loader.js.cache.js"]);
 
-  writeFileSync(__dirname + "/../dist/ncc/cli.js", cli, { mode: 0x777 });
+  writeFileSync(__dirname + "/../dist/ncc/cli.js", cli, { mode: 0o777 });
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
   writeFileSync(__dirname + "/../dist/ncc/typescript.js", `
 const { Module } = require('module');
