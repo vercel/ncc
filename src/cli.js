@@ -173,6 +173,9 @@ async function runCmd (argv, stdout, stderr) {
       if (args["--out"])
         errFlagNotCompatible("--out", "run");
 
+      if (args["--watch"])
+        errFlagNotCompatible("--watch", "run");
+
       outDir = resolve(
         require("os").tmpdir(),
         crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
@@ -312,19 +315,19 @@ async function runCmd (argv, stdout, stderr) {
       break;
 
     default:
-      errInvalidCommand(args._[0]);
+      errInvalidCommand(args._[0], 2);
   }
 
   function errTooManyArguments (cmd) {
-    nccError(`Error: Too many ${cmd} arguments provided\n${usage}`);
+    nccError(`Error: Too many ${cmd} arguments provided\n${usage}`, 2);
   }
 
   function errFlagNotCompatible (flag, cmd) {
-    nccError(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`);
+    nccError(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`, 2);
   }
 
   function errInvalidCommand (cmd) {
-    nccError(`Error: Invalid command "${cmd}"\n${usage}`);
+    nccError(`Error: Invalid command "${cmd}"\n${usage}`, 2);
   }
 
   // remove me when node.js makes this the default behavior
