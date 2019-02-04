@@ -35,7 +35,7 @@ function isExpressionReference(node, parent) {
 	return true;
 }
 
-const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define|require\(\s*[^'"]/;
+const relocateRegEx = /_\_dirname|_\_filename|require\.main|node-pre-gyp|bindings|define|require\(\s*[^'"]|__non_webpack_require__/;
 
 module.exports = function (code) {
   if (this.cacheable)
@@ -300,6 +300,12 @@ module.exports = function (code) {
             }
           }
         }
+        // __non_webpack_require__ -> eval('require')
+        else if (node.name === '__non_webpack_require__' && parent.type !== 'UnaryExpression') {
+          magicString.overwrite(node.start, node.end, 'eval("require")');
+          transformed = true;
+          return this.skip();
+        }
       }
       // require('bindings')('asdf')
       else if (node.type === 'CallExpression' && !isESM &&
@@ -363,17 +369,19 @@ module.exports = function (code) {
             else {
               magicString.overwrite(parent.start, parent.end, "false");
               transformed = true;
-              return;
+              return this.skip();
             }
           }
         }
         magicString.overwrite(node.object.start, node.object.end, '__non_webpack_require__');
         transformed = true;
+        return this.skip();
       }
       else if (!isESM && node.type === 'Property' && node.value.type === 'Identifier' &&
                node.value.name === 'require' && knownBindings.require.shadowDepth === 0) {
         magicString.overwrite(node.value.start, node.value.end, '__non_webpack_require__');
         transformed = true;
+        return this.skip();
       }
       else if (node.type === 'VariableDeclaration') {
         for (const decl of node.declarations) {
