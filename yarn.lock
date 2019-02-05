@@ -1091,10 +1091,10 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.1.tgz#5c85d662f76fa1d34575766c5dcd6615abcd30d8"
   integrity sha512-FZdkNBDqBRHKQ2MEbSC17xnPFOhZxeJ2YGSfr2BKf3sujG49Qe3bB+rGCwQfIaA7WHnGeGkSijX4FuBCdrzW/g==
 
-"@zeit/webpack-asset-relocator-loader@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@zeit/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.1.2.tgz#dfc9daa76d56385bc9cd04afbd17d2ec018bda86"
-  integrity sha512-Z8TWyyRCZ2bvyp4JDTkrq8hy5EnvEEOGj5tcyAuofL6D7TXymKz3tCFgQ7H71z6R5f8rn7Awum3j8Ubw4xOzwA==
+"@zeit/webpack-asset-relocator-loader@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@zeit/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.1.4.tgz#4f3ef702039460d6d8e42075310a0df97c15c673"
+  integrity sha512-/ODMfRVFrgNGcISbPqrq1bkjoXZ0LJDGQ+XMbaIG9Um3FxVz1mMpdSGV7ICBrRimLMkN44AynfmIyKpk3J5ehw==
 
 JSONStream@^1.3.1, JSONStream@^1.3.4:
   version "1.3.5"
