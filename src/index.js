@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep, dirname } = require("path");
+const { sep } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -26,7 +26,6 @@ const hashOf = name => {
 		.slice(0, 10);
 }
 
-const nodeLoader = eval('require(__dirname + "/loaders/node-loader.js")');
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 module.exports = (
@@ -45,26 +44,18 @@ module.exports = (
   process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
-  const assetNames = Object.create(null);
-  assetNames[filename] = true;
-  if (sourceMap)
-    assetNames[filename + '.map'] = true;
-  if (v8cache)
-    assetNames[filename + '.cache'] = assetNames[filename + '.cache.js'] = true;
+
+  const existingAssetNames = [filename];
+  if (sourceMap) {
+    existingAssetNames.push(filename + '.map');
+    existingAssetNames.push('sourcemap-register.js');
+  }
+  if (v8cache) {
+    existingAssetNames.push(filename + '.cache');
+    existingAssetNames.push(filename + '.cache.js');
+  }
   const resolvePlugins = [];
   let tsconfigMatchPath;
-  const assetState = {
-    assets: Object.create(null),
-    assetNames,
-    assetPermissions: undefined
-  };
-  assetState.assetNames[filename] = true;
-  if (sourceMap) {
-    assetState.assetNames[filename + '.map'] = true;
-    assetState.assetNames['sourcemap-register.js'] = true;
-  }
-  nodeLoader.setAssetState(assetState);
-  relocateLoader.setAssetState(assetState);
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
@@ -137,18 +128,13 @@ module.exports = (
     module: {
       rules: [
         {
-          test: /\.node$/,
-          use: [{
-            loader: eval('__dirname + "/loaders/node-loader.js"')
-          }]
-        },
-        {
-          test: /\.(js|mjs|tsx?)$/,
+          test: /\.(js|mjs|tsx?|node)$/,
           use: [{
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: {
-              cwd: dirname(resolvedEntry),
-              entryId: resolvedEntry
+              existingAssetNames,
+              escapeNonAnalyzableRequires: true,
+              wrapperCompatibility: true
             }
           }]
         },
@@ -180,24 +166,10 @@ module.exports = (
     plugins: [
       {
         apply(compiler) {
-          /* compiler.hooks.afterCompile.tap("ncc", compilation => {
-            compilation.cache.store('/NccPlugin/' + resolvedEntry, null, JSON.stringify(assetState.assetPermissions.permissions), (err) => {
-              if (err) console.error(err);
-            });
-          }); */
           compiler.hooks.watchRun.tap("ncc", () => {
             if (rebuildHandler)
               rebuildHandler();
           });
-          // override "not found" context to try built require first
-          compiler.hooks.compilation.tap("ncc", compilation => {
-            assetState.assetPermissions = Object.create(null);
-            /* compilation.cache.get('/NccPlugin/' + resolvedEntry, null, (err, _assetPermissions) => {
-              if (err) console.error(err);
-              assetState.assetPermissions = JSON.parse(_assetPermissions || 'null') || Object.create(null);
-            }); */
-          });
-
           compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
             function handler(parser) {
               parser.hooks.assign.for("require").intercept({
@@ -283,7 +255,7 @@ module.exports = (
 
   function finalizeHandler () {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, assetState.assetPermissions);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
     delete assets[filename];
     delete assets[filename + ".map"];
     let code = mfs.readFileSync(`/${filename}`, "utf8");
@@ -356,18 +328,18 @@ module.exports = (
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, assetPermissions, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     const curPath = curBase + "/" + path;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, assetPermissions, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetPermissions, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       output[curPath.substr(1)] = {
         source: mfsData[path],
-        permissions: assetPermissions[curPath.substr(1)]
-      }
+        permissions: getAssetPermissions(curPath.substr(1))
+      };
     }
   }
 }

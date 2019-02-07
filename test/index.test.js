@@ -29,12 +29,6 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
           fs.writeFileSync(`${testDir}/actual.js`, actual);
           throw e;
         }
-
-        // very simple asset validation in unit tests
-        if (unitTest.startsWith("asset-")) {
-          expect(Object.keys(assets).length).toBeGreaterThan(0);
-          expect(assets[Object.keys(assets)[0].source] instanceof Buffer);
-        }
       }
     );
   });

@@ -35,15 +35,6 @@ async function main() {
     }
   );
 
-  const { code: nodeLoader, assets: nodeLoaderAssets } = await ncc(
-    __dirname + "/../src/loaders/node-loader",
-    {
-      filename: "node-loader.js",
-      minify: true,
-      v8cache: true
-    }
-  );
-
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
     { filename: "relocate-loader.js", minify: true, v8cache: true }
@@ -72,7 +63,6 @@ async function main() {
   const unknownAssets = [
     ...Object.keys(cliAssets),
     ...Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/')),
-    ...Object.keys(nodeLoaderAssets),
     ...Object.keys(relocateLoaderAssets),
     ...Object.keys(shebangLoaderAssets),
     ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/')),
@@ -87,7 +77,6 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache", cliAssets["cli.js.cache"]);
   writeFileSync(__dirname + "/../dist/ncc/index.js.cache", indexAssets["index.js.cache"]);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache", sourcemapAssets["sourcemap-register.js.cache"]);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/node-loader.js.cache", nodeLoaderAssets["node-loader.js.cache"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache", relocateLoaderAssets["relocate-loader.js.cache"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache", shebangLoaderAssets["shebang-loader.js.cache"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache", tsLoaderAssets["ts-loader.js.cache"]);
@@ -95,7 +84,6 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache.js", cliAssets["cli.js.cache.js"]);
   writeFileSync(__dirname + "/../dist/ncc/index.js.cache.js", indexAssets["index.js.cache.js"]);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache.js", sourcemapAssets["sourcemap-register.js.cache.js"]);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/node-loader.js.cache.js", nodeLoaderAssets["node-loader.js.cache.js"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache.js", relocateLoaderAssets["relocate-loader.js.cache.js"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache.js", shebangLoaderAssets["shebang-loader.js.cache.js"]);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache.js", tsLoaderAssets["ts-loader.js.cache.js"]);
@@ -118,7 +106,6 @@ catch (e) {
 module.exports = typescript;
 `);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/node-loader.js", nodeLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js", tsLoader);
