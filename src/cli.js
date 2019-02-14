@@ -7,6 +7,7 @@ const rimraf = require("rimraf");
 const crypto = require("crypto");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
+const nccVersion = require('../package.json').version;
 
 const usage = `Usage: ncc <cmd> <opts>
 
@@ -99,7 +100,7 @@ function renderSummary(code, map, assets, outDir, buildTime) {
   }
   if (indexMapRender) output += (first ? "" : "\n") + indexMapRender;
 
-  output += `\n${totalSize}kB  [${buildTime}ms]`;
+  output += `\n${totalSize}kB  [${buildTime}ms] - ncc ${nccVersion}`;
 
   return output;
 }
