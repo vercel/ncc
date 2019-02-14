@@ -166,6 +166,7 @@ module.exports = (
     plugins: [
       {
         apply(compiler) {
+          compiler.hooks.compilation.tap("relocate-loader", relocateLoader.initAssetPermissionsCache);
           compiler.hooks.watchRun.tap("ncc", () => {
             if (rebuildHandler)
               rebuildHandler();
