@@ -312,16 +312,16 @@ module.exports = (
       if (map) map = {};
     }
 
+    if (map) {
+      code = `require('./sourcemap-register.js');` + code;
+      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: 0o666 };
+    }
+
     if (shebangMatch) {
       code = shebangMatch[0] + code;
       // add a line offset to the sourcemap
       if (map)
         map.mappings = ";" + map.mappings;
-    }
-
-    if (map) {
-      code = `require('./sourcemap-register.js');` + code;
-      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: 0o666 };
     }
 
     return { code, map, assets };
