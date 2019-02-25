@@ -36,6 +36,7 @@ module.exports = (
     filename = "index.js",
     minify = false,
     sourceMap = false,
+    sourceMapRegister = true,
     watch = false,
     v8cache = false
   } = {}
@@ -312,7 +313,7 @@ module.exports = (
       if (map) map = {};
     }
 
-    if (map) {
+    if (map && sourceMapRegister) {
       code = `require('./sourcemap-register.js');` + code;
       assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: 0o666 };
     }
