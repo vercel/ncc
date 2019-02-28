@@ -68,10 +68,13 @@ require('@zeit/ncc')('/path/to/input', {
   externals: ["externalpackage"],
   minify: false, // default
   sourceMap: false, // default
+  // when outputting a sourcemap, automatically include
+  // source-map-support in the output file (increases output by 32kB).
+  sourceMapRegister: true, // default
   watch: false // default
 }).then(({ code, map, assets }) => {
   console.log(code);
-  // assets is an object of asset file names to { source, permissions }
+  // Assets is an object of asset file names to { source, permissions }
   // expected relative to the output code (if any)
 })
 ```

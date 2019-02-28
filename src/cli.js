@@ -19,14 +19,15 @@ Commands:
   version
 
 Options:
-  -o, --out [file]      Output directory for build (defaults to dist)
-  -m, --minify          Minify output
-  -C, --no-cache        Skip build cache population
-  -s, --source-map      Generate source map
-  -e, --external [mod]  Skip bundling 'mod'. Can be used many times
-  -q, --quiet           Disable build summaries / non-error outputs
-  -w, --watch           Start a watched build
-  --v8-cache            Emit a build using the v8 compile cache
+  -o, --out [file]         Output directory for build (defaults to dist)
+  -m, --minify             Minify output
+  -C, --no-cache           Skip build cache population
+  -s, --source-map         Generate source map
+  --no-source-map-register Skip source-map-register source map support
+  -e, --external [mod]     Skip bundling 'mod'. Can be used many times
+  -q, --quiet              Disable build summaries / non-error outputs
+  -w, --watch              Start a watched build
+  --v8-cache               Emit a build using the v8 compile cache
 `;
 
 // support an API mode for CLI testing
@@ -126,6 +127,7 @@ async function runCmd (argv, stdout, stderr) {
       "-s": "--source-map",
       "--no-cache": Boolean,
       "-C": "--no-cache",
+      "--no-source-map-register": Boolean,
       "--quiet": Boolean,
       "-q": "--quiet",
       "--watch": Boolean,
@@ -137,11 +139,11 @@ async function runCmd (argv, stdout, stderr) {
     });
   } catch (e) {
     if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
-    nccError(e.message + `\n${usage}`);
+    nccError(e.message + `\n${usage}`, 2);
   }
 
   if (args._.length === 0)
-    nccError(`Error: No command specified\n${usage}`);
+    nccError(`Error: No command specified\n${usage}`, 2);
 
   let run = false;
   let outDir = args["--out"];
@@ -212,6 +214,7 @@ async function runCmd (argv, stdout, stderr) {
           minify: args["--minify"],
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
+          sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
           v8cache: args["--v8-cache"]
