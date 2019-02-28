@@ -103,8 +103,12 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
       throw e;
     }
     stderr.data.forEach(chunk => {
-      if (chunk.toString().startsWith('(node:')) return;
-      throw new Error(chunk.toString());
+      const chunkStr = chunk.toString();
+      if (chunkStr.indexOf('Your CPU supports instructions that this TensorFlow binary was not compiled to use') !== -1)
+        return;
+      if (chunkStr.startsWith('(node:'))
+        return;
+      throw new Error(chunkStr);
     });
     if (expectedStdout) {
       let stdoutStr = '';
