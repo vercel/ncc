@@ -38,9 +38,14 @@ for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
     const ps = fork(__dirname + (global.coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
       stdio: "pipe"
     });
+    let stderr = "", stdout = "";
+    ps.stderr.on("data", chunk => stderr += chunk.toString());
+    ps.stdout.on("data", chunk => stdout += chunk.toString());
     const expected = cliTest.expect || { code: 0 };
     const code = await new Promise(resolve => ps.on("close", resolve));
-    if ('code' in expected)
+    if (typeof expected === "function")
+      expect(expected(code, stdout, stderr)).toBe(true);
+    else if ("code" in expected)
       expect(code).toBe(expected.code);
   });
 }
@@ -98,8 +103,12 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
       throw e;
     }
     stderr.data.forEach(chunk => {
-      if (chunk.toString().startsWith('(node:')) return;
-      throw new Error(chunk.toString());
+      const chunkStr = chunk.toString();
+      if (chunkStr.indexOf('Your CPU supports instructions that this TensorFlow binary was not compiled to use') !== -1)
+        return;
+      if (chunkStr.startsWith('(node:'))
+        return;
+      throw new Error(chunkStr);
     });
     if (expectedStdout) {
       let stdoutStr = '';
