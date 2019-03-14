@@ -110,6 +110,7 @@ module.exports = typescript;
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js", tsLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/uncacheable.js", readFileSync(__dirname + "/../src/loaders/uncacheable.js"));
+  writeFileSync(__dirname + "/../dist/ncc/loaders/empty-loader.js", readFileSync(__dirname + "/../src/loaders/empty-loader.js"));
 
   // copy typescript types
   await copy(

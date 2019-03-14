@@ -131,6 +131,8 @@ module.exports = (
         {
           test: /\.(js|mjs|tsx?|node)$/,
           use: [{
+            loader: eval('__dirname + "/loaders/empty-loader.js"')
+          }, {
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: {
               existingAssetNames,
