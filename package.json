@@ -65,6 +65,7 @@
     "mongoose": "^5.3.12",
     "mysql": "^2.16.0",
     "node-gyp": "^3.8.0",
+    "npm": "^6.9.0",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
     "path-platform": "^0.11.15",
