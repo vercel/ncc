@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build-macos:
+  test-macos:
     macos:
       xcode: "9.3.0"
     working_directory: ~/macos-repo
@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Unit & integration tests
           command: yarn test
-  build-linux:
+  test-linux:
     docker:
       - image: circleci/node:10
     working_directory: ~/repo
