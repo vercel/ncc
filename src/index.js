@@ -259,6 +259,7 @@ module.exports = (
 
   function finalizeHandler () {
     const assets = Object.create(null);
+    const symlinks = Object.assign(Object.create(null), relocateLoader.getSymlinks());
     getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
     delete assets[filename];
     delete assets[filename + ".map"];
@@ -327,7 +328,7 @@ module.exports = (
         map.mappings = ";" + map.mappings;
     }
 
-    return { code, map, assets };
+    return { code, map, assets, symlinks };
   }
 };
 

@@ -221,7 +221,7 @@ async function runCmd (argv, stdout, stderr) {
         }
       );
 
-      async function handler ({ err, code, map, assets }) {
+      async function handler ({ err, code, map, assets, symlinks }) {
         // handle watch errors
         if (err) {
           stderr.write(err + '\n');
@@ -246,6 +246,11 @@ async function runCmd (argv, stdout, stderr) {
           const assetPath = outDir + "/" + asset;
           mkdirp.sync(dirname(assetPath));
           fs.writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
+        }
+
+        for (const symlink of Object.keys(symlinks)) {
+          const symlinkPath = outDir + "/" + symlink;
+          fs.symlinkSync(symlinks[symlink], symlinkPath);
         }
 
         if (!args["--quiet"]) {

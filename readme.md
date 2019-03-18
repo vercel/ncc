@@ -74,7 +74,7 @@ require('@zeit/ncc')('/path/to/input', {
   watch: false // default
 }).then(({ code, map, assets }) => {
   console.log(code);
-  // Assets is an object of asset file names to { source, permissions }
+  // Assets is an object of asset file names to { source, permissions, symlinks }
   // expected relative to the output code (if any)
 })
 ```
