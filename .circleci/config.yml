@@ -1,6 +1,27 @@
 version: 2
 jobs:
-  build:
+  test-macos:
+    macos:
+      xcode: "9.3.0"
+    working_directory: ~/macos-repo
+    steps:
+      - checkout
+      - run:
+          name: Install Node.js
+          command: curl -sSL https://install-node.now.sh/10 | sudo bash -s -- --yes
+      - run:
+          name: Installing dependencies
+          command: yarn install
+      - run:
+          name: Build unit test binary
+          command: yarn build-test-binary
+      # - run:
+      #     name: Linting
+      #     command: yarn lint
+      - run:
+          name: Unit & integration tests
+          command: yarn test
+  test-linux:
     docker:
       - image: circleci/node:10
     working_directory: ~/repo
@@ -21,3 +42,9 @@ jobs:
       - run:
           name: Coverage
           command: yarn test-coverage
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-linux
+      - test-macos
