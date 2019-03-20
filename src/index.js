@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep } = require("path");
+const { sep, join, dirname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -259,8 +259,14 @@ module.exports = (
 
   function finalizeHandler () {
     const assets = Object.create(null);
-    const symlinks = Object.assign(Object.create(null), relocateLoader.getSymlinks());
     getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
+    // filter symlinks to existing assets
+    const symlinks = Object.create(null);
+    for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
+      const resolved = join(dirname(key), value);
+      if (resolved in assets)
+        symlinks[key] = value;
+    }
     delete assets[filename];
     delete assets[filename + ".map"];
     let code = mfs.readFileSync(`/${filename}`, "utf8");
