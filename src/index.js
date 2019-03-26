@@ -10,6 +10,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
+const nccVersion = require('../package.json').version;
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -38,9 +39,13 @@ module.exports = (
     sourceMap = false,
     sourceMapRegister = true,
     watch = false,
-    v8cache = false
+    v8cache = false,
+    quiet = false
   } = {}
 ) => {
+  if (!quiet) {
+    console.log('ncc: Version ' + nccVersion);
+  }
   const resolvedEntry = resolve.sync(entry);
   process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);

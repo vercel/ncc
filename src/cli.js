@@ -147,6 +147,7 @@ async function runCmd (argv, stdout, stderr) {
 
   let run = false;
   let outDir = args["--out"];
+  const quiet = args["--quiet"];
 
   switch (args._[0]) {
     case "cache":
@@ -217,7 +218,8 @@ async function runCmd (argv, stdout, stderr) {
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
-          v8cache: args["--v8-cache"]
+          v8cache: args["--v8-cache"],
+          quiet
         }
       );
 
@@ -253,7 +255,7 @@ async function runCmd (argv, stdout, stderr) {
           fs.symlinkSync(symlinks[symlink], symlinkPath);
         }
 
-        if (!args["--quiet"]) {
+        if (!quiet) {
           stdout.write( 
             renderSummary(
               code,
