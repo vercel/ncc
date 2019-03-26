@@ -45,6 +45,7 @@ module.exports = (
 ) => {
   if (!quiet) {
     console.log('ncc: Version ' + nccVersion);
+    console.log('ncc: Compiling file ' + filename);
   }
   const resolvedEntry = resolve.sync(entry);
   process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
