@@ -68,6 +68,7 @@ require('@zeit/ncc')('/path/to/input', {
   externals: ["externalpackage"],
   minify: false, // default
   sourceMap: false, // default
+  sourceMapBasePrefix: '../' // default treats sources as output-relative
   // when outputting a sourcemap, automatically include
   // source-map-support in the output file (increases output by 32kB).
   sourceMapRegister: true, // default
