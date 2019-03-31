@@ -7,7 +7,7 @@ const rimraf = require("rimraf");
 const crypto = require("crypto");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
-const nccVersion = require('../package.json').version;
+const { version: nccVersion } = require('../package.json');
 
 const usage = `Usage: ncc <cmd> <opts>
 
