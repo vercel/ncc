@@ -323,11 +323,16 @@ module.exports = (
         assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
         map = undefined;
       }
-      code = `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
+      code =
+        `if (process.pkg) {\n` +
+          `module.exports=require('./${filename}.cache.js');\n` +
+        `} else {\n` +
+          `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
           `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
           `const script = new Script(wrap(source), { cachedData });\n` +
           `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
-          `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });`;
+          `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n` +
+        `}`;
     }
 
     if (sourceMap && sourceMapRegister) {
