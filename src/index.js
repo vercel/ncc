@@ -27,6 +27,8 @@ const hashOf = name => {
 		.slice(0, 10);
 }
 
+const defaultPermissions = 0o666;
+
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 module.exports = (
@@ -292,7 +294,6 @@ module.exports = (
           return '/webpack/' + source.substr(8);
         return sourceMapBasePrefix + source;
       });
-      map = JSON.stringify(map);
     }
 
     if (minify) {
@@ -316,21 +317,22 @@ module.exports = (
 
     if (v8cache) {
       const { Script } = require('vm');
-      assets[`${filename}.cache`] = new Script(code).createCachedData();
-      assets[`${filename}.cache.js`] = code;
-      if (map)
-        assets[filename + '.map'] = map;
+      assets[filename + '.cache'] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
+      assets[filename + '.cache.js'] = { source: code, permissions: defaultPermissions };
+      if (map) {
+        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
+        map = undefined;
+      }
       code = `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
           `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
           `const script = new Script(wrap(source), { cachedData });\n` +
           `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
           `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });`;
-      if (map) map = {};
     }
 
-    if (map && sourceMapRegister) {
+    if (sourceMap && sourceMapRegister) {
       code = `require('./sourcemap-register.js');` + code;
-      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: 0o666 };
+      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
     }
 
     if (shebangMatch) {
@@ -340,7 +342,7 @@ module.exports = (
         map.mappings = ";" + map.mappings;
     }
 
-    return { code, map, assets, symlinks };
+    return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks };
   }
 };
 

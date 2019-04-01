@@ -4,6 +4,10 @@
     expect: { code: 0 }
   },
   {
+    args: ["run", "--v8-cache", "test/integration/test.ts"],
+    expect: { code: 0 }
+  },
+  {
     args: ["run", "test/fixtures/error.js"],
     expect: { code: 1 }
   },
