@@ -38,9 +38,10 @@ module.exports = (
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
+    sourceMapBasePrefix = '../',
     watch = false,
     v8cache = false,
-    quiet = false
+    quiet = false,
   } = {}
 ) => {
   if (!quiet) {
@@ -280,17 +281,16 @@ module.exports = (
 
     if (map) {
       map = JSON.parse(map);
+      // make source map sources relative to output
       map.sources = map.sources.map(source => {
-        if (source.startsWith('webpack:///'))
-          source = source.substr(11);
         // webpack:///webpack:/// happens too for some reason
-        if (source.startsWith('webpack:///'))
+        while (source.startsWith('webpack:///'))
           source = source.substr(11);
         if (source.startsWith('./'))
           source = source.substr(2);
         if (source.startsWith('webpack/'))
-          return '/webpack:' + source.substr(8);
-        return '/' + source;
+          return '/webpack/' + source.substr(8);
+        return sourceMapBasePrefix + source;
       });
       map = JSON.stringify(map);
     }
