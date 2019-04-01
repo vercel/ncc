@@ -5,9 +5,9 @@ const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
-const fs = require("fs");
+const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
 const mkdirp = require("mkdirp");
-const nccVersion = require('../package.json').version;
+const { version: nccVersion } = require('../package.json');
 
 const usage = `Usage: ncc <cmd> <opts>
 
@@ -197,7 +197,7 @@ async function runCmd (argv, stdout, stderr) {
         require("os").tmpdir(),
         crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
       );
-      if (fs.existsSync(outDir))
+      if (existsSync(outDir))
         rimraf.sync(outDir);
       run = true;
 
@@ -238,21 +238,21 @@ async function runCmd (argv, stdout, stderr) {
           (await new Promise((resolve, reject) =>
             glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
           )).map(file =>
-            new Promise((resolve, reject) => fs.unlink(file, err => err ? reject(err) : resolve())
+            new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
           ))
         );
-        fs.writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
-        if (map) fs.writeFileSync(outDir + "/index.js.map", map);
+        writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
+        if (map) writeFileSync(outDir + "/index.js.map", map);
 
         for (const asset of Object.keys(assets)) {
           const assetPath = outDir + "/" + asset;
           mkdirp.sync(dirname(assetPath));
-          fs.writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
+          writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
         }
 
         for (const symlink of Object.keys(symlinks)) {
           const symlinkPath = outDir + "/" + symlink;
-          fs.symlinkSync(symlinks[symlink], symlinkPath);
+          symlinkSync(symlinks[symlink], symlinkPath);
         }
 
         if (!quiet) {
@@ -279,11 +279,11 @@ async function runCmd (argv, stdout, stderr) {
               nodeModulesDir = undefined;
               break;
             }
-            if (fs.existsSync(nodeModulesDir))
+            if (existsSync(nodeModulesDir))
               break;
           } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
           if (nodeModulesDir)
-            fs.symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
+            symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
           ps = require("child_process").fork(outDir + "/index.js", {
             stdio: api ? 'pipe' : 'inherit'
           });

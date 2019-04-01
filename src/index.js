@@ -10,7 +10,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
-const nccVersion = require('../package.json').version;
+const { version: nccVersion } = require('../package.json');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -45,8 +45,8 @@ module.exports = (
   } = {}
 ) => {
   if (!quiet) {
-    console.log('ncc: Version ' + nccVersion);
-    console.log('ncc: Compiling file ' + filename);
+    console.log(`ncc: Version ${nccVersion}`);
+    console.log(`ncc: Compiling file ${filename}`);
   }
   const resolvedEntry = resolve.sync(entry);
   process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
@@ -55,12 +55,12 @@ module.exports = (
 
   const existingAssetNames = [filename];
   if (sourceMap) {
-    existingAssetNames.push(filename + '.map');
+    existingAssetNames.push(`${filename}.map`);
     existingAssetNames.push('sourcemap-register.js');
   }
   if (v8cache) {
-    existingAssetNames.push(filename + '.cache');
-    existingAssetNames.push(filename + '.cache.js');
+    existingAssetNames.push(`${filename}.cache`);
+    existingAssetNames.push(`${filename}.cache.js`);
   }
   const resolvePlugins = [];
   let tsconfigMatchPath;
@@ -86,7 +86,7 @@ module.exports = (
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
       name: `ncc_${hashOf(entry)}`,
-      version: require('../package.json').version
+      version: nccVersion
     },
     optimization: {
       nodeEnv: false,
@@ -275,7 +275,7 @@ module.exports = (
         symlinks[key] = value;
     }
     delete assets[filename];
-    delete assets[filename + ".map"];
+    delete assets[`${filename}.map`];
     let code = mfs.readFileSync(`/${filename}`, "utf8");
     let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
 
@@ -305,7 +305,7 @@ module.exports = (
         sourceMap: sourceMap ? {
           content: map,
           filename,
-          url: filename + ".map"
+          url: `${filename}.map`
         } : false
       });
       // For some reason, auth0 returns "undefined"!
@@ -316,8 +316,8 @@ module.exports = (
 
     if (v8cache) {
       const { Script } = require('vm');
-      assets[filename + '.cache'] = new Script(code).createCachedData();
-      assets[filename + '.cache.js'] = code;
+      assets[`${filename}.cache`] = new Script(code).createCachedData();
+      assets[`${filename}.cache.js`] = code;
       if (map)
         assets[filename + '.map'] = map;
       code = `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
@@ -348,7 +348,7 @@ module.exports = (
 function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
-    const curPath = curBase + "/" + path;
+    const curPath = `${curBase}/${path}`;
     // directory
     if (item[""] === true) getFlatFiles(item, output, getAssetPermissions, curPath);
     // file
