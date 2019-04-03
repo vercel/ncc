@@ -34,8 +34,9 @@ Options:
 let api = false;
 if (require.main === module) {
   runCmd(process.argv.slice(2), process.stdout, process.stderr)
-  .then(() => {
-    process.exit()
+  .then((watching) => {
+    if (!watching)
+      process.exit();
   })
   .catch(e => {
     if (!e.silent)
@@ -315,6 +316,7 @@ async function runCmd (argv, stdout, stderr) {
           startTime = Date.now();
           stdout.write('File change, rebuilding...\n');
         });
+        return true;
       } else {
         return ncc.then(handler);
       }

@@ -226,18 +226,17 @@ module.exports = (
   else {
     let cachedResult;
     watcher = compiler.watch({}, (err, stats) => {
-      if (err) return reject(err);
       if (err)
         return watchHandler({ err });
       if (stats.hasErrors())
         return watchHandler({ err: stats.toString() });
-      const { code, map, assets } = finalizeHandler();
+      const returnValue = finalizeHandler();
       // clear output file system
       mfs.data = {};
       if (watchHandler)
-        watchHandler({ code, map, assets, err: null });
+        watchHandler(returnValue);
       else
-        cachedResult = { code, map, assets};
+        cachedResult = returnValue;
     });
     let closed = false;
     return {
