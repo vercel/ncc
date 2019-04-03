@@ -24,5 +24,10 @@
   {
     args: ["run", "--watch", "test/integration/test.ts"],
     expect: { code: 2 }
+  },
+  {
+    args: ["build", "-o", "tmp", "--watch", "test/fixtures/no-dep.js"],
+    timeout: 500,
+    expect: { timeout: true }
   }
 ]
