@@ -26,7 +26,7 @@
     expect: { code: 2 }
   },
   {
-    args: ["build", "--watch", "test/fixtures/no-dep.js"],
+    args: ["build", "-o", "tmp", "--watch", "test/fixtures/no-dep.js"],
     timeout: 500,
     expect: { timeout: true }
   }
