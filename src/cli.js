@@ -196,7 +196,7 @@ async function runCmd (argv, stdout, stderr) {
 
       outDir = resolve(
         require("os").tmpdir(),
-        crypto.createHash('md5').digest(resolve(args._[1] || ".")).toString('hex')
+        crypto.createHash('md5').update(resolve(args._[1] || ".")).digest('hex')
       );
       if (existsSync(outDir))
         rimraf.sync(outDir);
