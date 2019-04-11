@@ -58,10 +58,13 @@ class CustomWatchFileSystem {
     this.dirs = new Set(dirs);
     this.missing = new Set(missing);
 
+    // empty object indicates "unknown" timestamp
+    // (that is, not cached)
     for (const item of files)
       this.timestamps.set(item, {});
     for (const item of dirs)
       this.timestamps.set(item, {});
+    // null represents "no file"
     for (const item of missing)
       this.timestamps.set(item, null);
 
