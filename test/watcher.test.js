@@ -8,7 +8,7 @@ const fs = require('fs');
 // - https://www.npmjs.com/package/watchpack
 
 class CustomWatchFileSystem {
-	constructor(watchStart, watchEnd) {
+  constructor(watchStart, watchEnd) {
     this.closed = false;
     // paused allows the watchers to stay open for the next build
     this.paused = false;
@@ -44,16 +44,16 @@ class CustomWatchFileSystem {
         this.inputFileSystem.purge(file);
 
       this.changeCallback(
-				null,
-				this.timestamps,
-				this.timestamps,
-				removed
+        null,
+        this.timestamps,
+        this.timestamps,
+        removed
       );
     }
   }
 
   // This is called on every rebuild
-	watch (files, dirs, missing, startTime, options, changeCallback) {
+  watch (files, dirs, missing, startTime, options, changeCallback) {
     this.files = new Set(files);
     this.dirs = new Set(dirs);
     this.missing = new Set(missing);
@@ -74,18 +74,18 @@ class CustomWatchFileSystem {
     });
 		
 		return {
-			close: () => {
-				this.watchEnd();
-			},
-			pause: () => {
-				this.paused = true;
-			},
-			getFileTimestamps: () => {
-				return this.timestamps;
-			},
-			getContextTimestamps: () => {
-				return this.timestamps;
-			}
+      close: () => {
+        this.watchEnd();
+      },
+      pause: () => {
+        this.paused = true;
+      },
+      getFileTimestamps: () => {
+        return this.timestamps;
+      },
+      getContextTimestamps: () => {
+        return this.timestamps;
+      }
 		};
 	}
 }
