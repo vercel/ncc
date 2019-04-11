@@ -73,7 +73,7 @@ class CustomWatchFileSystem {
       this.watchStart(files, dirs, missing);
     });
 		
-		return {
+    return {
       close: () => {
         this.watchEnd();
       },
@@ -86,8 +86,8 @@ class CustomWatchFileSystem {
       getContextTimestamps: () => {
         return this.timestamps;
       }
-		};
-	}
+    };
+  }
 }
 
 jest.setTimeout(20000);
