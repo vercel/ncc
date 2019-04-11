@@ -1,5 +1,6 @@
 const path = require('path');
-const ncc = (global.coverage || true) ? require("../src/index") : require("../");
+const ncc = global.coverage ? require("../src/index") : require("../");
+const fs = require('fs');
 
 // Based on the NodeWatchFileSystem class at:
 // - https://github.com/webpack/webpack/blob/master/lib/node/NodeWatchFileSystem.js
@@ -99,8 +100,10 @@ it('Should support custom watch API', async () => {
       expect(files.length).toBeGreaterThan(100);
       expect(dirs.length).toBeGreaterThan(0);
       expect(missing.length).toBeGreaterThan(100);
-      if (buildCnt === 1) {
+      if (buildCnt < 3) {
         setTimeout(() => {
+          // NOTE: We actually have to make the change for the rebuild to happen!
+          fs.writeFileSync(buildFile, fs.readFileSync(buildFile).toString() + '\n');
           watcher.triggerChanges([buildFile], []);
         }, 100);
       }
@@ -121,7 +124,10 @@ it('Should support custom watch API', async () => {
       }
       else {
         console.timeEnd('Watched Build');
+      }
+      if (buildCnt === 3) {
         close();
+        fs.writeFileSync(buildFile, fs.readFileSync(buildFile).toString().slice(0, -2));
       }
     });
     rebuild(() => {
