@@ -224,6 +224,28 @@ module.exports = (
     .then(finalizeHandler);
   }
   else {
+    if (typeof watch === 'object') {
+      if (!watch.watch)
+        throw new Error('Watcher class must be a valid Webpack WatchFileSystem class instance (https://github.com/webpack/webpack/blob/master/lib/node/NodeWatchFileSystem.js)');
+      compiler.watchFileSystem = watch;
+      watch.inputFileSystem = compiler.inputFileSystem;
+    }
+    else {
+      // Used for inspecting Webpack watcher API
+      /*
+      const w = compiler.watchFileSystem.watch;
+      compiler.watchFileSystem.watch = function (files, dirs, missing, startTime, options, callback, callbackUndelayed) {
+        const cb = function () {
+          const timestamps = {};
+          for (const [key, value] of arguments[1].entries())
+            timestamps[key] = value;
+          console.log(JSON.stringify(timestamps));
+          callback.apply(this, arguments);
+        };
+        return w.call(this, files, dirs, missing, startTime, options, cb, callbackUndelayed);
+      };
+      */
+    }
     let cachedResult;
     watcher = compiler.watch({}, (err, stats) => {
       if (err)
@@ -232,7 +254,7 @@ module.exports = (
         return watchHandler({ err: stats.toString() });
       const returnValue = finalizeHandler();
       // clear output file system
-      mfs.data = {};
+      // mfs.data = {};
       if (watchHandler)
         watchHandler(returnValue);
       else
