@@ -237,8 +237,6 @@ module.exports = (
       if (stats.hasErrors())
         return watchHandler({ err: stats.toString() });
       const returnValue = finalizeHandler();
-      // clear output file system
-      mfs.data = {};
       if (watchHandler)
         watchHandler(returnValue);
       else
