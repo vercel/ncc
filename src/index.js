@@ -94,7 +94,7 @@ module.exports = (
       nodeEnv: false,
       minimize: false
     },
-    devtool: sourceMap ? "cheap-source-map" : false,
+    devtool: sourceMap ? "source-map" : false,
     mode: "production",
     target: "node",
     output: {

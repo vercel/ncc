@@ -1,4 +1,4 @@
-module.exports = function (input) {
+module.exports = function (input, map) {
   this.cacheable(false);
-  return input;
+  return this.callback(null, input, map);
 };

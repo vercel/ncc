@@ -14,7 +14,7 @@ function getPackageBase(id) {
 
 const emptyModules = { 'uglify-js': true };
 
-module.exports = function (input) {
+module.exports = function (input, map) {
   const id = this.resourcePath;
   const pkgBase = getPackageBase(id);
   if (pkgBase) {
@@ -27,5 +27,5 @@ module.exports = function (input) {
       }
     }
   }
-  return input;
+  this.callback(null, input, map);
 };
