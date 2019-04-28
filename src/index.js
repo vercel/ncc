@@ -44,6 +44,7 @@ module.exports = (
     watch = false,
     v8cache = false,
     quiet = false,
+    debugLog = false
   } = {}
 ) => {
   if (!quiet) {
@@ -146,7 +147,8 @@ module.exports = (
             options: {
               existingAssetNames,
               escapeNonAnalyzableRequires: true,
-              wrapperCompatibility: true
+              wrapperCompatibility: true,
+              debugLog
             }
           }]
         },
