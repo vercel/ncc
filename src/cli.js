@@ -118,6 +118,8 @@ async function runCmd (argv, stdout, stderr) {
   let args;
   try {
     args = require("arg")({
+      "--debug": Boolean,
+      "-d": "--debug",
       "--external": [String],
       "-e": "--external",
       "--out": String,
@@ -213,6 +215,7 @@ async function runCmd (argv, stdout, stderr) {
       const ncc = require("./index.js")(
         buildFile,
         {
+          debugLog: args["--debug"],
           minify: args["--minify"],
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
