@@ -74,7 +74,8 @@ require('@zeit/ncc')('/path/to/input', {
   sourceMapRegister: true, // default
   watch: false, // default
   v8cache: false, // default
-  quiet: false // default
+  quiet: false, // default
+  debugLog = false // default
 }).then(({ code, map, assets }) => {
   console.log(code);
   // Assets is an object of asset file names to { source, permissions, symlinks }
