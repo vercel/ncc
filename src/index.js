@@ -217,8 +217,10 @@ module.exports = (
         if (err) return reject(err);
         compiler.close(err => {
           if (err) return reject(err);
-          if (stats.hasErrors())
-            return reject(new Error(stats.toString()));
+          if (stats.hasErrors()) {
+            const errLog = stats.compilation.errors.map(err => err.message).join('\n');
+            return reject(new Error(errLog));
+          }
           resolve();
         });
       });
