@@ -31,9 +31,15 @@
     expect: { timeout: true }
   },
   {
-    args: ["run", "test/fixtures/fail.ts"],
+    args: ["run", "test/fixtures/ts-error1/fail.ts"],
     expect (code, stdout, stderr) {
       return code === 1 && stderr.toString().indexOf('fail.ts:2:1') !== -1;
+    }
+  },
+  {
+    args: ["run", "test/fixtures/ts-error2/ts-error.ts"],
+    expect (code, stdout, stderr) {
+      return code === 1 && stderr.toString().indexOf('ts-error.ts(3,16)') !== -1 && stderr.toString().split('\n').length < 10;
     }
   }
 ]
