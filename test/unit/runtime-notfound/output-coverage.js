@@ -33,7 +33,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(610);
+/******/ 		return __webpack_require__(155);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -42,22 +42,43 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 610:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ 97:
+/***/ (function() {
 
-"use strict";
-
-exports.__esModule = true;
-var _module_1 = __webpack_require__(816);
-console.log(_module_1["default"]);
+const id = "./not-foud2.js";
+if (id.startsWith('./') || id.startsWith('../')) {
+  const e = new Error('Cannot find module "' + id + '".');
+  e.code = 'MODULE_NOT_FOUND';
+  throw e;
+}
+else {
+  eval("require")(id);
+}
 
 
 /***/ }),
 
-/***/ 816:
-/***/ (function(module) {
+/***/ 155:
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-module.exports = require("@module");
+__webpack_require__(872);
+__webpack_require__(97);
+
+/***/ }),
+
+/***/ 872:
+/***/ (function() {
+
+const id = "./not-found.js";
+if (id.startsWith('./') || id.startsWith('../')) {
+  const e = new Error('Cannot find module "' + id + '".');
+  e.code = 'MODULE_NOT_FOUND';
+  throw e;
+}
+else {
+  eval("require")(id);
+}
+
 
 /***/ })
 

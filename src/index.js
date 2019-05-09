@@ -79,6 +79,21 @@ module.exports = (
     }
   } catch (e) {}
 
+  resolvePlugins.push({
+    apply(resolver) {
+      const resolve = resolver.resolve;
+      resolver.resolve = function (context, path, request, resolveContext, callback) {
+        resolve.call(resolver, context, path, request, resolveContext, function (err, result) {
+          if (!err) return callback(null, result);
+          if (!err.missing || !err.missing.length)
+            return callback(err);
+          // make not found errors runtime errors
+          callback(null, __dirname + '/@@notfound.js' + '?' + request);
+        });
+      };
+    }
+  });
+
   const externalSet = new Set(externals);
 
   let watcher, watchHandler, rebuildHandler;
@@ -143,6 +158,12 @@ module.exports = (
     module: {
       rules: [
         {
+          test: /@@notfound\.js$/,
+          use: [{
+            loader: eval('__dirname + "/loaders/notfound-loader.js"')
+          }]
+        },
+        {
           test: /\.(js|mjs|tsx?|node)$/,
           use: [{
             loader: eval('__dirname + "/loaders/empty-loader.js"')
@@ -184,6 +205,36 @@ module.exports = (
     plugins: [
       {
         apply(compiler) {
+          // override "not found" context to try built require first
+          compiler.hooks.compilation.tap("ncc", compilation => {
+            compilation.moduleTemplates.javascript.hooks.render.tap(
+              "ncc",
+              (
+                moduleSourcePostModule,
+                module,
+                options,
+                dependencyTemplates
+              ) => {
+                if (
+                  module._contextDependencies &&
+                  moduleSourcePostModule._value.match(
+                    /webpackEmptyAsyncContext|webpackEmptyContext/
+                  )
+                ) {
+                  // ensure __webpack_require__ is added to wrapper
+                  module.type = 'custom';
+                  return moduleSourcePostModule._value.replace(
+                    "var e = new Error",
+                    `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
+                    `  return __webpack_require__(req);\n` +
+                    `try { return require(req) }\n` + 
+                    `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
+                    `var e = new Error`
+                  );
+                }
+              }
+            );
+          });
           compiler.hooks.compilation.tap("relocate-loader", relocateLoader.initAssetPermissionsCache);
           compiler.hooks.watchRun.tap("ncc", () => {
             if (rebuildHandler)
