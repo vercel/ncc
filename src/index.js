@@ -133,27 +133,6 @@ module.exports = (
     node: false,
     externals: async ({ context, request }, callback) => {
       if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
-      if (request[0] === "." && (request[1] === "/" || request[1] === "." && request[2] === "/")) {
-        if (request.startsWith("./node_modules/")) request = request.substr(15);
-        else if (request.startsWith("../node_modules/")) request = request.substr(16);
-        else return callback();
-      }
-      if (request[0] === "/" || /^[a-z]:\\/i.test(request) || nodeBuiltins.has(request) ||
-          tsconfigMatchPath && tsconfigMatchPath(request, undefined, undefined, SUPPORTED_EXTENSIONS))
-        return callback();
-      const pkgNameMatch = request.match(pkgNameRegEx);
-      if (pkgNameMatch) request = pkgNameMatch[0];
-      let pkgPath = context + sep + 'node_modules' + sep + request;
-      do {
-        if (await new Promise((resolve, reject) =>
-          compiler.inputFileSystem.stat(pkgPath, (err, stats) =>
-            err && err.code !== 'ENOENT' ? reject(err) : resolve(stats ? stats.isDirectory() : false)
-          )
-        ))
-          return callback();
-      } while (pkgPath.length > (pkgPath = pkgPath.substr(0, pkgPath.lastIndexOf(sep, pkgPath.length - 15 - request.length)) + sep + 'node_modules' + sep + request).length);
-      console.error(`ncc: Module directory "${context}" attempted to require "${request}" but could not be resolved, assuming external.`);
-      return callback(null, `commonjs ${request}`);
     },
     module: {
       rules: [
