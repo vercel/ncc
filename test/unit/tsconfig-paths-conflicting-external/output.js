@@ -33,7 +33,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(266);
+/******/ 		return __webpack_require__(513);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -42,21 +42,30 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 250:
-/***/ (function(module) {
-
-module.exports = require("@module");
-
-/***/ }),
-
-/***/ 266:
+/***/ 513:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(250);
+var _module_1 = __webpack_require__(545);
 console.log(_module_1["default"]);
+
+
+/***/ }),
+
+/***/ 545:
+/***/ (function() {
+
+const id = "@module";
+if (id.startsWith('./') || id.startsWith('../')) {
+  const e = new Error('Cannot find module "' + id + '".');
+  e.code = 'MODULE_NOT_FOUND';
+  throw e;
+}
+else {
+  eval("require")(id);
+}
 
 
 /***/ })
