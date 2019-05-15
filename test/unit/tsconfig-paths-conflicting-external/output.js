@@ -48,16 +48,25 @@ module.exports =
 "use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(816);
+var _module_1 = __webpack_require__(811);
 console.log(_module_1["default"]);
 
 
 /***/ }),
 
-/***/ 816:
-/***/ (function(module) {
+/***/ 811:
+/***/ (function() {
 
-module.exports = require("@module");
+const id = "@module";
+if (id.startsWith('./') || id.startsWith('../')) {
+  const e = new Error('Cannot find module "' + id + '".');
+  e.code = 'MODULE_NOT_FOUND';
+  throw e;
+}
+else {
+  eval("require")(id);
+}
+
 
 /***/ })
 

@@ -133,6 +133,7 @@ module.exports = (
     node: false,
     externals: async ({ context, request }, callback) => {
       if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
+      return callback();
     },
     module: {
       rules: [

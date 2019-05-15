@@ -62,13 +62,12 @@ async function main() {
   // detect unexpected asset emissions from core build
   const unknownAssets = [
     ...Object.keys(cliAssets),
-    ...Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/')),
+    ...Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js'),
     ...Object.keys(relocateLoaderAssets),
     ...Object.keys(shebangLoaderAssets),
-    ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/')),
+    ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')),
     ...Object.keys(sourcemapAssets)
   ].filter(asset => !asset.endsWith('.js.cache') && !asset.endsWith('.cache.js'));
-  
   if (unknownAssets.length) {
     console.error("New assets are being emitted by the core build");
     console.log(unknownAssets);
