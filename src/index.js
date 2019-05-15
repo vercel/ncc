@@ -95,7 +95,8 @@ module.exports = (
       nodeEnv: false,
       minimize: false,
       moduleIds: 'deterministic',
-      chunkIds: 'deterministic'
+      chunkIds: 'deterministic',
+      mangleExports: false
     },
     devtool: sourceMap ? "source-map" : false,
     mode: "production",
