@@ -91,9 +91,13 @@ module.exports = (
       name: `ncc_${hashOf(entry)}`,
       version: nccVersion
     },
+    amd: false,
     optimization: {
       nodeEnv: false,
-      minimize: false
+      minimize: false,
+      moduleIds: 'deterministic',
+      chunkIds: 'deterministic',
+      mangleExports: false
     },
     devtool: sourceMap ? "source-map" : false,
     mode: "production",
