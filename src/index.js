@@ -91,6 +91,7 @@ module.exports = (
       name: `ncc_${hashOf(entry)}`,
       version: nccVersion
     },
+    amd: false,
     optimization: {
       nodeEnv: false,
       minimize: false,
