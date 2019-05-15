@@ -33,7 +33,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(519);
+/******/ 		return __webpack_require__(266);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -42,22 +42,22 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 519:
+/***/ 250:
+/***/ (function(module) {
+
+module.exports = require("@module");
+
+/***/ }),
+
+/***/ 266:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(816);
+var _module_1 = __webpack_require__(250);
 console.log(_module_1["default"]);
 
-
-/***/ }),
-
-/***/ 816:
-/***/ (function(module) {
-
-module.exports = require("@module");
 
 /***/ })
 
