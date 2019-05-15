@@ -33,7 +33,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(155);
+/******/ 		return __webpack_require__(226);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -42,7 +42,15 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 97:
+/***/ 226:
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+
+__webpack_require__(590);
+__webpack_require__(548);
+
+/***/ }),
+
+/***/ 548:
 /***/ (function() {
 
 const id = "./not-foud2.js";
@@ -58,15 +66,7 @@ else {
 
 /***/ }),
 
-/***/ 155:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
-
-__webpack_require__(872);
-__webpack_require__(97);
-
-/***/ }),
-
-/***/ 872:
+/***/ 590:
 /***/ (function() {
 
 const id = "./not-found.js";
