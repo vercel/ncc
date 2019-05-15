@@ -66,7 +66,6 @@ module.exports = (
     existingAssetNames.push(`${filename}.cache.js`);
   }
   const resolvePlugins = [];
-  let tsconfigMatchPath;
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
