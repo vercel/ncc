@@ -93,7 +93,9 @@ module.exports = (
     },
     optimization: {
       nodeEnv: false,
-      minimize: false
+      minimize: false,
+      moduleIds: 'deterministic',
+      chunkIds: 'deterministic'
     },
     devtool: sourceMap ? "source-map" : false,
     mode: "production",
