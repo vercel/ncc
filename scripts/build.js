@@ -59,7 +59,7 @@ async function main() {
   // detect unexpected asset emissions from core build
   const unknownAssets = [
     ...Object.keys(cliAssets),
-    ...Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js'),
+    ...Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js' && asset !== 'sourcemap-register.js'),
     ...Object.keys(relocateLoaderAssets),
     ...Object.keys(shebangLoaderAssets),
     ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')),
