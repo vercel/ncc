@@ -1,6 +1,6 @@
-type Context = import('webpack').loader.LoaderContext;
+type LoaderContext = import('webpack').loader.LoaderContext;
 
-module.exports = function (this: Context, input: string, map: any) {
+module.exports = function (this: LoaderContext, input: string, map: any) {
   this.cacheable(false);
   return this.callback(null, input, map);
 };
