@@ -378,7 +378,7 @@ module.exports = (
 
     if (sourceMap && sourceMapRegister) {
       code = `require('./sourcemap-register.js');` + code;
-      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
+      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js"), permissions: defaultPermissions };
     }
 
     if (shebangMatch) {
