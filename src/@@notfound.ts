@@ -1,6 +1,6 @@
 const id = 'UNKNOWN';
 if (id.startsWith('./') || id.startsWith('../')) {
-  const e = new Error('Cannot find module "' + id + '".');
+  const e: NodeJS.ErrnoException = new Error('Cannot find module "' + id + '".');
   e.code = 'MODULE_NOT_FOUND';
   throw e;
 }

@@ -1,15 +1,19 @@
-const resolve = require("resolve");
-const fs = require("graceful-fs");
-const crypto = require("crypto");
-const { sep, join, dirname } = require("path");
-const webpack = require("webpack");
-const MemoryFS = require("memory-fs");
-const terser = require("terser");
-const tsconfigPaths = require("tsconfig-paths");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
-const shebangRegEx = require('./utils/shebang');
-const { pkgNameRegEx } = require("./utils/get-package-base");
-const nccCacheDir = require("./utils/ncc-cache-dir");
+import resolve from "resolve";
+import fs from "graceful-fs";
+import crypto from "crypto";
+import { join, dirname } from "path";
+import webpack from "webpack";
+import MemoryFS from "memory-fs";
+import terser from "terser";
+import tsconfigPaths from "tsconfig-paths";
+import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
+import { shebangRegEx } from './utils/shebang';
+import { getCacheDir } from "./utils/ncc-cache-dir";
+import * as tsconfigplugin from "tsconfig-paths-webpack-plugin/lib/plugin";
+import { NccOptions } from './types/NccOptions';
+import { NccResult, NccAssets, NccSymlinks } from './types/NccResult';
+import { NccWatchHandler } from './types/NccWatchHandler';
+import { NccRebuildHandler } from "./types/NccRebuildHandler";
 const { version: nccVersion } = require('../package.json');
 
 // support glob graceful-fs
@@ -19,7 +23,7 @@ const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "mod
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
-const hashOf = name => {
+const hashOf = (name: string) => {
   return crypto
 		.createHash("md4")
 		.update(name)
@@ -29,11 +33,13 @@ const hashOf = name => {
 
 const defaultPermissions = 0o666;
 
-const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
+const relocateLoader: any = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
-module.exports = (
-  entry,
-  {
+export const build = (
+  entry: string,
+  options: NccOptions = {}
+) => {
+  const {
     cache,
     externals = [],
     filename = "index.js",
@@ -45,8 +51,8 @@ module.exports = (
     v8cache = false,
     quiet = false,
     debugLog = false
-  } = {}
-) => {
+  } = options;
+
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
     console.log(`ncc: Compiling file ${filename}`);
@@ -65,7 +71,7 @@ module.exports = (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache.js`);
   }
-  const resolvePlugins = [];
+  const resolvePlugins: tsconfigplugin.ResolverPlugin[] = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
@@ -79,10 +85,10 @@ module.exports = (
   } catch (e) {}
 
   resolvePlugins.push({
-    apply(resolver) {
+    apply(resolver: any) {
       const resolve = resolver.resolve;
-      resolver.resolve = function (context, path, request, resolveContext, callback) {
-        resolve.call(resolver, context, path, request, resolveContext, function (err, result) {
+      resolver.resolve = function (context: any, path: string, request: tsconfigplugin.Request, resolveContext: tsconfigplugin.ResolveContext, callback: any) {
+        resolve.call(resolver, context, path, request, resolveContext, function (err: any, result: any) {
           if (!err) return callback(null, result);
           if (!err.missing || !err.missing.length)
             return callback(err);
@@ -95,13 +101,13 @@ module.exports = (
 
   const externalSet = new Set(externals);
 
-  let watcher, watchHandler, rebuildHandler;
+  let watcher: webpack.Compiler.Watching, watchHandler: NccWatchHandler, rebuildHandler: NccRebuildHandler;
 
   const compiler = webpack({
     entry,
     cache: cache === false ? undefined : {
       type: "filesystem",
-      cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
+      cacheDirectory: typeof cache === 'string' ? cache : getCacheDir(),
       name: `ncc_${hashOf(entry)}`,
       version: nccVersion
     },
@@ -130,7 +136,7 @@ module.exports = (
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async ({ context, request }, callback) => {
+    externals: async ({ request }: { request: string }, callback: (foo?: any, message?: string) => void) => {
       if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
       return callback();
     },
@@ -183,25 +189,23 @@ module.exports = (
     },
     plugins: [
       {
-        apply(compiler) {
+        apply(compiler: webpack.Compiler) {
           // override "not found" context to try built require first
-          compiler.hooks.compilation.tap("ncc", compilation => {
+          compiler.hooks.compilation.tap("ncc", (compilation: webpack.compilation.Compilation) => {
             compilation.moduleTemplates.javascript.hooks.render.tap(
               "ncc",
               (
-                moduleSourcePostModule,
-                module,
-                options,
-                dependencyTemplates
+                moduleSourcePostModule: any,
+                mod: any,
               ) => {
                 if (
-                  module._contextDependencies &&
+                  mod._contextDependencies &&
                   moduleSourcePostModule._value.match(
                     /webpackEmptyAsyncContext|webpackEmptyContext/
                   )
                 ) {
                   // ensure __webpack_require__ is added to wrapper
-                  module.type = 'custom';
+                  mod.type = 'custom';
                   return moduleSourcePostModule._value.replace(
                     "var e = new Error",
                     `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
@@ -219,10 +223,10 @@ module.exports = (
             if (rebuildHandler)
               rebuildHandler();
           });
-          compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
-            function handler(parser) {
+          compiler.hooks.normalModuleFactory.tap("ncc", (NormalModuleFactory: webpack.compilation.NormalModuleFactory) => {
+            function handler(parser: webpack.ParserOptions) {
               parser.hooks.assign.for("require").intercept({
-                register: tapInfo => {
+                register: (tapInfo: any) => {
                   if (tapInfo.name !== "CommonJsPlugin") {
                     return tapInfo;
                   }
@@ -247,12 +251,12 @@ module.exports = (
   compiler.outputFileSystem = mfs;
   if (!watch) {
     return new Promise((resolve, reject) => {
-      compiler.run((err, stats) => {
+      compiler.run((err: Error | undefined, stats: webpack.Stats) => {
         if (err) return reject(err);
-        compiler.close(err => {
+        compiler.close((err: Error) => {
           if (err) return reject(err);
           if (stats.hasErrors()) {
-            const errLog = stats.compilation.errors.map(err => err.message).join('\n');
+            const errLog = stats.compilation.errors.map((err: Error) => err.message).join('\n');
             return reject(new Error(errLog));
           }
           resolve();
@@ -268,8 +272,8 @@ module.exports = (
       compiler.watchFileSystem = watch;
       watch.inputFileSystem = compiler.inputFileSystem;
     }
-    let cachedResult;
-    watcher = compiler.watch({}, (err, stats) => {
+    let cachedResult: NccResult | null;
+    watcher = compiler.watch({}, (err: Error, stats: webpack.Stats) => {
       if (err)
         return watchHandler({ err });
       if (stats.hasErrors())
@@ -288,9 +292,9 @@ module.exports = (
         if (closed)
           throw new Error('Watcher already closed.');
         closed = true;
-        watcher.close();
+        watcher.close(() => {});
       },
-      handler (handler) {
+      handler (handler: NccWatchHandler) {
         if (watchHandler)
           throw new Error('Watcher handler already provided.');
         watchHandler = handler;
@@ -299,7 +303,7 @@ module.exports = (
           cachedResult = null;
         }
       },
-      rebuild (handler) {
+      rebuild (handler: NccRebuildHandler) {
         if (rebuildHandler)
           throw new Error('Rebuild handler already provided.');
         rebuildHandler = handler;
@@ -307,25 +311,25 @@ module.exports = (
     };
   }
 
-  function finalizeHandler () {
-    const assets = Object.create(null);
+  function finalizeHandler (): NccResult {
+    const assets: NccAssets = Object.create(null);
     getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
     // filter symlinks to existing assets
-    const symlinks = Object.create(null);
-    for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
+    const symlinks: NccSymlinks = Object.create(null);
+    for (const [key, value] of Object.entries<string>(relocateLoader.getSymlinks())) {
       const resolved = join(dirname(key), value);
       if (resolved in assets)
         symlinks[key] = value;
     }
     delete assets[filename];
     delete assets[`${filename}.map`];
-    let code = mfs.readFileSync(`/${filename}`, "utf8");
-    let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
+    let code: string = mfs.readFileSync(`/${filename}`, "utf8");
+    let map: any = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
 
     if (map) {
       map = JSON.parse(map);
       // make source map sources relative to output
-      map.sources = map.sources.map(source => {
+      map.sources = map.sources.map((source: string) => {
         // webpack:///webpack:/// happens too for some reason
         while (source.startsWith('webpack:///'))
           source = source.substr(11);
@@ -393,7 +397,7 @@ module.exports = (
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
+function getFlatFiles(mfsData: any, output: NccAssets, getAssetPermissions: (path: string) => number, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     const curPath = `${curBase}/${path}`;

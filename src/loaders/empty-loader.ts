@@ -1,20 +1,11 @@
 // returns the base-level package folder based on detecting "node_modules"
 // package name boundaries
-const pkgNameRegEx = /^(@[^\\\/]+[\\\/])?[^\\\/]+/;
-function getPackageBase(id) {
-  const pkgIndex = id.lastIndexOf('node_modules');
-  if (pkgIndex !== -1 &&
-      (id[pkgIndex - 1] === '/' || id[pkgIndex - 1] === '\\') &&
-      (id[pkgIndex + 12] === '/' || id[pkgIndex + 12] === '\\')) {
-    const pkgNameMatch = id.substr(pkgIndex + 13).match(pkgNameRegEx);
-    if (pkgNameMatch)
-      return id.substr(0, pkgIndex + 13 + pkgNameMatch[0].length);
-  }
-}
+import { getPackageBase } from '../utils/get-package-base';
+type Context = import('webpack').loader.LoaderContext;
 
 const emptyModules = { 'uglify-js': true };
 
-module.exports = function (input, map) {
+module.exports = function (this: Context, input: string, map: any) {
   const id = this.resourcePath;
   const pkgBase = getPackageBase(id);
   if (pkgBase) {
@@ -28,4 +19,5 @@ module.exports = function (input, map) {
     }
   }
   this.callback(null, input, map);
+  return undefined;
 };

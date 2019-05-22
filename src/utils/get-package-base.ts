@@ -1,7 +1,7 @@
 // returns the base-level package folder based on detecting "node_modules"
 // package name boundaries
 const pkgNameRegEx = /^(@[^\\\/]+[\\\/])?[^\\\/]+/;
-module.exports = function (id) {
+export function getPackageBase(id: string) {
   const pkgIndex = id.lastIndexOf('node_modules');
   if (pkgIndex !== -1 &&
       (id[pkgIndex - 1] === '/' || id[pkgIndex - 1] === '\\') &&
@@ -10,6 +10,5 @@ module.exports = function (id) {
     if (pkgNameMatch)
       return id.substr(0, pkgIndex + 13 + pkgNameMatch[0].length);
   }
-};
-
-module.exports.pkgNameRegEx = pkgNameRegEx;
+  return undefined;
+}

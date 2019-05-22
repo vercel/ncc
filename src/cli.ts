@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep } = require("path");
-const glob = require("glob");
-const shebangRegEx = require("./utils/shebang");
-const rimraf = require("rimraf");
-const crypto = require("crypto");
-const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
-const mkdirp = require("mkdirp");
+import { resolve, relative, dirname, sep } from "path";
+import glob from "glob";
+import { shebangRegEx } from './utils/shebang';
+import rimraf from "rimraf";
+import crypto from "crypto";
+import { writeFileSync, unlink, existsSync, symlinkSync } from "fs";
+import mkdirp from "mkdirp";
+import { getCacheDir } from "./utils/ncc-cache-dir";
+import { tmpdir } from "os";
+import { fork, ChildProcess, StdioOptions } from "child_process";
+import arg from "arg";
+import { build as nccBuild } from "./index";
+import { NccResult } from "./types/NccResult";
 const { version: nccVersion } = require('../package.json');
 
 const usage = `Usage: ncc <cmd> <opts>
@@ -71,10 +77,10 @@ function renderSummary(code, map, assets, outDir, buildTime) {
 
   const sizePadding = totalSize.toString().length;
 
-  let indexRender = `${codeSize
+  let indexRender: string | null = `${codeSize
     .toString()
     .padStart(sizePadding, " ")}kB  ${outDir}${"index.js"}`;
-  let indexMapRender = map ? `${mapSize
+  let indexMapRender : string | null = map ? `${mapSize
     .toString()
     .padStart(sizePadding, " ")}kB  ${outDir}${"index.js.map"}` : '';
 
@@ -107,17 +113,16 @@ function renderSummary(code, map, assets, outDir, buildTime) {
   return output;
 }
 
-function nccError(msg, exitCode = 1) {
-  const err = new Error(msg);
+function nccError(msg: string, exitCode = 1) {
+  const err: any = new Error(msg);
   err.nccError = true;
   err.exitCode = exitCode;
-  throw err;
+  return err;
 }
 
-async function runCmd (argv, stdout, stderr) {
-  let args;
+function parseArgs(argv: string[]) {
   try {
-    args = require("arg")({
+    return arg({
       "--debug": Boolean,
       "-d": "--debug",
       "--external": [String],
@@ -142,14 +147,18 @@ async function runCmd (argv, stdout, stderr) {
     });
   } catch (e) {
     if (e.message.indexOf("Unknown or unexpected option") === -1) throw e;
-    nccError(e.message + `\n${usage}`, 2);
+    throw nccError(e.message + `\n${usage}`, 2);
   }
+}
+
+async function runCmd (argv: string[], stdout: NodeJS.WriteStream, stderr: NodeJS.WriteStream) {
+  const args = parseArgs(argv);
 
   if (args._.length === 0)
-    nccError(`Error: No command specified\n${usage}`, 2);
+    throw nccError(`Error: No command specified\n${usage}`, 2);
 
   let run = false;
-  let outDir = args["--out"];
+  let outDir = args["--out"] || resolve("dist");
   const quiet = args["--quiet"];
 
   switch (args._[0]) {
@@ -161,7 +170,7 @@ async function runCmd (argv, stdout, stderr) {
       if (flags.length)
         errFlagNotCompatible(flags[0], "cache");
 
-      const cacheDir = require("./utils/ncc-cache-dir");
+      const cacheDir = getCacheDir();
       switch (args._[1]) {
         case "clean":
           rimraf.sync(cacheDir);
@@ -170,7 +179,7 @@ async function runCmd (argv, stdout, stderr) {
           stdout.write(cacheDir + '\n');
         break;
         case "size":
-          require("get-folder-size")(cacheDir, (err, size) => {
+          require("get-folder-size")(cacheDir, (err: NodeJS.ErrnoException, size: number) => {
             if (err) {
               if (err.code === 'ENOENT') {
                 stdout.write("0MB\n");
@@ -197,7 +206,7 @@ async function runCmd (argv, stdout, stderr) {
         errFlagNotCompatible("--watch", "run");
 
       outDir = resolve(
-        require("os").tmpdir(),
+        tmpdir(),
         crypto.createHash('md5').update(resolve(args._[1] || ".")).digest('hex')
       );
       if (existsSync(outDir))
@@ -210,9 +219,9 @@ async function runCmd (argv, stdout, stderr) {
         errTooManyArguments("build");
 
       let startTime = Date.now();
-      let ps;
+      let ps: ChildProcess;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const ncc = require("./index.js")(
+      const ncc = nccBuild(
         buildFile,
         {
           debugLog: args["--debug"],
@@ -227,7 +236,7 @@ async function runCmd (argv, stdout, stderr) {
         }
       );
 
-      async function handler ({ err, code, map, assets, symlinks }) {
+      async function handler ({ err, code, map, assets, symlinks }: NccResult) {
         // handle watch errors
         if (err) {
           stderr.write(err + '\n');
@@ -235,11 +244,10 @@ async function runCmd (argv, stdout, stderr) {
           return;
         }
 
-        outDir = outDir || resolve("dist");
         mkdirp.sync(outDir);
         // remove all existing ".js" files in the out directory
         await Promise.all(
-          (await new Promise((resolve, reject) =>
+          (await new Promise<string[]>((resolve, reject) =>
             glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
           )).map(file =>
             new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
@@ -277,7 +285,7 @@ async function runCmd (argv, stdout, stderr) {
         if (run) {
           // find node_modules
           const root = resolve('/node_modules');
-          let nodeModulesDir = dirname(buildFile) + "/node_modules";
+          let nodeModulesDir: string | undefined = dirname(buildFile) + "/node_modules";
           do {
             if (nodeModulesDir === root) {
               nodeModulesDir = undefined;
@@ -288,16 +296,16 @@ async function runCmd (argv, stdout, stderr) {
           } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
           if (nodeModulesDir)
             symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
-          ps = require("child_process").fork(outDir + "/index.js", {
-            stdio: api ? 'pipe' : 'inherit'
-          });
+
+          const stdio: StdioOptions = api ? 'pipe' : 'inherit';
+          ps = fork(outDir + "/index.js", [], { stdio });
           if (api) {
             ps.stdout.pipe(stdout);
             ps.stderr.pipe(stderr);
           }
           return new Promise((resolve, reject) => {
-            function exit (code) {
-              require("rimraf").sync(outDir);
+            function exit (code: NodeJS.Signals) {
+              rimraf.sync(outDir);
               if (code === 0)
                 resolve();
               else
@@ -326,26 +334,26 @@ async function runCmd (argv, stdout, stderr) {
       break;
 
     case "help":
-      nccError(usage, 2);
+      throw nccError(usage, 2);
 
     case "version":
       stdout.write(require("../package.json").version + '\n');
       break;
 
     default:
-      errInvalidCommand(args._[0], 2);
+      errInvalidCommand(args._[0]);
   }
 
-  function errTooManyArguments (cmd) {
-    nccError(`Error: Too many ${cmd} arguments provided\n${usage}`, 2);
+  function errTooManyArguments (cmd: string) {
+    throw nccError(`Error: Too many ${cmd} arguments provided\n${usage}`, 2);
   }
 
-  function errFlagNotCompatible (flag, cmd) {
-    nccError(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`, 2);
+  function errFlagNotCompatible (flag: string, cmd: string) {
+    throw nccError(`Error: ${flag} flag is not compatible with ncc ${cmd}\n${usage}`, 2);
   }
 
-  function errInvalidCommand (cmd) {
-    nccError(`Error: Invalid command "${cmd}"\n${usage}`, 2);
+  function errInvalidCommand (cmd: string) {
+    throw nccError(`Error: Invalid command "${cmd}"\n${usage}`, 2);
   }
 
   // remove me when node.js makes this the default behavior

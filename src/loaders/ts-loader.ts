@@ -4,10 +4,10 @@
 // compiling typescript
 const logger = require("ts-loader/dist/logger");
 const makeLogger = logger.makeLogger;
-logger.makeLogger = function (loaderOptions, colors) {
+logger.makeLogger = function (loaderOptions: any, colors: any) {
   const instance = makeLogger(loaderOptions, colors);
   const logWarning = instance.logWarning;
-  instance.logWarning = function (message) {
+  instance.logWarning = function (message: string) {
     // Disable TS Loader TypeScript compatibility warning
     if (message.indexOf('This version may or may not be compatible with ts-loader') !== -1)
       return;

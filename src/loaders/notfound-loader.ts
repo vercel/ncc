@@ -1,4 +1,6 @@
-module.exports = function (input, map) {
+type Context = import('webpack').loader.LoaderContext;
+
+module.exports = function (this: Context, input: string, map: any) {
   if (this.cacheable)
     this.cacheable();
   const id = this.resourceQuery.substr(1);
