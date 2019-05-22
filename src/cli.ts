@@ -12,7 +12,7 @@ import { tmpdir } from "os";
 import { fork, ChildProcess, StdioOptions } from "child_process";
 import arg from "arg";
 import { build as nccBuild } from "./index";
-import { NccResult } from "./types/NccResult";
+import { NccResult, NccAssets } from "./types/NccResult";
 const { version: nccVersion } = require('../package.json');
 
 const usage = `Usage: ncc <cmd> <opts>
@@ -55,7 +55,7 @@ else {
   api = true;
 }
 
-function renderSummary(code, map, assets, outDir, buildTime) {
+function renderSummary(code: string, map: string | undefined, assets: NccAssets, outDir: string, buildTime: number) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
   const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
   const mapSize = map ? Math.round(Buffer.byteLength(map, "utf8") / 1024) : 0;
