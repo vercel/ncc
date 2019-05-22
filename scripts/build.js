@@ -16,8 +16,7 @@ async function main() {
     {
       filename: "cli.js",
       externals: ["./index.js"],
-      minify: true,
-      v8cache: true
+      minify: true
     }
   );
 
@@ -30,33 +29,31 @@ async function main() {
       // chokidar, which is quite convenient
       externals: ["chokidar"],
       filename: "index.js",
-      minify: true,
-      v8cache: true
+      minify: true
     }
   );
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
-    { filename: "relocate-loader.js", minify: true, v8cache: true }
+    { filename: "relocate-loader.js", minify: true }
   );
 
   const { code: shebangLoader, assets: shebangLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/shebang-loader",
-    { filename: "shebang-loader.js", minify: true, v8cache: true }
+    { filename: "shebang-loader.js", minify: true }
   );
 
   const { code: tsLoader, assets: tsLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/ts-loader",
     {
       filename: "ts-loader.js",
-      minify: true,
-      v8cache: true
+      minify: true
     }
   );
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
-    { filename: "sourcemap-register.js", minfiy: true, v8cache: true }
+    { filename: "sourcemap-register.js", minfiy: true }
   );
 
   // detect unexpected asset emissions from core build
@@ -67,25 +64,11 @@ async function main() {
     ...Object.keys(shebangLoaderAssets),
     ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')),
     ...Object.keys(sourcemapAssets)
-  ].filter(asset => !asset.endsWith('.js.cache') && !asset.endsWith('.cache.js'));
+  ];
   if (unknownAssets.length) {
     console.error("New assets are being emitted by the core build");
     console.log(unknownAssets);
   }
-
-  writeFileSync(__dirname + "/../dist/ncc/cli.js.cache", cliAssets["cli.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/index.js.cache", indexAssets["index.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache", sourcemapAssets["sourcemap-register.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache", relocateLoaderAssets["relocate-loader.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache", shebangLoaderAssets["shebang-loader.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache", tsLoaderAssets["ts-loader.js.cache"].source);
-
-  writeFileSync(__dirname + "/../dist/ncc/cli.js.cache.js", cliAssets["cli.js.cache.js"].source);
-  writeFileSync(__dirname + "/../dist/ncc/index.js.cache.js", indexAssets["index.js.cache.js"].source);
-  writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache.js", sourcemapAssets["sourcemap-register.js.cache.js"].source);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache.js", relocateLoaderAssets["relocate-loader.js.cache.js"].source);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache.js", shebangLoaderAssets["shebang-loader.js.cache.js"].source);
-  writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache.js", tsLoaderAssets["ts-loader.js.cache.js"].source);
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli, { mode: 0o777 });
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
