@@ -6,7 +6,7 @@ If you are having trouble running a package with ncc, try searching for it in th
 
 ### Sequelize
 
-For example, with the `maria-db`:
+For example, with the `mariadb` dialect:
 
 ```js
 const db = new Sequelize({
