@@ -18,6 +18,7 @@ dist/**/*.js
 !.circleci
 !.github
 !.*ignore
+!tsconfig.json
 !readme.md
 !examples/
 !examples/**
