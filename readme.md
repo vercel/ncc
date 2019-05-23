@@ -58,6 +58,12 @@ file is necessary. Most likely you want to indicate `es2015` support:
 }
 ```
 
+### Package Support
+
+Some packages may need some extra options for ncc support in order to better work with the static analysis.
+
+See [package-support.md](package-support.md) for some common packages and their usage with ncc.
+
 ### Programmatically From Node.js
 
 ```js
@@ -99,4 +105,4 @@ When `watch: true` is set, the build object is not a promise, but has the follow
 
 ## Caveats
 
-- Files / assets are relocated based on a static evaluator. Dynamic non-statically analyzable asset loads may not work out correctly
+- Files / assets are relocated based on a [static evaluator](https://github.com/zeit/webpack-asset-relocator-loader#how-it-works). Dynamic non-statically analyzable asset loads may not work out correctly
