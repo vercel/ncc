@@ -370,7 +370,7 @@ module.exports = (
         map = undefined;
       }
       code =
-        `if (process.pkg) {\n` +
+        `if (process.pkg || require('process').platform === 'win32') {\n` +
           `module.exports=require('./${filename}.cache.js');\n` +
         `} else {\n` +
           `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
