@@ -87,13 +87,18 @@ module.exports = (
           if (!err.missing || !err.missing.length)
             return callback(err);
           // make not found errors runtime errors
-          callback(null, __dirname + '/@@notfound.js' + '?' + request);
+          callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
         });
       };
     }
   });
 
-  const externalSet = new Set(externals);
+  const externalMap = new Map();
+
+  if (externals instanceof Array)
+    externals.forEach(external => externalMap.set(external, external));
+  else if (typeof externals === 'object')
+    Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
 
   let watcher, watchHandler, rebuildHandler;
 
@@ -131,7 +136,7 @@ module.exports = (
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
     externals: async ({ context, request }, callback) => {
-      if (externalSet.has(request)) return callback(null, `commonjs ${request}`);
+      if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
       return callback();
     },
     module: {

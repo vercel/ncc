@@ -33,7 +33,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(121);
+/******/ 		return __webpack_require__(613);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -42,22 +42,19 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 121:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ 306:
+/***/ (function(module) {
 
-"use strict";
-
-exports.__esModule = true;
-var _module_1 = __webpack_require__(545);
-console.log(_module_1["default"]);
-
+module.exports = require("externalmapped");
 
 /***/ }),
 
-/***/ 545:
-/***/ (function() {
+/***/ 613:
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-eval("require")("@module");
+const external = __webpack_require__(306);
+
+console.log(external);
 
 
 /***/ })

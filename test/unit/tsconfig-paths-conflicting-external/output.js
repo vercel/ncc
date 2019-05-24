@@ -57,15 +57,7 @@ console.log(_module_1["default"]);
 /***/ 545:
 /***/ (function() {
 
-const id = "@module";
-if (id.startsWith('./') || id.startsWith('../')) {
-  const e = new Error('Cannot find module "' + id + '".');
-  e.code = 'MODULE_NOT_FOUND';
-  throw e;
-}
-else {
-  eval("require")(id);
-}
+eval("require")("@module");
 
 
 /***/ })

@@ -53,15 +53,7 @@ __webpack_require__(548);
 /***/ 548:
 /***/ (function() {
 
-const id = "./not-foud2.js";
-if (id.startsWith('./') || id.startsWith('../')) {
-  const e = new Error('Cannot find module "' + id + '".');
-  e.code = 'MODULE_NOT_FOUND';
-  throw e;
-}
-else {
-  eval("require")(id);
-}
+eval("require")("./not-foud2.js");
 
 
 /***/ }),
@@ -69,15 +61,7 @@ else {
 /***/ 590:
 /***/ (function() {
 
-const id = "./not-found.js";
-if (id.startsWith('./') || id.startsWith('../')) {
-  const e = new Error('Cannot find module "' + id + '".');
-  e.code = 'MODULE_NOT_FOUND';
-  throw e;
-}
-else {
-  eval("require")(id);
-}
+eval("require")("./not-found.js");
 
 
 /***/ })
