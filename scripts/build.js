@@ -20,6 +20,7 @@ async function main() {
       v8cache: true
     }
   );
+  checkUnknownAssets('cli', Object.keys(cliAssets));
 
   const { code: index, assets: indexAssets } = await ncc(
     __dirname + "/../src/index",
@@ -34,16 +35,19 @@ async function main() {
       v8cache: true
     }
   );
+  checkUnknownAssets('index', Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js'));
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
     { filename: "relocate-loader.js", minify: true, v8cache: true }
   );
+  checkUnknownAssets('relocate-loader', Object.keys(relocateLoaderAssets));
 
   const { code: shebangLoader, assets: shebangLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/shebang-loader",
     { filename: "shebang-loader.js", minify: true, v8cache: true }
   );
+  checkUnknownAssets('shebang-loader', Object.keys(shebangLoaderAssets));
 
   const { code: tsLoader, assets: tsLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/ts-loader",
@@ -53,24 +57,20 @@ async function main() {
       v8cache: true
     }
   );
+  checkUnknownAssets('ts-loader', Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')));
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
     { filename: "sourcemap-register.js", minfiy: true, v8cache: true }
   );
+  checkUnknownAssets('source-map-support/register', Object.keys(sourcemapAssets));
 
   // detect unexpected asset emissions from core build
-  const unknownAssets = [
-    ...Object.keys(cliAssets),
-    ...Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js'),
-    ...Object.keys(relocateLoaderAssets),
-    ...Object.keys(shebangLoaderAssets),
-    ...Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')),
-    ...Object.keys(sourcemapAssets)
-  ].filter(asset => !asset.endsWith('.js.cache') && !asset.endsWith('.cache.js'));
-  if (unknownAssets.length) {
-    console.error("New assets are being emitted by the core build");
-    console.log(unknownAssets);
+  function checkUnknownAssets (buildName, assets) {
+    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js'));
+    if (!assets.length) return;
+    console.error(`New assets are being emitted by the ${buildName} build`);
+    console.log(assets);
   }
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache", cliAssets["cli.js.cache"].source);
