@@ -16,10 +16,9 @@ async function main() {
   }
 
   const { files: cliFiles } = await ncc(
-    __dirname + "/../src/cli",
+    { 'cli': __dirname + "/../src/cli" },
     {
       externals: ["./index.js"],
-      filename: "cli.js",
       minify: true,
       v8cache: true
     }
@@ -27,14 +26,13 @@ async function main() {
   checkUnknownAssets('cli', assetList(cliFiles));
 
   const { files: indexFiles } = await ncc(
-    __dirname + "/../src/index",
+    { 'index': __dirname + "/../src/index" },
     {
       // we dont care about watching, so we don't want
       // to bundle it. even if we did want watching and a bigger
       // bundle, webpack (and therefore ncc) cannot currently bundle
       // chokidar, which is quite convenient
       externals: ["chokidar"],
-      filename: "index.js",
       minify: true,
       v8cache: true
     }
@@ -42,30 +40,26 @@ async function main() {
   checkUnknownAssets('index', assetList(indexFiles).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index.js'));
 
   const { files: relocateLoaderFiles } = await ncc(
-    __dirname + "/../src/loaders/relocate-loader",
-    { filename: "relocate-loader.js", minify: true, v8cache: true }
+    { 'relocate-loader': __dirname + "/../src/loaders/relocate-loader",},
+    { minify: true, v8cache: true }
   );
   checkUnknownAssets('relocate-loader', assetList(relocateLoaderFiles));
 
   const { files: shebangLoaderFiles } = await ncc(
-    __dirname + "/../src/loaders/shebang-loader",
-    { filename: "shebang-loader.js", minify: true, v8cache: true }
+    { 'shebang-loader': __dirname + "/../src/loaders/shebang-loader" },
+    { minify: true, v8cache: true }
   );
   checkUnknownAssets('shebang-loader', assetList(shebangLoaderFiles));
 
   const { files: tsLoaderFiles } = await ncc(
-    __dirname + "/../src/loaders/ts-loader",
-    {
-      filename: "ts-loader.js",
-      minify: true,
-      v8cache: true
-    }
+    { 'ts-loader': __dirname + "/../src/loaders/ts-loader" },
+    { minify: true, v8cache: true }
   );
   checkUnknownAssets('ts-loader', assetList(tsLoaderFiles).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')));
 
   const { files: sourceMapSupportFiles } = await ncc(
-    require.resolve("source-map-support/register"),
-    { filename: "sourcemap-register.js", minfiy: true, v8cache: true }
+    { 'sourcemap-register': require.resolve("source-map-support/register") },
+    { minifiy: true, v8cache: true }
   );
   checkUnknownAssets('source-map-support/register', assetList(sourceMapSupportFiles));
 

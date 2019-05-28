@@ -35,7 +35,6 @@ module.exports = (
   {
     cache,
     externals = [],
-    filename,
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -46,16 +45,24 @@ module.exports = (
     debugLog = false
   } = {}
 ) => {
-  if (!filename)
-    filename = typeof entry === 'object' && Object.keys(entry).length > 1 ? "[name].js" : "index.js";
+  const processedEntry = Object.create(null);
   if (entry instanceof Array) {
-    const objEntry = Object.create(null);
     entry.forEach(file => {
-      objEntry[basename(file.substr(0, file.length - extname(file).length))] = pathResolve(file);
+      processedEntry[basename(file)] = pathResolve(file);
     });
-    entry = objEntry;
   }
-  const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0], { basedir: process.cwd() });
+  else if (typeof entry === 'object') {
+    Object.keys(entry).forEach(item => {
+      if (!item.endsWith('.js') && !item.endsWith('.mjs'))
+        processedEntry[item + '.js'] = entry[item];
+      else
+        processedEntry[item] = entry[item];
+    });
+  }
+  else if (typeof entry === 'string') {
+    processedEntry['index.js'] = pathResolve(entry);
+  }
+  const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0]);
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
     console.log(`ncc: Compiling file${typeof entry === 'object' && Object.keys(entry).length > 1 ? 's' : ''} ${typeof entry === 'object' ? Object.values(entry).map(name => resolve.sync(name)).join(', ') : resolvedEntry}`);
@@ -102,7 +109,7 @@ module.exports = (
   let watcher, watchHandler, rebuildHandler;
 
   const compiler = webpack({
-    entry,
+    entry: processedEntry,
     cache: cache === false ? undefined : {
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
@@ -125,7 +132,7 @@ module.exports = (
     target: "node",
     output: {
       path: "/",
-      filename,
+      filename: "[name]",
       libraryTarget: "commonjs2"
     },
     resolve: {
