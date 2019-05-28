@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep } = require("path");
+const { resolve, relative, dirname, sep, basename, extname } = require("path");
 const glob = require("glob");
-const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
 const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
@@ -12,8 +11,8 @@ const { version: nccVersion } = require('../package.json');
 const usage = `Usage: ncc <cmd> <opts>
 
 Commands:
-  build <input-file> [opts]
-  run <input-file> [opts]
+  build <input-file>+ [opts]
+  run <input-file> <args>? [opts]
   cache clean|dir|size
   help
   version
@@ -168,8 +167,7 @@ async function runCmd (argv, stdout, stderr) {
 
     break;
     case "run":
-      if (args._.length > 2)
-        errTooManyArguments("run");
+      var runArgs = args._.slice(2);
 
       if (args["--out"])
         errFlagNotCompatible("--out", "run");
@@ -187,14 +185,21 @@ async function runCmd (argv, stdout, stderr) {
 
     // fallthrough
     case "build":
-      if (args._.length > 2)
-        errTooManyArguments("build");
+      let buildFiles;
+      if (runArgs) {
+        buildFiles = resolve(args._[1]);
+      }
+      else {
+        buildFiles = Object.create(null);
+        args._.slice(1).forEach(file => {
+          buildFiles[basename(file.substr(0, file.length - extname(file).length))] = resolve(file);
+        });
+      }
 
       let startTime = Date.now();
       let ps;
-      const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
       const ncc = require("./index.js")(
-        buildFile,
+        buildFiles,
         {
           debugLog: args["--debug"],
           minify: args["--minify"],
@@ -253,6 +258,7 @@ async function runCmd (argv, stdout, stderr) {
         if (run) {
           // find node_modules
           const root = resolve('/node_modules');
+          const buildFile = eval("require.resolve")(args._[1]);
           let nodeModulesDir = dirname(buildFile) + "/node_modules";
           do {
             if (nodeModulesDir === root) {
@@ -264,7 +270,7 @@ async function runCmd (argv, stdout, stderr) {
           } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
           if (nodeModulesDir)
             symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
-          ps = require("child_process").fork(outDir + "/index.js", {
+          ps = require("child_process").fork(outDir + "/index.js", runArgs, {
             stdio: api ? 'pipe' : 'inherit'
           });
           if (api) {

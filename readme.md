@@ -36,6 +36,8 @@ $ ncc build input.js -o dist
 
 Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
+It is also possible to build multiple files in a code-splitting build by passing additional inputs.
+
 ### Execution Testing
 
 For testing and debugging, a file can be built into a temporary directory and executed with full source maps support with the command:

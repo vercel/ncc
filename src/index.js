@@ -1,14 +1,13 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep, join, dirname } = require("path");
+const { join, dirname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
-const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const { version: nccVersion } = require('../package.json');
 
@@ -48,8 +47,8 @@ module.exports = (
   } = {}
 ) => {
   if (!filename)
-    filename = entry instanceof Array && entry.length > 1 ? "[name].js" : "index.js";
-  const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0]);
+    filename = typeof entry === 'object' && Object.keys(entry).length > 1 ? "[name].js" : "index.js";
+  const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0], { basedir: process.cwd() });
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
     console.log(`ncc: Compiling file${typeof entry === 'object' && Object.keys(entry).length > 1 ? 's' : ''} ${typeof entry === 'object' ? Object.values(entry).map(name => resolve.sync(name)).join(', ') : resolvedEntry}`);
