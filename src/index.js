@@ -54,21 +54,20 @@ module.exports = (
   else if (typeof entry === 'object') {
     Object.keys(entry).forEach(item => {
       if (!item.endsWith('.js') && !item.endsWith('.mjs'))
-        processedEntry[item + '.js'] = entry[item];
+        processedEntry[item + '.js'] = pathResolve(entry[item]);
       else
-        processedEntry[item] = entry[item];
+        processedEntry[item] = pathResolve(entry[item]);
     });
   }
   else if (typeof entry === 'string') {
     processedEntry['index.js'] = pathResolve(entry);
   }
-  const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0]);
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file${typeof entry === 'object' && Object.keys(entry).length > 1 ? 's' : ''} ${typeof entry === 'object' ? Object.values(entry).map(name => resolve.sync(name)).join(', ') : resolvedEntry}`);
+    console.log(`ncc: Compiling file${typeof entry === 'object' && Object.keys(entry).length > 1 ? 's' : ''} ${Object.values(processedEntry).join(', ')}`);
   }
-  process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
-  const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
+  // How to handle for multi-entry case?
+  process.env.TYPESCRIPT_LOOKUP_PATH = Object.values(processedEntry)[0];
   const mfs = new MemoryFS();
 
   const resolvePlugins = [];
@@ -398,6 +397,17 @@ module.exports = (
         files['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
       }
   
+      const entryPath = processedEntry[filename];
+      let shebangMatch;
+      try {
+        shebangMatch = fs.readFileSync(entryPath).toString().match(shebangRegEx);
+      }
+      catch (e) {
+        try {
+          shebangMatch = fs.readFileSync(entryPath + '.js').toString().match(shebangRegEx);
+        }
+        catch (e) {}
+      }
       if (shebangMatch) {
         code = shebangMatch[0] + code;
         // add a line offset to the sourcemap
