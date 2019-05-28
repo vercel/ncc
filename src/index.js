@@ -1,14 +1,13 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep, join, dirname } = require("path");
+const { join, dirname, resolve: pathResolve, basename, extname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
-const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const { version: nccVersion } = require('../package.json');
 
@@ -36,7 +35,6 @@ module.exports = (
   {
     cache,
     externals = [],
-    filename = "index.js",
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -47,24 +45,31 @@ module.exports = (
     debugLog = false
   } = {}
 ) => {
+  const processedEntry = Object.create(null);
+  if (entry instanceof Array) {
+    entry.forEach(file => {
+      processedEntry[basename(file)] = pathResolve(file);
+    });
+  }
+  else if (typeof entry === 'object') {
+    Object.keys(entry).forEach(item => {
+      if (!item.endsWith('.js') && !item.endsWith('.mjs'))
+        processedEntry[item + '.js'] = pathResolve(entry[item]);
+      else
+        processedEntry[item] = pathResolve(entry[item]);
+    });
+  }
+  else if (typeof entry === 'string') {
+    processedEntry['index.js'] = pathResolve(entry);
+  }
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file ${filename}`);
+    console.log(`ncc: Compiling file${Object.keys(processedEntry).length > 1 ? 's' : ''} ${Object.values(processedEntry).join(', ')}`);
   }
-  const resolvedEntry = resolve.sync(entry);
-  process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
-  const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
+  // How to handle for multi-entry case?
+  process.env.TYPESCRIPT_LOOKUP_PATH = Object.values(processedEntry)[0];
   const mfs = new MemoryFS();
 
-  const existingAssetNames = [filename];
-  if (sourceMap) {
-    existingAssetNames.push(`${filename}.map`);
-    existingAssetNames.push('sourcemap-register.js');
-  }
-  if (v8cache) {
-    existingAssetNames.push(`${filename}.cache`);
-    existingAssetNames.push(`${filename}.cache.js`);
-  }
   const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
@@ -103,11 +108,11 @@ module.exports = (
   let watcher, watchHandler, rebuildHandler;
 
   const compiler = webpack({
-    entry,
+    entry: processedEntry,
     cache: cache === false ? undefined : {
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
-      name: `ncc_${hashOf(entry)}`,
+      name: `ncc_${hashOf(JSON.stringify(entry))}`,
       version: nccVersion
     },
     amd: false,
@@ -116,14 +121,17 @@ module.exports = (
       minimize: false,
       moduleIds: 'deterministic',
       chunkIds: 'deterministic',
-      mangleExports: false
+      mangleExports: false,
+      splitChunks: typeof entry === 'object' && Object.keys(entry).length > 1 ? {
+        chunks: 'all'
+      } : false
     },
     devtool: sourceMap ? "source-map" : false,
     mode: "production",
     target: "node",
     output: {
       path: "/",
-      filename,
+      filename: "[name]",
       libraryTarget: "commonjs2"
     },
     resolve: {
@@ -154,7 +162,7 @@ module.exports = (
           }, {
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: {
-              existingAssetNames,
+              outputAssetBase: 'assets',
               escapeNonAnalyzableRequires: true,
               wrapperCompatibility: true,
               debugLog
@@ -260,7 +268,7 @@ module.exports = (
             const errLog = stats.compilation.errors.map(err => err.message).join('\n');
             return reject(new Error(errLog));
           }
-          resolve();
+          resolve(stats);
         });
       });
     })
@@ -279,7 +287,7 @@ module.exports = (
         return watchHandler({ err });
       if (stats.hasErrors())
         return watchHandler({ err: stats.toString() });
-      const returnValue = finalizeHandler();
+      const returnValue = finalizeHandler(stats);
       if (watchHandler)
         watchHandler(returnValue);
       else
@@ -312,88 +320,107 @@ module.exports = (
     };
   }
 
-  function finalizeHandler () {
-    const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
-    // filter symlinks to existing assets
+  function finalizeHandler (stats) {
+    const files = Object.create(null);
     const symlinks = Object.create(null);
+    getFlatFiles(mfs.data, files, relocateLoader.getAssetPermissions);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
       const resolved = join(dirname(key), value);
-      if (resolved in assets)
+      if (resolved in files && key in files === false)
         symlinks[key] = value;
     }
-    delete assets[filename];
-    delete assets[`${filename}.map`];
-    let code = mfs.readFileSync(`/${filename}`, "utf8");
-    let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
 
-    if (map) {
-      map = JSON.parse(map);
-      // make source map sources relative to output
-      map.sources = map.sources.map(source => {
-        // webpack:///webpack:/// happens too for some reason
-        while (source.startsWith('webpack:///'))
-          source = source.substr(11);
-        if (source.startsWith('./'))
-          source = source.substr(2);
-        if (source.startsWith('webpack/'))
-          return '/webpack/' + source.substr(8);
-        return sourceMapBasePrefix + source;
-      });
+    for (const chunk of stats.compilation.chunks) {
+      finalizeOutput(chunk.files[0]);
     }
 
-    if (minify) {
-      const result = terser.minify(code, {
-        compress: false,
-        mangle: {
-          keep_classnames: true,
-          keep_fnames: true
-        },
-        sourceMap: sourceMap ? {
-          content: map,
-          filename,
-          url: `${filename}.map`
-        } : false
-      });
-      // For some reason, auth0 returns "undefined"!
-      // custom terser phase used over Webpack integration for this reason
-      if (result.code !== undefined)
-        ({ code, map } = { code: result.code, map: result.map });
-    }
-
-    if (v8cache) {
-      const { Script } = require('vm');
-      assets[filename + '.cache'] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
-      assets[filename + '.cache.js'] = { source: code, permissions: defaultPermissions };
+    function finalizeOutput (filename) {
+      let code = mfs.readFileSync(`/${filename}`, "utf8");
+      let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
+  
       if (map) {
-        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
-        map = undefined;
+        map = JSON.parse(map);
+        // make source map sources relative to output
+        map.sources = map.sources.map(source => {
+          // webpack:///webpack:/// happens too for some reason
+          while (source.startsWith('webpack:///'))
+            source = source.substr(11);
+          if (source.startsWith('./'))
+            source = source.substr(2);
+          if (source.startsWith('webpack/'))
+            return '/webpack/' + source.substr(8);
+          return sourceMapBasePrefix + source;
+        });
       }
-      code =
-        `if (process.pkg || require('process').platform === 'win32') {\n` +
-          `module.exports=require('./${filename}.cache.js');\n` +
-        `} else {\n` +
-          `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
-          `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
-          `const script = new Script(wrap(source), { cachedData });\n` +
-          `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
-          `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n` +
-        `}`;
+  
+      if (minify) {
+        const result = terser.minify(code, {
+          compress: false,
+          mangle: {
+            keep_classnames: true,
+            keep_fnames: true
+          },
+          sourceMap: sourceMap ? {
+            content: map,
+            filename,
+            url: `${filename}.map`
+          } : false
+        });
+        // For some reason, auth0 returns "undefined"!
+        // custom terser phase used over Webpack integration for this reason
+        if (result.code !== undefined)
+          ({ code, map } = { code: result.code, map: result.map });
+      }
+  
+      if (v8cache) {
+        const { Script } = require('vm');
+        files[filename + '.cache'] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
+        files[filename + '.cache.js'] = { source: code, permissions: defaultPermissions };
+        if (map) {
+          files[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
+          map = undefined;
+        }
+        code =
+          `if (process.pkg || require('process').platform === 'win32') {\n` +
+            `module.exports=require('./${filename}.cache.js');\n` +
+          `} else {\n` +
+            `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
+            `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
+            `const script = new Script(wrap(source), { cachedData });\n` +
+            `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
+            `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n` +
+          `}`;
+      }
+  
+      if (sourceMap && sourceMapRegister) {
+        code = `require('./sourcemap-register.js');` + code;
+        files['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
+      }
+  
+      const entryPath = processedEntry[filename];
+      let shebangMatch;
+      try {
+        shebangMatch = fs.readFileSync(entryPath).toString().match(shebangRegEx);
+      }
+      catch (e) {
+        try {
+          shebangMatch = fs.readFileSync(entryPath + '.js').toString().match(shebangRegEx);
+        }
+        catch (e) {}
+      }
+      if (shebangMatch) {
+        code = shebangMatch[0] + code;
+        // add a line offset to the sourcemap
+        if (map)
+          map.mappings = ";" + map.mappings;
+      }
+
+      files[filename].source = code;
+      if (sourceMap && map)
+        files[filename + '.map'].source = JSON.stringify(map);
     }
 
-    if (sourceMap && sourceMapRegister) {
-      code = `require('./sourcemap-register.js');` + code;
-      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
-    }
-
-    if (shebangMatch) {
-      code = shebangMatch[0] + code;
-      // add a line offset to the sourcemap
-      if (map)
-        map.mappings = ";" + map.mappings;
-    }
-
-    return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks };
+    return { files, symlinks };
   }
 };
 
@@ -408,7 +435,7 @@ function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
     else if (!curPath.endsWith("/")) {
       output[curPath.substr(1)] = {
         source: mfsData[path],
-        permissions: getAssetPermissions(curPath.substr(1))
+        permissions: getAssetPermissions(curPath.substr(1)) || defaultPermissions
       };
     }
   }
