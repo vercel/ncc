@@ -36,7 +36,7 @@ module.exports = (
   {
     cache,
     externals = [],
-    filename = "index.js",
+    filename,
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -47,24 +47,17 @@ module.exports = (
     debugLog = false
   } = {}
 ) => {
+  if (!filename)
+    filename = entry instanceof Array && entry.length > 1 ? "[name].js" : "index.js";
+  const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0]);
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file ${filename}`);
+    console.log(`ncc: Compiling file${typeof entry === 'object' && Object.keys(entry).length > 1 ? 's' : ''} ${typeof entry === 'object' ? Object.values(entry).map(name => resolve.sync(name)).join(', ') : resolvedEntry}`);
   }
-  const resolvedEntry = resolve.sync(entry);
   process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
 
-  const existingAssetNames = [filename];
-  if (sourceMap) {
-    existingAssetNames.push(`${filename}.map`);
-    existingAssetNames.push('sourcemap-register.js');
-  }
-  if (v8cache) {
-    existingAssetNames.push(`${filename}.cache`);
-    existingAssetNames.push(`${filename}.cache.js`);
-  }
   const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
@@ -107,7 +100,7 @@ module.exports = (
     cache: cache === false ? undefined : {
       type: "filesystem",
       cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
-      name: `ncc_${hashOf(entry)}`,
+      name: `ncc_${hashOf(JSON.stringify(entry))}`,
       version: nccVersion
     },
     amd: false,
@@ -116,7 +109,10 @@ module.exports = (
       minimize: false,
       moduleIds: 'deterministic',
       chunkIds: 'deterministic',
-      mangleExports: false
+      mangleExports: false,
+      splitChunks: typeof entry === 'object' && Object.keys(entry).length > 1 ? {
+        chunks: 'all'
+      } : false
     },
     devtool: sourceMap ? "source-map" : false,
     mode: "production",
@@ -154,7 +150,7 @@ module.exports = (
           }, {
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: {
-              existingAssetNames,
+              outputAssetBase: 'assets',
               escapeNonAnalyzableRequires: true,
               wrapperCompatibility: true,
               debugLog
@@ -260,7 +256,7 @@ module.exports = (
             const errLog = stats.compilation.errors.map(err => err.message).join('\n');
             return reject(new Error(errLog));
           }
-          resolve();
+          resolve(stats);
         });
       });
     })
@@ -279,7 +275,7 @@ module.exports = (
         return watchHandler({ err });
       if (stats.hasErrors())
         return watchHandler({ err: stats.toString() });
-      const returnValue = finalizeHandler();
+      const returnValue = finalizeHandler(stats);
       if (watchHandler)
         watchHandler(returnValue);
       else
@@ -312,88 +308,95 @@ module.exports = (
     };
   }
 
-  function finalizeHandler () {
-    const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
-    // filter symlinks to existing assets
-    const symlinks = Object.create(null);
+  function finalizeHandler (stats) {
+    const files = Object.create(null);
+    getFlatFiles(mfs.data, files, relocateLoader.getAssetPermissions);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
       const resolved = join(dirname(key), value);
-      if (resolved in assets)
-        symlinks[key] = value;
-    }
-    delete assets[filename];
-    delete assets[`${filename}.map`];
-    let code = mfs.readFileSync(`/${filename}`, "utf8");
-    let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
-
-    if (map) {
-      map = JSON.parse(map);
-      // make source map sources relative to output
-      map.sources = map.sources.map(source => {
-        // webpack:///webpack:/// happens too for some reason
-        while (source.startsWith('webpack:///'))
-          source = source.substr(11);
-        if (source.startsWith('./'))
-          source = source.substr(2);
-        if (source.startsWith('webpack/'))
-          return '/webpack/' + source.substr(8);
-        return sourceMapBasePrefix + source;
-      });
+      if (resolved in files && key in files === false)
+        files[key] = value;
     }
 
-    if (minify) {
-      const result = terser.minify(code, {
-        compress: false,
-        mangle: {
-          keep_classnames: true,
-          keep_fnames: true
-        },
-        sourceMap: sourceMap ? {
-          content: map,
-          filename,
-          url: `${filename}.map`
-        } : false
-      });
-      // For some reason, auth0 returns "undefined"!
-      // custom terser phase used over Webpack integration for this reason
-      if (result.code !== undefined)
-        ({ code, map } = { code: result.code, map: result.map });
+    for (const chunk of stats.compilation.chunks) {
+      finalizeOutput(chunk.files[0]);
     }
 
-    if (v8cache) {
-      const { Script } = require('vm');
-      assets[filename + '.cache'] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
-      assets[filename + '.cache.js'] = { source: code, permissions: defaultPermissions };
+    function finalizeOutput (filename) {
+      let code = mfs.readFileSync(`/${filename}`, "utf8");
+      let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
+  
       if (map) {
-        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
-        map = undefined;
+        map = JSON.parse(map);
+        // make source map sources relative to output
+        map.sources = map.sources.map(source => {
+          // webpack:///webpack:/// happens too for some reason
+          while (source.startsWith('webpack:///'))
+            source = source.substr(11);
+          if (source.startsWith('./'))
+            source = source.substr(2);
+          if (source.startsWith('webpack/'))
+            return '/webpack/' + source.substr(8);
+          return sourceMapBasePrefix + source;
+        });
       }
-      code =
-        `if (process.pkg || require('process').platform === 'win32') {\n` +
-          `module.exports=require('./${filename}.cache.js');\n` +
-        `} else {\n` +
-          `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
-          `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
-          `const script = new Script(wrap(source), { cachedData });\n` +
-          `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
-          `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n` +
-        `}`;
+  
+      if (minify) {
+        const result = terser.minify(code, {
+          compress: false,
+          mangle: {
+            keep_classnames: true,
+            keep_fnames: true
+          },
+          sourceMap: sourceMap ? {
+            content: map,
+            filename,
+            url: `${filename}.map`
+          } : false
+        });
+        // For some reason, auth0 returns "undefined"!
+        // custom terser phase used over Webpack integration for this reason
+        if (result.code !== undefined)
+          ({ code, map } = { code: result.code, map: result.map });
+      }
+  
+      if (v8cache) {
+        const { Script } = require('vm');
+        files[filename + '.cache'] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
+        files[filename + '.cache.js'] = { source: code, permissions: defaultPermissions };
+        if (map) {
+          files[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
+          map = undefined;
+        }
+        code =
+          `if (process.pkg || require('process').platform === 'win32') {\n` +
+            `module.exports=require('./${filename}.cache.js');\n` +
+          `} else {\n` +
+            `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
+            `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
+            `const script = new Script(wrap(source), { cachedData });\n` +
+            `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
+            `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n` +
+          `}`;
+      }
+  
+      if (sourceMap && sourceMapRegister) {
+        code = `require('./sourcemap-register.js');` + code;
+        files['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
+      }
+  
+      if (shebangMatch) {
+        code = shebangMatch[0] + code;
+        // add a line offset to the sourcemap
+        if (map)
+          map.mappings = ";" + map.mappings;
+      }
+
+      files[filename].source = code;
+      if (sourceMap)
+        files[filename + '.map'].source = JSON.stringify(map);
     }
 
-    if (sourceMap && sourceMapRegister) {
-      code = `require('./sourcemap-register.js');` + code;
-      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
-    }
-
-    if (shebangMatch) {
-      code = shebangMatch[0] + code;
-      // add a line offset to the sourcemap
-      if (map)
-        map.mappings = ";" + map.mappings;
-    }
-
-    return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks };
+    return { output: files };
   }
 };
 

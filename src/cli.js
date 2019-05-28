@@ -49,58 +49,39 @@ else {
   api = true;
 }
 
-function renderSummary(code, map, assets, outDir, buildTime) {
+function renderSummary(files, outDir, buildTime) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
-  const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
-  const mapSize = map ? Math.round(Buffer.byteLength(map, "utf8") / 1024) : 0;
-  const assetSizes = Object.create(null);
-  let totalSize = codeSize;
-  let maxAssetNameLength = 8 + (map ? 4 : 0); // length of index.js(.map)?
-  for (const asset of Object.keys(assets)) {
-    const assetSource = assets[asset].source;
+  const fileSizes = Object.create(null);
+  let totalSize = 0;
+  let maxAssetNameLength = 0;
+  for (const file of Object.keys(files)) {
+    const assetSource = files[file].source;
+    if (!assetSource) continue;
     const assetSize = Math.round(
       (assetSource.byteLength || Buffer.byteLength(assetSource, "utf8")) / 1024
     );
-    assetSizes[asset] = assetSize;
+    fileSizes[file] = assetSize;
     totalSize += assetSize;
-    if (asset.length > maxAssetNameLength) maxAssetNameLength = asset.length;
+    if (file.length > maxAssetNameLength) maxAssetNameLength = file.length;
   }
-  const orderedAssets = Object.keys(assets).sort((a, b) =>
-    assetSizes[a] > assetSizes[b] ? 1 : -1
-  );
+  const orderedAssets = Object.keys(files).sort((a, b) => {
+    if ((a.startsWith('asset/') || b.startsWith('asset/')) &&
+        !(a.startsWith('asset/') && b.startsWith('asset/')))
+      return a.startsWith('asset/') ? 1 : -1;
+    return fileSizes[a] > fileSizes[b] ? 1 : -1;
+  });
 
   const sizePadding = totalSize.toString().length;
-
-  let indexRender = `${codeSize
-    .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js"}`;
-  let indexMapRender = map ? `${mapSize
-    .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js.map"}` : '';
 
   let output = "",
     first = true;
   for (const asset of orderedAssets) {
     if (first) first = false;
     else output += "\n";
-    if (codeSize < assetSizes[asset] && indexRender) {
-      output += indexRender + "\n";
-      indexRender = null;
-    }
-    if (mapSize && mapSize < assetSizes[asset] && indexMapRender) {
-      output += indexMapRender + "\n";
-      indexMapRender = null;
-    }
-    output += `${assetSizes[asset]
+    output += `${fileSizes[asset]
       .toString()
       .padStart(sizePadding, " ")}kB  ${outDir}${asset}`;
   }
-
-  if (indexRender) {
-    output += (first ? "" : "\n") + indexRender;
-    first = false;
-  }
-  if (indexMapRender) output += (first ? "" : "\n") + indexMapRender;
 
   output += `\n${totalSize}kB  [${buildTime}ms] - ncc ${nccVersion}`;
 
@@ -227,7 +208,7 @@ async function runCmd (argv, stdout, stderr) {
         }
       );
 
-      async function handler ({ err, code, map, assets, symlinks }) {
+      async function handler ({ err, output }) {
         // handle watch errors
         if (err) {
           stderr.write(err + '\n');
@@ -245,26 +226,21 @@ async function runCmd (argv, stdout, stderr) {
             new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
           ))
         );
-        writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
-        if (map) writeFileSync(outDir + "/index.js.map", map);
 
-        for (const asset of Object.keys(assets)) {
-          const assetPath = outDir + "/" + asset;
-          mkdirp.sync(dirname(assetPath));
-          writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
-        }
-
-        for (const symlink of Object.keys(symlinks)) {
-          const symlinkPath = outDir + "/" + symlink;
-          symlinkSync(symlinks[symlink], symlinkPath);
+        for (const filename of Object.keys(output)) {
+          const file = output[filename];
+          const filePath = outDir + "/" + filename;
+          mkdirp.sync(dirname(filePath));
+          if (typeof file === 'string')
+            symlinkSync(file, filePath);
+          else
+            writeFileSync(filePath, file.source, { mode: file.permissions });
         }
 
         if (!quiet) {
-          stdout.write( 
+          stdout.write(
             renderSummary(
-              code,
-              map,
-              assets,
+              output,
               run ? "" : relative(process.cwd(), outDir),
               Date.now() - startTime,
             ) + '\n'

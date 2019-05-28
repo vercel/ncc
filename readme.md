@@ -68,6 +68,8 @@ See [package-support.md](package-support.md) for some common packages and their 
 
 ```js
 require('@zeit/ncc')('/path/to/input', {
+  // custom filename to use in output (default is "index.js")
+  filename: 'build.js',
   // provide a custom cache path or disable caching
   cache: "./custom/cache/path" | false,
   // externals to leave as requires of the build
@@ -82,12 +84,31 @@ require('@zeit/ncc')('/path/to/input', {
   v8cache: false, // default
   quiet: false, // default
   debugLog = false // default
-}).then(({ code, map, assets }) => {
-  console.log(code);
-  // Assets is an object of asset file names to { source, permissions, symlinks }
-  // expected relative to the output code (if any)
+}).then(({ output }) => {
+  // Output is an object of file names to { source, permissions } | string
+  // Where string entries represent symlinks to other files, referenced relatively.
+  // The main build file is located at output[filename].
+  output['build.js'].source
 })
 ```
+
+Multiple entry points can be built by providing an object to build. In this case the output returned is an array of `{ code, map }` pairs:
+
+```js
+require('@zeit/ncc')({
+  entry1: '/path/to/input1',
+  entry2: '/path/to/input2
+}, {
+  filename: '[name].js' // default
+}).then(({ output }) => {
+  output['entry1.js'].source
+  output['entry1.js.map'].source
+  output['entry2.js'].source
+  // ... assets
+});
+```
+
+The `filename` option supports all Webpack supported patterns (eg `[name].js`) in the multi-entry case.
 
 When `watch: true` is set, the build object is not a promise, but has the following signature:
 
