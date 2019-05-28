@@ -64,7 +64,7 @@ module.exports = (
   }
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file${typeof entry === 'object' && Object.keys(entry).length > 1 ? 's' : ''} ${Object.values(processedEntry).join(', ')}`);
+    console.log(`ncc: Compiling file${Object.keys(processedEntry).length > 1 ? 's' : ''} ${Object.values(processedEntry).join(', ')}`);
   }
   // How to handle for multi-entry case?
   process.env.TYPESCRIPT_LOOKUP_PATH = Object.values(processedEntry)[0];
