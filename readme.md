@@ -87,8 +87,8 @@ require('@zeit/ncc')('/path/to/input', {
 }).then(({ files, symlinks }) => {
   // files: an object of file names to { source, permissions }
   // symlinks: an object of symlink mappings required for the build
-  // The main build file is located at files[input]:
-  files['build.js'].source
+  // The main file is located at 'index.js':
+  files['index.js'].source
 })
 ```
 
@@ -99,6 +99,7 @@ require('@zeit/ncc')({
   entry1: '/path/to/input1',
   entry2: '/path/to/input2
 }).then(({ files, symlinks }) => {
+  // named entry points are available at their names:
   files['entry1.js'].source
   files['entry1.js.map'].source
   files['entry2.js'].source
