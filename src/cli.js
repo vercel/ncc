@@ -258,7 +258,7 @@ async function runCmd (argv, stdout, stderr) {
         if (run) {
           // find node_modules
           const root = resolve('/node_modules');
-          const buildFile = eval("require.resolve")(args._[1]);
+          const buildFile = resolve(args._[1]);
           let nodeModulesDir = dirname(buildFile) + "/node_modules";
           do {
             if (nodeModulesDir === root) {
