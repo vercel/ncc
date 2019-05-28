@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname } = require("path");
+const { join, dirname, resolve: pathResolve, basename, extname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -48,6 +48,13 @@ module.exports = (
 ) => {
   if (!filename)
     filename = typeof entry === 'object' && Object.keys(entry).length > 1 ? "[name].js" : "index.js";
+  if (entry instanceof Array) {
+    const objEntry = Object.create(null);
+    entry.forEach(file => {
+      objEntry[basename(file.substr(0, file.length - extname(file).length))] = pathResolve(file);
+    });
+    entry = objEntry;
+  }
   const resolvedEntry = resolve.sync(typeof entry === 'string' ? entry : Object.values(entry)[0], { basedir: process.cwd() });
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);

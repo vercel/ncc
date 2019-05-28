@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep, basename, extname } = require("path");
+const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
@@ -185,16 +185,7 @@ async function runCmd (argv, stdout, stderr) {
 
     // fallthrough
     case "build":
-      let buildFiles;
-      if (runArgs) {
-        buildFiles = resolve(args._[1]);
-      }
-      else {
-        buildFiles = Object.create(null);
-        args._.slice(1).forEach(file => {
-          buildFiles[basename(file.substr(0, file.length - extname(file).length))] = resolve(file);
-        });
-      }
+      const buildFiles = runArgs ? resolve(args._[1]) : args._.slice(1);
 
       let startTime = Date.now();
       let ps;
