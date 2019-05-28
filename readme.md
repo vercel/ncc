@@ -86,15 +86,15 @@ require('@zeit/ncc')('/path/to/input', {
   v8cache: false, // default
   quiet: false, // default
   debugLog = false // default
-}).then(({ output }) => {
-  // Output is an object of file names to { source, permissions } | string
-  // Where string entries represent symlinks to other files, referenced relatively.
-  // The main build file is located at output[filename].
-  output['build.js'].source
+}).then(({ files, symlinks }) => {
+  // files: an object of file names to { source, permissions }
+  // symlinks: an object of symlink mappings required for the build
+  // The main build file is located at files[filename]:
+  files['build.js'].source
 })
 ```
 
-Multiple entry points can be built by providing an object to build. In this case the output returned is an array of `{ code, map }` pairs:
+Multiple entry points can be built by providing an object to build. In this case, those files are avaiable as additional output files:
 
 ```js
 require('@zeit/ncc')({
@@ -102,10 +102,10 @@ require('@zeit/ncc')({
   entry2: '/path/to/input2
 }, {
   filename: '[name].js' // default
-}).then(({ output }) => {
-  output['entry1.js'].source
-  output['entry1.js.map'].source
-  output['entry2.js'].source
+}).then(({ files, symlinks }) => {
+  files['entry1.js'].source
+  files['entry1.js.map'].source
+  files['entry2.js'].source
   // ... assets
 });
 ```
@@ -118,7 +118,7 @@ When `watch: true` is set, the build object is not a promise, but has the follow
 {
   // handler re-run on each build completion
   // watch errors are reported on "err"
-  handler (({ err, code, map, assets }) => { ... })
+  handler (({ err, files, symlinks }) => { ... })
   // handler re-run on each rebuild start
   rebuild (() => {})
   // close the watcher

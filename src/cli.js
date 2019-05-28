@@ -213,7 +213,7 @@ async function runCmd (argv, stdout, stderr) {
         }
       );
 
-      async function handler ({ err, output }) {
+      async function handler ({ err, files, symlinks }) {
         // handle watch errors
         if (err) {
           stderr.write(err + '\n');
@@ -232,20 +232,24 @@ async function runCmd (argv, stdout, stderr) {
           ))
         );
 
-        for (const filename of Object.keys(output)) {
-          const file = output[filename];
+        for (const filename of Object.keys(files)) {
+          const file = files[filename];
           const filePath = outDir + "/" + filename;
           mkdirp.sync(dirname(filePath));
-          if (typeof file === 'string')
-            symlinkSync(file, filePath);
-          else
-            writeFileSync(filePath, file.source, { mode: file.permissions });
+          writeFileSync(filePath, file.source, { mode: file.permissions });
+        }
+
+        for (const filename of Object.keys(symlinks)) {
+          const file = symlinks[filename];
+          const filePath = outDir + "/" + filename;
+          mkdirp.sync(dirname(filePath));
+          symlinkSync(file, filePath);
         }
 
         if (!quiet) {
           stdout.write(
             renderSummary(
-              output,
+              files,
               run ? "" : relative(process.cwd(), outDir),
               Date.now() - startTime,
             ) + '\n'

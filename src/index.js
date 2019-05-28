@@ -309,11 +309,12 @@ module.exports = (
 
   function finalizeHandler (stats) {
     const files = Object.create(null);
+    const symlinks = Object.create(null);
     getFlatFiles(mfs.data, files, relocateLoader.getAssetPermissions);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
       const resolved = join(dirname(key), value);
       if (resolved in files && key in files === false)
-        files[key] = value;
+        symlinks[key] = value;
     }
 
     for (const chunk of stats.compilation.chunks) {
@@ -395,7 +396,7 @@ module.exports = (
         files[filename + '.map'].source = JSON.stringify(map);
     }
 
-    return { output: files };
+    return { files, symlinks };
   }
 };
 
