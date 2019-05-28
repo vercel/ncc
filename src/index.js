@@ -392,7 +392,7 @@ module.exports = (
       }
 
       files[filename].source = code;
-      if (sourceMap)
+      if (sourceMap && map)
         files[filename + '.map'].source = JSON.stringify(map);
     }
 
@@ -411,7 +411,7 @@ function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
     else if (!curPath.endsWith("/")) {
       output[curPath.substr(1)] = {
         source: mfsData[path],
-        permissions: getAssetPermissions(curPath.substr(1))
+        permissions: getAssetPermissions(curPath.substr(1)) || defaultPermissions
       };
     }
   }

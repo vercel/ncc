@@ -64,7 +64,7 @@ function renderSummary(files, outDir, buildTime) {
     totalSize += assetSize;
     if (file.length > maxAssetNameLength) maxAssetNameLength = file.length;
   }
-  const orderedAssets = Object.keys(files).sort((a, b) => {
+  const orderedAssets = Object.keys(files).filter(file => typeof files[file] === 'object').sort((a, b) => {
     if ((a.startsWith('asset/') || b.startsWith('asset/')) &&
         !(a.startsWith('asset/') && b.startsWith('asset/')))
       return a.startsWith('asset/') ? 1 : -1;
@@ -75,12 +75,12 @@ function renderSummary(files, outDir, buildTime) {
 
   let output = "",
     first = true;
-  for (const asset of orderedAssets) {
+  for (const file of orderedAssets) {
     if (first) first = false;
     else output += "\n";
-    output += `${fileSizes[asset]
+    output += `${fileSizes[file]
       .toString()
-      .padStart(sizePadding, " ")}kB  ${outDir}${asset}`;
+      .padStart(sizePadding, " ")}kB  ${outDir}${file}`;
   }
 
   output += `\n${totalSize}kB  [${buildTime}ms] - ncc ${nccVersion}`;
