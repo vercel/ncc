@@ -4,6 +4,12 @@
     expect: { code: 0 }
   },
   {
+    args: ["build", "test/integration/test.ts", "-o", "tmp"],
+    expect (code, stdout, stderr) {
+      return stdout.toString().indexOf('tmp/index.js') !== -1;
+    }
+  },
+  {
     args: ["run", "--v8-cache", "test/integration/test.ts"],
     expect: { code: 0 }
   },
