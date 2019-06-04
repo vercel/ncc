@@ -185,7 +185,7 @@ async function runCmd (argv, stdout, stderr) {
 
     // fallthrough
     case "build":
-      const buildFiles = runArgs ? resolve(args._[1]) : args._.slice(1);
+      const buildFiles = (runArgs || args._.length === 2) ? resolve(args._[1]) : args._.slice(1);
 
       let startTime = Date.now();
       let ps;
