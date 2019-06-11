@@ -20,7 +20,7 @@
     "@bugsnag/js": "^5.0.1",
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
     "@google-cloud/bigquery": "^2.0.1",
-    "@google-cloud/firestore": "^0.19.0",
+    "@google-cloud/firestore": "^2.2.0",
     "@sentry/node": "^4.3.0",
     "@tensorflow/tfjs-node": "^0.3.0",
     "@zeit/webpack-asset-relocator-loader": "0.5.1",
