@@ -108,13 +108,11 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     }
     catch (e) {
       if (e.silent) {
-        if (e.exitCode !== 0) {
-          let lastErr = stderr.data[stderr.data.length - 1];
-          if (lastErr)
-            throw new Error(lastErr);
-          else
-            throw new Error('Process exited with code ' + e.exitCode);
-        }
+        let lastErr = stderr.data[stderr.data.length - 1];
+        if (lastErr)
+          throw new Error(lastErr);
+        else
+          throw new Error('Process exited with code ' + e.exitCode);
       }
       throw e;
     }
