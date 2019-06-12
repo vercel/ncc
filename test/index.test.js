@@ -108,22 +108,16 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     }
     catch (e) {
       if (e.silent) {
-        let lastErr = stderr.data[stderr.data.length - 1];
-        if (lastErr)
-          throw new Error(lastErr);
-        else
-          throw new Error('Process exited with code ' + e.exitCode);
+        if (e.exitCode !== 0) {
+          let lastErr = stderr.data[stderr.data.length - 1];
+          if (lastErr)
+            throw new Error(lastErr);
+          else
+            throw new Error('Process exited with code ' + e.exitCode);
+        }
       }
       throw e;
     }
-    stderr.data.forEach(chunk => {
-      const chunkStr = chunk.toString();
-      if (chunkStr.indexOf('Your CPU supports instructions that this TensorFlow binary was not compiled to use') !== -1)
-        return;
-      if (chunkStr.startsWith('(node:'))
-        return;
-      throw new Error(chunkStr);
-    });
     if (expectedStdout) {
       let stdoutStr = '';
       for (const chunk of stdout.data)
