@@ -5248,6 +5248,14 @@ google-p12-pem@^2.0.0:
   dependencies:
     node-forge "^0.8.0"
 
+google-proto-files@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/google-proto-files/-/google-proto-files-1.0.1.tgz#029d9ad5ac9b65925a018dfe5ff0561113e02356"
+  integrity sha512-s5/pNQjweaPvCbH7uiTbKjrBye8jyM5pP+ZNj7P4j/t/VkV+DZua+SkZPrVGYy+cIwRBxTXrAptYBzpNn4DQAA==
+  dependencies:
+    protobufjs "^6.8.0"
+    walkdir "^0.4.0"
+
 google-proto-files@^0.18.0:
   version "0.18.0"
   resolved "https://registry.yarnpkg.com/google-proto-files/-/google-proto-files-0.18.0.tgz#5be91bac15b38dbeae00393b0e47b9acb6c51cf2"
