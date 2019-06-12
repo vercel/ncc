@@ -365,6 +365,11 @@
   resolved "https://registry.yarnpkg.com/@google-cloud/promisify/-/promisify-0.3.1.tgz#f641e6d944a8e0a05ee0cb1091dfa60089becdba"
   integrity sha512-QzB0/IMvB0eFxFK7Eqh+bfC8NLv3E9ScjWQrPOk6GgfNroxcVITdTlT8NRsRrcp5+QQJVPLkRqKG0PUdaWXmHw==
 
+"@google-cloud/promisify@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/promisify/-/promisify-1.0.0.tgz#1ae99ab8dd36807ee9923a81f8c6bc9159025fe9"
+  integrity sha512-B1wYzEqvM71QQgzc47xH3np40dxT17G76gMYew0q/fSwU/iWu7nNfxOU8Ataormee5j/n27G1muKU85LRdecww==
+
 "@google-cloud/storage@^1.6.0":
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/@google-cloud/storage/-/storage-1.7.0.tgz#07bff573d92d5c294db6a04af246688875a8f74b"
@@ -391,6 +396,16 @@
     stream-events "^1.0.1"
     through2 "^2.0.0"
     xdg-basedir "^3.0.0"
+
+"@google-cloud/vision@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@google-cloud/vision/-/vision-1.1.1.tgz#84f2bf825b849acd2fb7d604f7ed1f78dfdec297"
+  integrity sha512-khhyUx5XmVRoUZYjQvkNguwjAgylJenSN9IwWX3L+lhPanvg1HYw2jeATLrBHbP77SzFCbzJ3+IxTR+yTjttmA==
+  dependencies:
+    "@google-cloud/promisify" "^1.0.0"
+    google-gax "^1.0.0"
+    is "^3.2.1"
+    protobufjs "^6.8.6"
 
 "@grpc/grpc-js@^0.3.0":
   version "0.3.2"

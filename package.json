@@ -106,5 +106,8 @@
     "webpack": "5.0.0-alpha.12",
     "when": "^3.7.8",
     "yoga-layout": "^1.9.3"
+  },
+  "dependencies": {
+    "@google-cloud/vision": "^1.1.1"
   }
 }
