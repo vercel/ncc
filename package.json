@@ -42,7 +42,7 @@
     "esm": "^3.2.22",
     "express": "^4.16.4",
     "fetch-h2": "^1.0.2",
-    "firebase": "^5.5.8",
+    "firebase": "^6.1.1",
     "firebase-admin": "^6.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "fontkit": "^1.7.7",
