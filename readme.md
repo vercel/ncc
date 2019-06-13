@@ -92,7 +92,7 @@ require('@zeit/ncc')('/path/to/input', {
 })
 ```
 
-Multiple entry points can be built by providing an object to build. In this case, those files are avaiable as additional output files:
+Multiple entry points can be built by providing an object to build. In this case, those files are available as additional output files:
 
 ```js
 require('@zeit/ncc')({
