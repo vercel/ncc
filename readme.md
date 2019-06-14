@@ -97,7 +97,7 @@ Multiple entry points can be built by providing an object to build. In this case
 ```js
 require('@zeit/ncc')({
   entry1: '/path/to/input1',
-  entry2: '/path/to/input2
+  entry2: '/path/to/input2'
 }).then(({ files, symlinks }) => {
   // named entry points are available at their names:
   files['entry1.js'].source
