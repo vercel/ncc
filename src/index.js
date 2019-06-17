@@ -62,6 +62,9 @@ module.exports = (
   else if (typeof entry === 'string') {
     processedEntry['index.js'] = pathResolve(entry);
   }
+  const sepEntry = Object.keys(processedEntry).find(name => name.match(/\/|\\/));
+  if (sepEntry)
+    throw new Error('Cannot create a multi-entry build with names containing path separators.');
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
     console.log(`ncc: Compiling file${Object.keys(processedEntry).length > 1 ? 's' : ''} ${Object.values(processedEntry).join(', ')}`);
