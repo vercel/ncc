@@ -36,8 +36,6 @@ $ ncc build input.js -o dist
 
 Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
-It is also possible to build multiple files in a code-splitting build by passing additional inputs.
-
 ### Execution Testing
 
 For testing and debugging, a file can be built into a temporary directory and executed with full source maps support with the command:
@@ -84,27 +82,11 @@ require('@zeit/ncc')('/path/to/input', {
   v8cache: false, // default
   quiet: false, // default
   debugLog = false // default
-}).then(({ files, symlinks }) => {
-  // files: an object of file names to { source, permissions }
-  // symlinks: an object of symlink mappings required for the build
-  // The main file is located at 'index.js':
-  files['index.js'].source
+}).then(({ code, map, assets }) => {
+  console.log(code);
+  // Assets is an object of asset file names to { source, permissions, symlinks }
+  // expected relative to the output code (if any)
 })
-```
-
-Multiple entry points can be built by providing an object to build. In this case, those files are available as additional output files:
-
-```js
-require('@zeit/ncc')({
-  entry1: '/path/to/input1',
-  entry2: '/path/to/input2'
-}).then(({ files, symlinks }) => {
-  // named entry points are available at their names:
-  files['entry1.js'].source
-  files['entry1.js.map'].source
-  files['entry2.js'].source
-  // ... assets
-});
 ```
 
 When `watch: true` is set, the build object is not a promise, but has the following signature:
@@ -113,7 +95,7 @@ When `watch: true` is set, the build object is not a promise, but has the follow
 {
   // handler re-run on each build completion
   // watch errors are reported on "err"
-  handler (({ err, files, symlinks }) => { ... })
+  handler (({ err, code, map, assets }) => { ... })
   // handler re-run on each rebuild start
   rebuild (() => {})
   // close the watcher

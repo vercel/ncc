@@ -21,8 +21,8 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         'externaltest': 'externalmapped'
       }
     }).then(
-      async ({ files }) => {
-        const actual = files['index.js'].source
+      async ({ code, assets }) => {
+        const actual = code
           .trim()
           // Windows support
           .replace(/\r/g, "");
