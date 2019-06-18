@@ -2,6 +2,7 @@
 
 const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
+const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
 const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
@@ -11,8 +12,8 @@ const { version: nccVersion } = require('../package.json');
 const usage = `Usage: ncc <cmd> <opts>
 
 Commands:
-  build <input-file>+ [opts]
-  run <input-file> <args>? [opts]
+  build <input-file> [opts]
+  run <input-file> [opts]
   cache clean|dir|size
   help
   version
@@ -48,39 +49,58 @@ else {
   api = true;
 }
 
-function renderSummary(files, outDir, buildTime) {
+function renderSummary(code, map, assets, outDir, buildTime) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
-  const fileSizes = Object.create(null);
-  let totalSize = 0;
-  let maxAssetNameLength = 0;
-  for (const file of Object.keys(files)) {
-    const assetSource = files[file].source;
-    if (!assetSource) continue;
+  const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
+  const mapSize = map ? Math.round(Buffer.byteLength(map, "utf8") / 1024) : 0;
+  const assetSizes = Object.create(null);
+  let totalSize = codeSize;
+  let maxAssetNameLength = 8 + (map ? 4 : 0); // length of index.js(.map)?
+  for (const asset of Object.keys(assets)) {
+    const assetSource = assets[asset].source;
     const assetSize = Math.round(
       (assetSource.byteLength || Buffer.byteLength(assetSource, "utf8")) / 1024
     );
-    fileSizes[file] = assetSize;
+    assetSizes[asset] = assetSize;
     totalSize += assetSize;
-    if (file.length > maxAssetNameLength) maxAssetNameLength = file.length;
+    if (asset.length > maxAssetNameLength) maxAssetNameLength = asset.length;
   }
-  const orderedAssets = Object.keys(files).filter(file => typeof files[file] === 'object').sort((a, b) => {
-    if ((a.startsWith('asset/') || b.startsWith('asset/')) &&
-        !(a.startsWith('asset/') && b.startsWith('asset/')))
-      return a.startsWith('asset/') ? 1 : -1;
-    return fileSizes[a] > fileSizes[b] ? 1 : -1;
-  });
+  const orderedAssets = Object.keys(assets).sort((a, b) =>
+    assetSizes[a] > assetSizes[b] ? 1 : -1
+  );
 
   const sizePadding = totalSize.toString().length;
 
+  let indexRender = `${codeSize
+    .toString()
+    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js"}`;
+  let indexMapRender = map ? `${mapSize
+    .toString()
+    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js.map"}` : '';
+
   let output = "",
     first = true;
-  for (const file of orderedAssets) {
+  for (const asset of orderedAssets) {
     if (first) first = false;
     else output += "\n";
-    output += `${fileSizes[file]
+    if (codeSize < assetSizes[asset] && indexRender) {
+      output += indexRender + "\n";
+      indexRender = null;
+    }
+    if (mapSize && mapSize < assetSizes[asset] && indexMapRender) {
+      output += indexMapRender + "\n";
+      indexMapRender = null;
+    }
+    output += `${assetSizes[asset]
       .toString()
-      .padStart(sizePadding, " ")}kB  ${outDir}${file}`;
+      .padStart(sizePadding, " ")}kB  ${outDir}${asset}`;
   }
+
+  if (indexRender) {
+    output += (first ? "" : "\n") + indexRender;
+    first = false;
+  }
+  if (indexMapRender) output += (first ? "" : "\n") + indexMapRender;
 
   output += `\n${totalSize}kB  [${buildTime}ms] - ncc ${nccVersion}`;
 
@@ -167,7 +187,8 @@ async function runCmd (argv, stdout, stderr) {
 
     break;
     case "run":
-      var runArgs = args._.slice(2);
+      if (args._.length > 2)
+        errTooManyArguments("run");
 
       if (args["--out"])
         errFlagNotCompatible("--out", "run");
@@ -185,12 +206,14 @@ async function runCmd (argv, stdout, stderr) {
 
     // fallthrough
     case "build":
-      const buildFiles = (runArgs || args._.length === 2) ? resolve(args._[1]) : args._.slice(1);
+      if (args._.length > 2)
+        errTooManyArguments("build");
 
       let startTime = Date.now();
       let ps;
+      const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
       const ncc = require("./index.js")(
-        buildFiles,
+        buildFile,
         {
           debugLog: args["--debug"],
           minify: args["--minify"],
@@ -204,7 +227,7 @@ async function runCmd (argv, stdout, stderr) {
         }
       );
 
-      async function handler ({ err, files, symlinks }) {
+      async function handler ({ err, code, map, assets, symlinks }) {
         // handle watch errors
         if (err) {
           stderr.write(err + '\n');
@@ -222,25 +245,26 @@ async function runCmd (argv, stdout, stderr) {
             new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
           ))
         );
+        writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
+        if (map) writeFileSync(outDir + "/index.js.map", map);
 
-        for (const filename of Object.keys(files)) {
-          const file = files[filename];
-          const filePath = outDir + "/" + filename;
-          mkdirp.sync(dirname(filePath));
-          writeFileSync(filePath, file.source, { mode: file.permissions });
+        for (const asset of Object.keys(assets)) {
+          const assetPath = outDir + "/" + asset;
+          mkdirp.sync(dirname(assetPath));
+          writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
         }
 
-        for (const filename of Object.keys(symlinks)) {
-          const file = symlinks[filename];
-          const filePath = outDir + "/" + filename;
-          mkdirp.sync(dirname(filePath));
-          symlinkSync(file, filePath);
+        for (const symlink of Object.keys(symlinks)) {
+          const symlinkPath = outDir + "/" + symlink;
+          symlinkSync(symlinks[symlink], symlinkPath);
         }
 
         if (!quiet) {
-          stdout.write(
+          stdout.write( 
             renderSummary(
-              files,
+              code,
+              map,
+              assets,
               run ? "" : relative(process.cwd(), outDir),
               Date.now() - startTime,
             ) + '\n'
@@ -253,7 +277,6 @@ async function runCmd (argv, stdout, stderr) {
         if (run) {
           // find node_modules
           const root = resolve('/node_modules');
-          const buildFile = resolve(args._[1]);
           let nodeModulesDir = dirname(buildFile) + "/node_modules";
           do {
             if (nodeModulesDir === root) {
@@ -265,7 +288,7 @@ async function runCmd (argv, stdout, stderr) {
           } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
           if (nodeModulesDir)
             symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
-          ps = require("child_process").fork(outDir + "/index.js", runArgs, {
+          ps = require("child_process").fork(outDir + "/index.js", {
             stdio: api ? 'pipe' : 'inherit'
           });
           if (api) {
