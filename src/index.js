@@ -95,7 +95,7 @@ module.exports = (
 
   const externalMap = new Map();
 
-  if (externals instanceof Array)
+  if (Array.isArray(externals))
     externals.forEach(external => externalMap.set(external, external));
   else if (typeof externals === 'object')
     Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
