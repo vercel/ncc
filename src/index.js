@@ -370,15 +370,12 @@ module.exports = (
         map = undefined;
       }
       code =
-        `if (process.pkg || require('process').platform === 'win32') {\n` +
-          `module.exports=require('./${filename}.cache.js');\n` +
-        `} else {\n` +
-          `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
-          `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8'), cachedData = readFileSync(__dirname + '/${filename}.cache');\n` +
-          `const script = new Script(wrap(source), { cachedData });\n` +
-          `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
-          `process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n` +
-        `}`;
+        `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
+        `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8');\n` +
+        `const cachedData = !process.pkg && require('process').platform !== 'win32' && readFileSync(__dirname + '/${filename}.cache');\n` +
+        `const script = new Script(wrap(source), cachedData ? { cachedData } : {});\n` +
+        `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
+        `if (cachedData) process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n`;
     }
 
     if (sourceMap && sourceMapRegister) {
