@@ -29,6 +29,7 @@ module.exports =
 /******/ 	}
 /******/
 /******/
+/******/ 	__webpack_require__.ab = __dirname + "/";
 /******/
 /******/ 	// the startup function
 /******/ 	function startup() {
