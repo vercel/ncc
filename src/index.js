@@ -43,6 +43,7 @@ module.exports = (
     sourceMapBasePrefix = '../',
     watch = false,
     v8cache = false,
+    filterAssetBase = process.cwd(),
     quiet = false,
     debugLog = false
   } = {}
@@ -154,6 +155,7 @@ module.exports = (
           }, {
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: {
+              filterAssetBase,
               existingAssetNames,
               escapeNonAnalyzableRequires: true,
               wrapperCompatibility: true,

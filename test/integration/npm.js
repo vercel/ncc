@@ -1,5 +1,6 @@
 const npm = require('npm');
 const install = require('npm/lib/install');
+const rimraf = require('rimraf');
 
 npm.load((err) => {
   if (err) {
@@ -13,4 +14,5 @@ npm.load((err) => {
   }
   const args = [`lodash@4.1.17`];
   install('./asdf', args, () => {});
+  rimraf.sync('./asdf');
 });

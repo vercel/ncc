@@ -72,6 +72,8 @@ require('@zeit/ncc')('/path/to/input', {
   cache: "./custom/cache/path" | false,
   // externals to leave as requires of the build
   externals: ["externalpackage"],
+  // directory outside of which never to emit assets
+  filterAssetBase: process.cwd(), // default
   minify: false, // default
   sourceMap: false, // default
   sourceMapBasePrefix: '../' // default treats sources as output-relative
