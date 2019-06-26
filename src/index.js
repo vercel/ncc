@@ -221,7 +221,7 @@ module.exports = (
               }
             );
           });
-          compiler.hooks.compilation.tap("relocate-loader", relocateLoader.initAssetPermissionsCache);
+          compiler.hooks.compilation.tap("relocate-loader", compilation => relocateLoader.initAssetCache(compilation));
           compiler.hooks.watchRun.tap("ncc", () => {
             if (rebuildHandler)
               rebuildHandler();
