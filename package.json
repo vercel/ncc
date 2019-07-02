@@ -31,6 +31,7 @@
     "aws-sdk": "^2.356.0",
     "axios": "^0.18.0",
     "azure-storage": "^2.10.2",
+    "browserify-middleware": "^8.1.1",
     "bytes": "^3.0.0",
     "canvas": "^2.2.0",
     "chromeless": "^1.5.2",
