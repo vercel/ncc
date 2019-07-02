@@ -116,7 +116,7 @@ module.exports = typescript;
   // copy typescript types
   await copy(
     __dirname + "/../node_modules/typescript/lib/*.ts",
-    __dirname + "/../dist/ncc/loaders/lib/"
+    __dirname + "/../dist/ncc/loaders/typescript/lib/"
   );
 
   for (const file of await glob(__dirname + "/../dist/**/*.js")) {
