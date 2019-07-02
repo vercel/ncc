@@ -12,7 +12,7 @@ function getPackageBase(id) {
   }
 }
 
-const emptyModules = { 'uglify-js': true };
+const emptyModules = { 'uglify-js': true, 'uglify-es': true };
 
 module.exports = function (input, map) {
   const id = this.resourcePath;
