@@ -13129,10 +13129,10 @@ syntax-error@^1.1.1:
   dependencies:
     acorn-node "^1.2.0"
 
-tapable@2.0.0-beta.4:
-  version "2.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.0.0-beta.4.tgz#26a7acfdaa064768020ee909fc5cb7fc8778fb02"
-  integrity sha512-2SqW2/WlGd2mP0ukqm8KQCou36O77zdqo2e+pp5viqGRIcHuUGB+TLA8OnzOh/wUAF6467htfNsWmWV92vufNQ==
+tapable@2.0.0-beta.5:
+  version "2.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.0.0-beta.5.tgz#51def4d94c58ad8fadf00cac7661216502fe9c70"
+  integrity sha512-P4o84kC8CD66ZuCs6noh3QLU2ZuaBvMl0yCmp9rr0GXZyIfLd1sB2ZvJZjitQgfds8GDKRLmiiAcssr2bEHQ0A==
 
 tapable@^1.0.0:
   version "1.1.1"
@@ -14050,11 +14050,12 @@ watchify@^3.3.0:
     through2 "^2.0.0"
     xtend "^4.0.0"
 
-watchpack@2.0.0-beta.3:
-  version "2.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-2.0.0-beta.3.tgz#deec81c4244bf4898633cbf887415d5f84747bed"
-  integrity sha512-rzxJ4SY3PS9ii2YnrF0nM/N4OtGeqBoCIhWHVwg3FrHaRZ3u/wuoE/lYx+eYWH8bssnXoBVqWbRbS1vCxSBhoA==
+watchpack@2.0.0-beta.5:
+  version "2.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-2.0.0-beta.5.tgz#c005db39570d81d9d34334870abc0f548901b880"
+  integrity sha512-HGqh9e9QZFhow8JYX+1+E+kIYK0uTTsk6rCOkI0ff0f9kMO0wX783yW8saQC9WDx7qHpVGPXsRnld9nY7iwzQA==
   dependencies:
+    glob-to-regexp "^0.4.1"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
 
@@ -14091,10 +14092,10 @@ webpack-sources@^1.1.0:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@5.0.0-alpha.16:
-  version "5.0.0-alpha.16"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.0.0-alpha.16.tgz#95c880ec923f5d1228e6d34853ee0b4346421af5"
-  integrity sha512-sMcHUapRGT/rsCy2C1ugvrIJA3J+ysayMO+BCDQj+W9PbU/f+knyINXVx3U2QsqVMCFMYF67GsWwiEJDOomang==
+webpack@5.0.0-alpha.17:
+  version "5.0.0-alpha.17"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.0.0-alpha.17.tgz#17fb88bc066313cbc8d05eedf236fc802592ef97"
+  integrity sha512-tKNeZe+fWxrIEiLVhv00DUgyU6X/9M65zef2//XKcXlcFWLj99qrrOxpKZ/wX9B55IrQyW9ScgLuFO5ZtmWkTQ==
   dependencies:
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/helper-module-context" "1.8.5"
@@ -14117,9 +14118,9 @@ webpack@5.0.0-alpha.16:
     memory-fs "~0.4.1"
     neo-async "^2.6.0"
     schema-utils "^1.0.0"
-    tapable "2.0.0-beta.4"
+    tapable "2.0.0-beta.5"
     terser-webpack-plugin "^1.2.1"
-    watchpack "2.0.0-beta.3"
+    watchpack "2.0.0-beta.5"
     webpack-sources "2.0.0-beta.1"
 
 websocket-driver@>=0.5.1:
