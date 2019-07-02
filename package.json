@@ -8,7 +8,7 @@
     "ncc": "./dist/ncc/cli.js"
   },
   "scripts": {
-    "build": "node scripts/build",
+    "build": "node scripts/build && curl -L https://unpkg.com/@zeit/ncc@0.18/dist/ncc/loaders/ts-loader.js.cache.js > dist/ncc/loaders/ts-loader.js.cache.js",
     "build-test-binary": "cd test/binary && node-gyp rebuild && cp build/Release/hello.node ../integration/hello.node",
     "codecov": "codecov",
     "test": "npm run build-test-binary && npm run build && node --expose-gc --max_old_space_size=3072 node_modules/.bin/jest",
@@ -23,7 +23,7 @@
     "@google-cloud/firestore": "^2.2.0",
     "@sentry/node": "^4.3.0",
     "@tensorflow/tfjs-node": "^0.3.0",
-    "@zeit/webpack-asset-relocator-loader": "0.5.7",
+    "@zeit/webpack-asset-relocator-loader": "0.6.1",
     "analytics-node": "^3.3.0",
     "apollo-server-express": "^2.2.2",
     "arg": "^4.1.0",
