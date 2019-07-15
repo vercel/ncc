@@ -85,7 +85,7 @@ require('@zeit/ncc')('/path/to/input', {
   quiet: false, // default
   debugLog = false, // default
   // https://webpack.js.org/configuration/resolve/#resolvealias
-  resolveAlias: {} // default,
+  resolveAlias: {}, // default
   // https://webpack.js.org/configuration/resolve/#resolvemodules
   resolveModules: [] // default
 }).then(({ code, map, assets }) => {
