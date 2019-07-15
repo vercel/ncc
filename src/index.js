@@ -45,7 +45,9 @@ module.exports = (
     v8cache = false,
     filterAssetBase = process.cwd(),
     quiet = false,
-    debugLog = false
+    debugLog = false,
+    resolveAlias = {},
+    resolveModules = []
   } = {}
 ) => {
   if (!quiet) {
@@ -128,10 +130,12 @@ module.exports = (
       libraryTarget: "commonjs2"
     },
     resolve: {
+      alias: resolveAlias,
       extensions: SUPPORTED_EXTENSIONS,
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
+      modules: ['node_modules'].concat(resolveModules),
       plugins: resolvePlugins
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175

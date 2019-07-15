@@ -83,7 +83,11 @@ require('@zeit/ncc')('/path/to/input', {
   watch: false, // default
   v8cache: false, // default
   quiet: false, // default
-  debugLog = false // default
+  debugLog = false, // default
+  // https://webpack.js.org/configuration/resolve/#resolvealias
+  resolveAlias: {} // default,
+  // https://webpack.js.org/configuration/resolve/#resolvemodules
+  resolveModules: [] // default
 }).then(({ code, map, assets }) => {
   console.log(code);
   // Assets is an object of asset file names to { source, permissions, symlinks }
