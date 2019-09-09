@@ -71,9 +71,15 @@ module.exports = (
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
   try {
-    resolvePlugins.push(new TsconfigPathsPlugin({ silent: true }));
-
     const tsconfig = tsconfigPaths.loadConfig();
+    const fullTsconfig = require(tsconfig.configFileAbsolutePath)
+
+    const tsconfigPathsOptions = { silent: true }
+    if (fullTsconfig.compilerOptions.allowJs) {
+      tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
+    }
+    resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
+
     if (tsconfig.resultType === "success") {
       tsconfigMatchPath = tsconfigPaths.createMatchPath(tsconfig.absoluteBaseUrl, tsconfig.paths);
     }
