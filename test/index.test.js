@@ -17,6 +17,9 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
     await ncc(`${testDir}/${inputFile}`, {
+      alias: {
+        'aliastest': `${testDir}/aliasmap.js`
+      },
       externals: {
         'externaltest': 'externalmapped'
       }

@@ -36,6 +36,7 @@ module.exports = (
   {
     cache,
     externals = [],
+    alias = [],
     filename = "index.js",
     minify = false,
     sourceMap = false,
@@ -107,6 +108,12 @@ module.exports = (
   else if (typeof externals === 'object')
     Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
 
+  const aliasMap = {};
+  if (Array.isArray(aliasMap))
+    alias.forEach(alias => aliasMap[alias[0]] = alias[1]);
+  else if (typeof alias === 'object')
+    Object.keys(alias).forEach(from => aliasMap[from] = alias[from]);
+
   let watcher, watchHandler, rebuildHandler;
 
   const compiler = webpack({
@@ -138,7 +145,8 @@ module.exports = (
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
-      plugins: resolvePlugins
+      plugins: resolvePlugins,
+      alias: aliasMap
     },
     // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
     node: false,
