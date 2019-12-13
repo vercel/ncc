@@ -12,6 +12,7 @@ jobs:
   test:
     name: Test on node ${{ matrix.node }} and ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         node: [10]
