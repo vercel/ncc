@@ -26,5 +26,7 @@ jobs:
       run: node --version
     - name: Install Dependencies
       run: yarn install
-    - name: Run Tests
+    - name: Build Test Binary
       run: yarn build-test-binary
+    - name: Run Tests
+      run: yarn test
