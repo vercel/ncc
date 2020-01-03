@@ -45,7 +45,8 @@ module.exports = (
     v8cache = false,
     filterAssetBase = process.cwd(),
     quiet = false,
-    debugLog = false
+    debugLog = false,
+    transpileOnly = false
   } = {}
 ) => {
   if (!quiet) {
@@ -177,6 +178,7 @@ module.exports = (
           {
             loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
+              transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
                 outDir: '//',
