@@ -366,7 +366,7 @@ module.exports = (
       // For some reason, auth0 returns "undefined"!
       // custom terser phase used over Webpack integration for this reason
       if (result.code !== undefined)
-        ({ code, map } = { code: result.code, map: result.map });
+        ({ code, map } = { code: result.code, map: map ? JSON.parse(result.map) : undefined });
     }
 
     if (v8cache) {

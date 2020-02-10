@@ -11,17 +11,32 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
       .trim()
       // Windows support
       .replace(/\r/g, "");
+    let expectedSoureMap;
+    try {
+      expectedSoureMap = fs
+        .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js.map`)
+        .toString()
+        .trim()
+        // Windows support
+        .replace(/\r/g, "");
+    } catch (_) {}
+
+    let opts;
+    try {
+      opts = fs.readFileSync(`${testDir}/opt.json`, 'utf8');
+      opts = JSON.parse(opts);
+    } catch (_) {}
 
     // set env variable so tsconfig-paths can find the config
     process.env.TS_NODE_PROJECT = `${testDir}/tsconfig.json`;
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
-    await ncc(`${testDir}/${inputFile}`, {
+    await ncc(`${testDir}/${inputFile}`, Object.assign({
       externals: {
         'externaltest': 'externalmapped'
       }
-    }).then(
-      async ({ code, assets }) => {
+    }, opts)).then(
+      async ({ code, assets, map }) => {
         const actual = code
           .trim()
           // Windows support
@@ -32,6 +47,20 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
           // useful for updating fixtures
           fs.writeFileSync(`${testDir}/actual.js`, actual);
           throw e;
+        }
+
+        if (map) {
+          const actualSourceMap = map
+            .trim()
+            // Windows support
+            .replace(/\r/g, "");
+          try {
+            expect(actualSourceMap).toBe(expectedSoureMap);
+          } catch (e) {
+            // useful for updating fixtures
+            fs.writeFileSync(`${testDir}/actual.js.map`, actualSourceMap);
+            throw e;
+          }
         }
       }
     );
