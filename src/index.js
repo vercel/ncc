@@ -45,7 +45,8 @@ module.exports = (
     v8cache = false,
     filterAssetBase = process.cwd(),
     quiet = false,
-    debugLog = false
+    debugLog = false,
+    transpileOnly = false
   } = {}
 ) => {
   if (!quiet) {
@@ -177,6 +178,7 @@ module.exports = (
           {
             loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
+              transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
                 outDir: '//',
@@ -366,7 +368,10 @@ module.exports = (
       // For some reason, auth0 returns "undefined"!
       // custom terser phase used over Webpack integration for this reason
       if (result.code !== undefined)
-        ({ code, map } = { code: result.code, map: result.map });
+        ({ code, map } = {
+          code: result.code,
+          map: sourceMap ? JSON.parse(result.map) : undefined
+        });
     }
 
     if (v8cache) {

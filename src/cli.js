@@ -27,6 +27,7 @@ Options:
   -e, --external [mod]     Skip bundling 'mod'. Can be used many times
   -q, --quiet              Disable build summaries / non-error outputs
   -w, --watch              Start a watched build
+  -t, --transpile-only     Use transpileOnly option with the ts-loader
   --v8-cache               Emit a build using the v8 compile cache
 `;
 
@@ -135,7 +136,9 @@ async function runCmd (argv, stdout, stderr) {
       "-q": "--quiet",
       "--watch": Boolean,
       "-w": "--watch",
-      "--v8-cache": Boolean
+      "--v8-cache": Boolean,
+      "--transpile-only": Boolean,
+      "-t": "--transpile-only",
     }, {
       permissive: false,
       argv
@@ -223,6 +226,7 @@ async function runCmd (argv, stdout, stderr) {
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
           v8cache: args["--v8-cache"],
+          transpileOnly: args["--transpile-only"],
           quiet
         }
       );

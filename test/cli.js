@@ -47,5 +47,9 @@
     expect (code, stdout, stderr) {
       return code === 1 && stderr.toString().indexOf('ts-error.ts(3,16)') !== -1 && stderr.toString().split('\n').length < 10;
     }
+  },
+  {
+    args: ["run", "-t", "test/fixtures/with-type-errors/ts-error.ts"],
+    expect: { code: 0 }
   }
 ]
