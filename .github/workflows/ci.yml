@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - '!*'
+  pull_request:
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }} and ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [10]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node }}
+    - name: Print Node Version
+      run: node --version
+    - name: Install Dependencies
+      run: yarn install
+    - name: Build Test Binary
+      run: yarn build-test-binary
+    - name: Build
+      run: yarn build
+    - name: Run Tests
+      run: yarn test
+    - name: Coverage
+      if: matrix.os == 'ubuntu-latest'
+      run: yarn test-coverage
