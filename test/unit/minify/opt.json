@@ -1,0 +1,5 @@
+{
+  "minify": true,
+  "sourceMap": true,
+  "sourceMapRegister": false
+}
