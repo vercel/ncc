@@ -29,5 +29,10 @@ jobs:
       run: yarn install
     - name: Build Test Binary
       run: yarn build-test-binary
+    - name: Build
+      run: yarn build
     - name: Run Tests
       run: yarn test
+    - name: Coverage
+      if: matrix.os == 'ubuntu-latest'
+      run: yarn test-coverage
