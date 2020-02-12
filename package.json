@@ -71,7 +71,7 @@
     "mongoose": "^5.3.12",
     "mysql": "^2.16.0",
     "node-gyp": "^3.8.0",
-    "npm": "^6.9.0",
+    "npm": "^6.13.4",
     "oracledb": "^3.1.2",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
