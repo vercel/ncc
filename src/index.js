@@ -95,6 +95,13 @@ module.exports = (
           if (!err.missing || !err.missing.length)
             return callback(err);
           // make not found errors runtime errors
+          if (request.endsWith('.js'))
+            return resolve.call(resolver, context, path, request.slice(0, -3), resolveContext, function (err, result) {
+              if (!err) return callback(null, result);
+              if (!err.missing || !err.missing.length)
+                return callback(err);
+              callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
+            });
           callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
         });
       };
