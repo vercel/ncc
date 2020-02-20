@@ -40,6 +40,9 @@ $ ncc build input.js -o dist
 
 Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
+> Note: If the input file is using a `.cjs` extension, then so will the corresponding output file.
+> This is useful for packages that want to use `.js` files as modules in native Node.js using
+> a `"type": "module"` in the package.json file.
 
 #### Commands:
 ```

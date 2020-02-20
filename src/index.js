@@ -1,21 +1,18 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { sep, join, dirname } = require("path");
+const { join, dirname, extname } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
-const { pkgNameRegEx } = require("./utils/get-package-base");
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const { version: nccVersion } = require('../package.json');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
-
-const nodeBuiltins = new Set([...require("repl")._builtinLibs, "constants", "module", "timers", "console", "_stream_writable", "_stream_readable", "_stream_duplex"]);
 
 const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
@@ -36,7 +33,7 @@ module.exports = (
   {
     cache,
     externals = [],
-    filename = "index.js",
+    filename = 'index' + (entry.endsWith('.cjs') ? '.cjs' : '.js'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -49,6 +46,8 @@ module.exports = (
     transpileOnly = false
   } = {}
 ) => {
+  const ext = extname(filename);
+
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
     console.log(`ncc: Compiling file ${filename}`);
@@ -61,11 +60,11 @@ module.exports = (
   const existingAssetNames = [filename];
   if (sourceMap) {
     existingAssetNames.push(`${filename}.map`);
-    existingAssetNames.push('sourcemap-register.js');
+    existingAssetNames.push(`sourcemap-register${ext}`);
   }
   if (v8cache) {
     existingAssetNames.push(`${filename}.cache`);
-    existingAssetNames.push(`${filename}.cache.js`);
+    existingAssetNames.push(`${filename}.cache${ext}`);
   }
   const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
@@ -95,7 +94,7 @@ module.exports = (
           if (!err.missing || !err.missing.length)
             return callback(err);
           // make not found errors runtime errors
-          callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
+          callback(null, `${__dirname}/@@notfound${ext}?${(externalMap.get(request) || request)}`);
         });
       };
     }
@@ -150,7 +149,7 @@ module.exports = (
     module: {
       rules: [
         {
-          test: /@@notfound\.js$/,
+          test: /@@notfound\.(m|c)?js$/,
           use: [{
             loader: eval('__dirname + "/loaders/notfound-loader.js"')
           }]
@@ -376,15 +375,15 @@ module.exports = (
 
     if (v8cache) {
       const { Script } = require('vm');
-      assets[filename + '.cache'] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
-      assets[filename + '.cache.js'] = { source: code, permissions: defaultPermissions };
+      assets[`${filename}.cache`] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
+      assets[`${filename}.cache${ext}`] = { source: code, permissions: defaultPermissions };
       if (map) {
         assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
         map = undefined;
       }
       code =
         `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
-        `const source = readFileSync(__dirname + '/${filename}.cache.js', 'utf-8');\n` +
+        `const source = readFileSync(__dirname + '/${filename}.cache${ext}', 'utf-8');\n` +
         `const cachedData = !process.pkg && require('process').platform !== 'win32' && readFileSync(__dirname + '/${filename}.cache');\n` +
         `const script = new Script(wrap(source), cachedData ? { cachedData } : {});\n` +
         `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
@@ -392,8 +391,8 @@ module.exports = (
     }
 
     if (sourceMap && sourceMapRegister) {
-      code = `require('./sourcemap-register.js');` + code;
-      assets['sourcemap-register.js'] = { source: fs.readFileSync(__dirname + "/sourcemap-register.js.cache.js"), permissions: defaultPermissions };
+      code = `require('./sourcemap-register${ext}');` + code;
+      assets[`sourcemap-register${ext}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register${ext}.cache${ext}`), permissions: defaultPermissions };
     }
 
     if (shebangMatch) {

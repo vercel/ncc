@@ -51,5 +51,17 @@
   {
     args: ["run", "-t", "test/fixtures/with-type-errors/ts-error.ts"],
     expect: { code: 0 }
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/test.cjs"],
+    expect (code, stdout, stderr) {
+      return stdout.toString().indexOf('tmp/index.cjs') !== -1;
+    }
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/test.mjs"],
+    expect (code, stdout, stderr) {
+      return stdout.toString().indexOf('tmp/index.js') !== -1;
+    }
   }
 ]
