@@ -94,7 +94,7 @@ module.exports = (
           if (!err.missing || !err.missing.length)
             return callback(err);
           // make not found errors runtime errors
-          callback(null, `${__dirname}/@@notfound.js?${(externalMap.get(request) || request)}`);
+          callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
         });
       };
     }
