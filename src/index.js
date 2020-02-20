@@ -95,7 +95,7 @@ module.exports = (
           if (!err.missing || !err.missing.length)
             return callback(err);
           // make not found errors runtime errors
-          if (request.endsWith('.js'))
+          if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx')))
             return resolve.call(resolver, context, path, request.slice(0, -3), resolveContext, function (err, result) {
               if (!err) return callback(null, result);
               if (!err.missing || !err.missing.length)
