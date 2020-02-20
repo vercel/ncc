@@ -130,7 +130,8 @@ module.exports = (
     target: "node",
     output: {
       path: "/",
-      filename,
+      // Webpack only emits sourcemaps for files ending in .js
+      filename: ext === '.cjs' ? filename + '.js' : filename,
       libraryTarget: "commonjs2"
     },
     resolve: {
@@ -149,7 +150,7 @@ module.exports = (
     module: {
       rules: [
         {
-          test: /@@notfound\.c?js$/,
+          test: /@@notfound\.js$/,
           use: [{
             loader: eval('__dirname + "/loaders/notfound-loader.js"')
           }]
@@ -331,10 +332,12 @@ module.exports = (
       if (resolved in assets)
         symlinks[key] = value;
     }
-    delete assets[filename];
-    delete assets[`${filename}.map`];
-    let code = mfs.readFileSync(`/${filename}`, "utf8");
-    let map = sourceMap ? mfs.readFileSync(`/${filename}.map`, "utf8") : null;
+    // Webpack only emits sourcemaps for .js files
+    // so we need to adjust the .cjs extension handling
+    delete assets[filename + (ext === '.cjs' ? '.js' : '')];
+    delete assets[`${filename}${ext === '.cjs' ? '.js' : ''}.map`];
+    let code = mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}`, "utf8");
+    let map = sourceMap ? mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8") : null;
 
     if (map) {
       map = JSON.parse(map);
@@ -392,7 +395,7 @@ module.exports = (
 
     if (sourceMap && sourceMapRegister) {
       code = `require('./sourcemap-register${ext}');` + code;
-      assets[`sourcemap-register${ext}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register${ext}.cache${ext}`), permissions: defaultPermissions };
+      assets[`sourcemap-register${ext}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
     }
 
     if (shebangMatch) {
