@@ -149,7 +149,7 @@ module.exports = (
     module: {
       rules: [
         {
-          test: /@@notfound\.(m|c)?js$/,
+          test: /@@notfound\.c?js$/,
           use: [{
             loader: eval('__dirname + "/loaders/notfound-loader.js"')
           }]
