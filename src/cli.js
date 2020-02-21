@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep } = require("path");
+const { resolve, relative, dirname, sep, extname } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
@@ -50,7 +50,7 @@ else {
   api = true;
 }
 
-function renderSummary(code, map, assets, outDir, buildTime) {
+function renderSummary(code, map, assets, ext, outDir, buildTime) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
   const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
   const mapSize = map ? Math.round(Buffer.byteLength(map, "utf8") / 1024) : 0;
@@ -74,10 +74,10 @@ function renderSummary(code, map, assets, outDir, buildTime) {
 
   let indexRender = `${codeSize
     .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js"}`;
+    .padStart(sizePadding, " ")}kB  ${outDir}index${ext}`;
   let indexMapRender = map ? `${mapSize
     .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}${"index.js.map"}` : '';
+    .padStart(sizePadding, " ")}kB  ${outDir}index${ext}.map` : '';
 
   let output = "",
     first = true;
@@ -215,6 +215,7 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
+      const ext = buildFile.endsWith('.cjs') ? '.cjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
         {
@@ -241,16 +242,16 @@ async function runCmd (argv, stdout, stderr) {
 
         outDir = outDir || resolve("dist");
         mkdirp.sync(outDir);
-        // remove all existing ".js" files in the out directory
+        // remove all existing ".js" and ".cjs" files in the out directory
         await Promise.all(
           (await new Promise((resolve, reject) =>
-            glob(outDir + '/**/*.js', (err, files) => err ? reject(err) : resolve(files))
+            glob(outDir + '/**/*.(js|cjs)', (err, files) => err ? reject(err) : resolve(files))
           )).map(file =>
             new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
           ))
         );
-        writeFileSync(outDir + "/index.js", code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
-        if (map) writeFileSync(outDir + "/index.js.map", map);
+        writeFileSync(`${outDir}/index${ext}`, code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
+        if (map) writeFileSync(`${outDir}/index${ext}.map`, map);
 
         for (const asset of Object.keys(assets)) {
           const assetPath = outDir + "/" + asset;
@@ -269,6 +270,7 @@ async function runCmd (argv, stdout, stderr) {
               code,
               map,
               assets,
+              ext,
               run ? "" : relative(process.cwd(), outDir),
               Date.now() - startTime,
             ) + '\n'
@@ -292,7 +294,7 @@ async function runCmd (argv, stdout, stderr) {
           } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
           if (nodeModulesDir)
             symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
-          ps = require("child_process").fork(outDir + "/index.js", {
+          ps = require("child_process").fork(`${outDir}/index${ext}`, {
             stdio: api ? 'pipe' : 'inherit'
           });
           if (api) {
