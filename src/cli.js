@@ -245,7 +245,7 @@ async function runCmd (argv, stdout, stderr) {
         // remove all existing ".js", ".mjs" and ".cjs" files in the out directory
         await Promise.all(
           (await new Promise((resolve, reject) =>
-            glob(outDir + '/**/*.(js|mjs|cjs)', (err, files) => err ? reject(err) : resolve(files))
+            glob(outDir + '/**/*.(js|cjs)', (err, files) => err ? reject(err) : resolve(files))
           )).map(file =>
             new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
           ))
