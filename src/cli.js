@@ -242,7 +242,7 @@ async function runCmd (argv, stdout, stderr) {
 
         outDir = outDir || resolve("dist");
         mkdirp.sync(outDir);
-        // remove all existing ".js", ".mjs" and ".cjs" files in the out directory
+        // remove all existing ".js" and ".cjs" files in the out directory
         await Promise.all(
           (await new Promise((resolve, reject) =>
             glob(outDir + '/**/*.(js|cjs)', (err, files) => err ? reject(err) : resolve(files))
