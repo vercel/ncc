@@ -63,5 +63,17 @@
     expect (code, stdout, stderr) {
       return stdout.toString().indexOf('tmp/index.js') !== -1;
     }
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/test.mjs", "--stats-out", "tmp/stats.json"],
+    expect (code, stdout, stderr) {
+      const fs = require('fs');
+      try {
+        JSON.parse(fs.readFileSync('tmp/stats.json', 'utf8'));
+      } catch {
+        return false;
+      }
+      return true;
+    }
   }
 ]

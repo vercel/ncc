@@ -33,7 +33,7 @@ npm i -g @zeit/ncc
 ```bash
 $ ncc <cmd> <opts>
 ```
-Eg: 
+Eg:
 ```bash
 $ ncc build input.js -o dist
 ```
@@ -64,6 +64,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   -q, --quiet              Disable build summaries / non-error outputs
   -w, --watch              Start a watched build
   --v8-cache               Emit a build using the v8 compile cache
+  --stats-out [file]       Emit webpack stats as json to the specified output file
 ```
 
 ### Execution Testing
