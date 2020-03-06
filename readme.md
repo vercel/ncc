@@ -1,6 +1,6 @@
 # ncc
 
-[![CI Status](https://badgen.net/github/checks/zeit/ncc?label=CI)](https://github.com/zeit/ncc/actions?workflow=CI)
+[![CI Status](https://github.com/zeit/ncc/workflows/CI/badge.svg)](https://github.com/zeit/ncc/actions?workflow=CI)
 [![codecov](https://codecov.io/gh/zeit/ncc/branch/master/graph/badge.svg)](https://codecov.io/gh/zeit/ncc)
 
 Simple CLI for compiling a Node.js module into a single file,
