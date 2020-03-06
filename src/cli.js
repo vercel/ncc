@@ -29,6 +29,7 @@ Options:
   -w, --watch              Start a watched build
   -t, --transpile-only     Use transpileOnly option with the ts-loader
   --v8-cache               Emit a build using the v8 compile cache
+  --stats-out [file]       Emit webpack stats as json to the specified output file
 `;
 
 // support an API mode for CLI testing
@@ -139,6 +140,7 @@ async function runCmd (argv, stdout, stderr) {
       "--v8-cache": Boolean,
       "--transpile-only": Boolean,
       "-t": "--transpile-only",
+      "--stats-out": String,
     }, {
       permissive: false,
       argv
@@ -154,6 +156,7 @@ async function runCmd (argv, stdout, stderr) {
   let run = false;
   let outDir = args["--out"];
   const quiet = args["--quiet"];
+  const statsOutFile = args["--stats-out"];
 
   switch (args._[0]) {
     case "cache":
@@ -232,7 +235,7 @@ async function runCmd (argv, stdout, stderr) {
         }
       );
 
-      async function handler ({ err, code, map, assets, symlinks }) {
+      async function handler ({ err, code, map, assets, symlinks, stats }) {
         // handle watch errors
         if (err) {
           stderr.write(err + '\n');
@@ -265,7 +268,7 @@ async function runCmd (argv, stdout, stderr) {
         }
 
         if (!quiet) {
-          stdout.write( 
+          stdout.write(
             renderSummary(
               code,
               map,
@@ -279,6 +282,9 @@ async function runCmd (argv, stdout, stderr) {
           if (args["--watch"])
             stdout.write('Watching for changes...\n');
         }
+
+        if (statsOutFile)
+          writeFileSync(statsOutFile, JSON.stringify(stats.toJson()));
 
         if (run) {
           // find node_modules

@@ -230,7 +230,7 @@ module.exports = (
                     "var e = new Error",
                     `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
                     `  return __webpack_require__(req);\n` +
-                    `try { return require(req) }\n` + 
+                    `try { return require(req) }\n` +
                     `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
                     `var e = new Error`
                   );
@@ -279,7 +279,7 @@ module.exports = (
             const errLog = stats.compilation.errors.map(err => err.message).join('\n');
             return reject(new Error(errLog));
           }
-          resolve();
+          resolve(stats);
         });
       });
     })
@@ -298,7 +298,7 @@ module.exports = (
         return watchHandler({ err });
       if (stats.hasErrors())
         return watchHandler({ err: stats.toString() });
-      const returnValue = finalizeHandler();
+      const returnValue = finalizeHandler(stats);
       if (watchHandler)
         watchHandler(returnValue);
       else
@@ -331,7 +331,7 @@ module.exports = (
     };
   }
 
-  function finalizeHandler () {
+  function finalizeHandler (stats) {
     const assets = Object.create(null);
     getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
     // filter symlinks to existing assets
@@ -414,7 +414,7 @@ module.exports = (
         map.mappings = ";" + map.mappings;
     }
 
-    return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks };
+    return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks, stats };
   }
 };
 
