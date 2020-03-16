@@ -52,17 +52,17 @@ __webpack_require__(695);
 /***/ }),
 
 /***/ 367:
-/***/ (function() {
+/***/ (function(module) {
 
-eval("require")("./not-found.js");
+module.exports = eval("require")("./not-found.js");
 
 
 /***/ }),
 
 /***/ 695:
-/***/ (function() {
+/***/ (function(module) {
 
-eval("require")("./not-foud2.js");
+module.exports = eval("require")("./not-foud2.js");
 
 
 /***/ })
