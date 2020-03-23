@@ -20,10 +20,10 @@ if (isWin || isNode12) {
   delete pkg.devDependencies['yoga-layout'];
 
   // Since we are going to regenerate yarn.lock, lets make sure to pick the exact version
-  saveExact('ts-loader');
-  saveExact('tsconfig-paths');
-  saveExact('tsconfig-paths-webpack-plugin');
-  saveExact('typescript');
+  saveExact(pkg, 'ts-loader');
+  saveExact(pkg, 'tsconfig-paths');
+  saveExact(pkg, 'tsconfig-paths-webpack-plugin');
+  saveExact(pkg, 'typescript');
 }
 
 if (isWin) {
