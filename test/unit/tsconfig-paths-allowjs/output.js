@@ -44,9 +44,9 @@ module.exports =
 /******/ ({
 
 /***/ 17:
-/***/ (function() {
+/***/ (function(module) {
 
-eval("require")("@module");
+module.exports = eval("require")("@module");
 
 
 /***/ }),
