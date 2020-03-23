@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        node: [10]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [10, 12]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -25,6 +25,8 @@ jobs:
         node-version: ${{ matrix.node }}
     - name: Print Node Version
       run: node --version
+    - name: Prepare Install (if applicable)
+      run: node prepare-install.js
     - name: Install Dependencies
       run: yarn install
     - name: Build Test Binary
@@ -34,5 +36,5 @@ jobs:
     - name: Run Tests
       run: yarn test
     - name: Coverage
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 10 # only run once
       run: yarn test-coverage
