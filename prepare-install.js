@@ -6,11 +6,24 @@ const pkg = JSON.parse(pkgJson);
 const isWin = process.platform === 'win32';
 const isNode12 = process.version.startsWith('v12.');
 
+function saveExact(pkg, name) {
+  const value = pkg.devDependencies[name];
+  if (value && value.startsWith('^')) {
+    pkg.devDependencies[name] = value.slice(1);
+  }
+}
+
 if (isWin || isNode12) {
   unlinkSync(join(__dirname, 'yarn.lock'));
   // Delete the integration tests that fail in both Windows and Node12
   unlinkSync(join(__dirname, 'test', 'integration', 'yoga-layout.js'));
   delete pkg.devDependencies['yoga-layout'];
+
+  // Since we are going to regenerate yarn.lock, lets make sure to pick the exact version
+  saveExact('ts-loader');
+  saveExact('tsconfig-paths');
+  saveExact('tsconfig-paths-webpack-plugin');
+  saveExact('typescript');
 }
 
 if (isWin) {
