@@ -28,8 +28,10 @@ if (isNode12) {
   // Delete the integration tests that do not currently work with Node 12.x
   unlinkSync(join(__dirname, 'test', 'integration', 'oracledb.js'));
   unlinkSync(join(__dirname, 'test', 'integration', 'leveldown.js'));
+  unlinkSync(join(__dirname, 'test', 'integration', 'sharp.js'));
   delete pkg.devDependencies['oracledb'];
   delete pkg.devDependencies['leveldown'];
+  delete pkg.devDependencies['sharp'];
 }
 
-writeFileSync(join(__dirname, 'package.json'), JSON.stringify(pkg));
+writeFileSync(join(__dirname, 'package.json'), JSON.stringify(pkg, null, ' '));

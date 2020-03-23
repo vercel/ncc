@@ -16,6 +16,7 @@ dist/**/*.js
 !dist/ncc/
 !dist/buildin/
 !package.json
+!prepare-install.js
 !yarn.lock
 !.circleci
 !.github
