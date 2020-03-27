@@ -1346,10 +1346,10 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
-"@zeit/webpack-asset-relocator-loader@0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@zeit/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.6.2.tgz#b15353d8578562f299eddb94d4b771297acc0487"
-  integrity sha512-IUz2YvFAv03LHP4dhjHqG549ecZhdp7KU8B+vGfJRgcDzvlCmc9CA1YcYfJHVO96U8dU5z85RIysr2whYUXmgQ==
+"@zeit/webpack-asset-relocator-loader@0.6.3":
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/@zeit/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.6.3.tgz#e4661b705ca4f91b290b847404c0235d9c83f63a"
+  integrity sha512-PwEMPqJxFV5py5Qm2tYu0GyqqJoqpBhyy1Uw8BDnl69x93OCOClXg7IccoYxbBBjDPYCQUhIrEsm8nftlF8v4Q==
   dependencies:
     sourcemap-codec "^1.4.4"
 
