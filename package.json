@@ -23,7 +23,7 @@
     "@google-cloud/firestore": "^2.2.0",
     "@sentry/node": "^4.3.0",
     "@tensorflow/tfjs-node": "^0.3.0",
-    "@zeit/webpack-asset-relocator-loader": "0.6.2",
+    "@zeit/webpack-asset-relocator-loader": "0.6.4",
     "analytics-node": "^3.3.0",
     "apollo-server-express": "^2.2.2",
     "arg": "^4.1.0",
@@ -61,7 +61,7 @@
     "jimp": "^0.5.6",
     "jugglingdb": "2.0.1",
     "koa": "^2.6.2",
-    "leveldown": "^4.0.1",
+    "leveldown": "^5.6.0",
     "lighthouse": "^5.0.0",
     "loopback": "^3.24.0",
     "mailgun": "^0.5.0",
@@ -72,7 +72,7 @@
     "mysql": "^2.16.0",
     "node-gyp": "^3.8.0",
     "npm": "^6.13.4",
-    "oracledb": "^3.1.2",
+    "oracledb": "^4.2.0",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
     "path-platform": "^0.11.15",
@@ -87,7 +87,7 @@
     "rxjs": "^6.3.3",
     "saslprep": "^1.0.2",
     "sequelize": "^5.8.6",
-    "sharp": "^0.21.1",
+    "sharp": "^0.25.2",
     "shebang-loader": "^0.0.1",
     "socket.io": "^2.2.0",
     "source-map-support": "^0.5.9",
@@ -105,7 +105,6 @@
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "webpack": "5.0.0-alpha.17",
-    "when": "^3.7.8",
-    "yoga-layout": "^1.9.3"
+    "when": "^3.7.8"
   }
 }
