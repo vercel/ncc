@@ -1346,12 +1346,10 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
-"@zeit/webpack-asset-relocator-loader@0.6.3":
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/@zeit/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.6.3.tgz#e4661b705ca4f91b290b847404c0235d9c83f63a"
-  integrity sha512-PwEMPqJxFV5py5Qm2tYu0GyqqJoqpBhyy1Uw8BDnl69x93OCOClXg7IccoYxbBBjDPYCQUhIrEsm8nftlF8v4Q==
-  dependencies:
-    sourcemap-codec "^1.4.4"
+"@zeit/webpack-asset-relocator-loader@0.6.4":
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/@zeit/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.6.4.tgz#e9460de26733c6df16c0a922cc388830948dd4bd"
+  integrity sha512-y3ux3GzW4SKwwIstPhXwvODBLHVm64WrQ8g/IXplyp9viQy1KqR3bGyFLThlGQOj3PIOGtWNou/44KN2LpTbkw==
 
 JSONStream@^1.0.3, JSONStream@^1.3.1, JSONStream@^1.3.4, JSONStream@^1.3.5:
   version "1.3.5"
@@ -12393,11 +12391,6 @@ source-map@~0.1.30:
   integrity sha1-wkvBRspRfBRx9drL4lcbK3+eM0Y=
   dependencies:
     amdefine ">=0.0.4"
-
-sourcemap-codec@^1.4.4:
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/sourcemap-codec/-/sourcemap-codec-1.4.4.tgz#c63ea927c029dd6bd9a2b7fa03b3fec02ad56e9f"
-  integrity sha512-CYAPYdBu34781kLHkaW3m6b/uUSyMOC2R61gcYMWooeuaGtjof86ZA/8T+qVPPt7np1085CR9hmMGrySwEc8Xg==
 
 sparse-bitfield@^3.0.3:
   version "3.0.3"
