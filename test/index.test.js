@@ -124,7 +124,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   }
 
   // Fixes todo
-  if (integrationTest === 'sharp.js' || integrationTest === 'oracledb.js' || integrationTest === 'leveldown.js')
+  if (integrationTest === 'sharp.js' || integrationTest === 'oracledb.js')
     continue;
 
   it(`should execute "ncc run ${integrationTest}"`, async () => {
