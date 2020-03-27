@@ -2,6 +2,8 @@ const fs = require("fs");
 const { fork } = require("child_process");
 const ncc = global.coverage ? require("../src/index") : require("../");
 
+const isNode12 = process.version.startsWith('v12');
+
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
     const testDir = `${__dirname}/unit/${unitTest}`;
@@ -123,9 +125,10 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     }
   }
 
-  // Fixes todo
-  if (integrationTest === 'sharp.js' || integrationTest === 'oracledb.js')
-    continue;
+  if (isNode12) {
+    if (integrationTest === 'sharp.js' || integrationTest === 'oracledb.js')
+      continue;
+  }
 
   it(`should execute "ncc run ${integrationTest}"`, async () => {
     let expectedStdout;
