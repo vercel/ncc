@@ -141,7 +141,8 @@ module.exports = (
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
       filename: ext === '.cjs' ? filename + '.js' : filename,
-      libraryTarget: "commonjs2"
+      libraryTarget: "commonjs2",
+      strictModuleExceptionHandling: true
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
