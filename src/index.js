@@ -394,13 +394,16 @@ module.exports = (
         assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
         map = undefined;
       }
+      const columnOffset = -'(function (exports, require, module, __filename, __dirname) { '.length;
       code =
         `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
-        `const source = readFileSync(__dirname + '/${filename}.cache${ext}', 'utf-8');\n` +
-        `const cachedData = !process.pkg && require('process').platform !== 'win32' && readFileSync(__dirname + '/${filename}.cache');\n` +
-        `const script = new Script(wrap(source), cachedData ? { cachedData } : {});\n` +
+        `const basename = __dirname + '/${filename}';\n` +
+        `const source = readFileSync(basename + '.cache${ext}', 'utf-8');\n` +
+        `const cachedData = !process.pkg && require('process').platform !== 'win32' && readFileSync(basename + '.cache');\n` +
+        `const scriptOpts = { filename: basename + '.cache${ext}', columnOffset: ${columnOffset} }\n` +
+        `const script = new Script(wrap(source), cachedData ? Object.assign({ cachedData }, scriptOpts) : scriptOpts);\n` +
         `(script.runInThisContext())(exports, require, module, __filename, __dirname);\n` +
-        `if (cachedData) process.on('exit', () => { try { writeFileSync(__dirname + '/${filename}.cache', script.createCachedData()); } catch(e) {} });\n`;
+        `if (cachedData) process.on('exit', () => { try { writeFileSync(basename + '.cache', script.createCachedData()); } catch(e) {} });\n`;
     }
 
     if (sourceMap && sourceMapRegister) {
