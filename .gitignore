@@ -8,6 +8,8 @@ dist/**/*.js
 !test/integration/*.json
 !test/integration/*.js
 !test/integration/*.ts
+!test/integration/include/
+!test/integration/include/*.js
 !test/integration/node-path
 !test/integration/node-path/*.js
 !test/unit
