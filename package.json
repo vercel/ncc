@@ -25,7 +25,7 @@
     "@tensorflow/tfjs-node": "^0.3.0",
     "@zeit/webpack-asset-relocator-loader": "0.7.2",
     "analytics-node": "^3.3.0",
-    "apollo-server-express": "^2.2.2",
+    "apollo-server-express": "^2.14.2",
     "arg": "^4.1.0",
     "auth0": "^2.14.0",
     "aws-sdk": "^2.356.0",
