@@ -27,6 +27,7 @@ Options:
   -e, --external [mod]     Skip bundling 'mod'. Can be used many times
   -q, --quiet              Disable build summaries / non-error outputs
   -w, --watch              Start a watched build
+  -l, --license            Adds a file containing licensing information to the output
   -t, --transpile-only     Use transpileOnly option with the ts-loader
   --v8-cache               Emit a build using the v8 compile cache
   --stats-out [file]       Emit webpack stats as json to the specified output file
@@ -137,6 +138,8 @@ async function runCmd (argv, stdout, stderr) {
       "-q": "--quiet",
       "--watch": Boolean,
       "-w": "--watch",
+      "--license": Boolean,
+      "-l": "--license",
       "--v8-cache": Boolean,
       "--transpile-only": Boolean,
       "-t": "--transpile-only",
@@ -231,6 +234,7 @@ async function runCmd (argv, stdout, stderr) {
           watch: args["--watch"],
           v8cache: args["--v8-cache"],
           transpileOnly: args["--transpile-only"],
+          license: args["--license"],
           quiet
         }
       );

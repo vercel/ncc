@@ -63,6 +63,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   -e, --external [mod]     Skip bundling 'mod'. Can be used many times
   -q, --quiet              Disable build summaries / non-error outputs
   -w, --watch              Start a watched build
+  -l, --license            Adds a file containing licensing information to the output
   --v8-cache               Emit a build using the v8 compile cache
   --stats-out [file]       Emit webpack stats as json to the specified output file
 ```
@@ -112,6 +113,7 @@ require('@zeit/ncc')('/path/to/input', {
   // source-map-support in the output file (increases output by 32kB).
   sourceMapRegister: true, // default
   watch: false, // default
+  license: false, //default
   v8cache: false, // default
   quiet: false, // default
   debugLog: false // default
