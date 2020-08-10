@@ -45,7 +45,7 @@ module.exports = (
     quiet = false,
     debugLog = false,
     transpileOnly = false,
-    license = false
+    license = ""
   } = {}
 ) => {
   const ext = extname(filename);
@@ -183,10 +183,10 @@ module.exports = (
     }
   ]
 
-  if (license)
+  if (typeof license === 'string' && license.length > 0)
   {
     plugins.push(new LicenseWebpackPlugin({
-      outputFilename: "licenses.txt"
+      outputFilename: license
     }));
   }
 
