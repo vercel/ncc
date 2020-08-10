@@ -29,6 +29,7 @@ Options:
   -w, --watch              Start a watched build
   -t, --transpile-only     Use transpileOnly option with the ts-loader
   --v8-cache               Emit a build using the v8 compile cache
+  --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
 `;
 
@@ -140,6 +141,7 @@ async function runCmd (argv, stdout, stderr) {
       "--v8-cache": Boolean,
       "--transpile-only": Boolean,
       "-t": "--transpile-only",
+      "--license": String,
       "--stats-out": String,
     }, {
       permissive: false,
@@ -231,6 +233,7 @@ async function runCmd (argv, stdout, stderr) {
           watch: args["--watch"],
           v8cache: args["--v8-cache"],
           transpileOnly: args["--transpile-only"],
+          license: args["--license"],
           quiet
         }
       );
