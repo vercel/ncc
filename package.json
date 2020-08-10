@@ -58,7 +58,7 @@
     "in-publish": "^2.0.0",
     "ioredis": "^4.2.0",
     "isomorphic-unfetch": "^3.0.0",
-    "jest": "^23.6.0",
+    "jest": "^26.3.0",
     "jimp": "^0.5.6",
     "jugglingdb": "2.0.1",
     "koa": "^2.6.2",
