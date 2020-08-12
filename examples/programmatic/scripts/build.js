@@ -5,7 +5,7 @@ const { promisify } = require("util");
 const bytes = require("bytes");
 const glob = promisify(require("glob"));
 const mkdirp = promisify(require("mkdirp"));
-const ncc = require("@zeit/ncc");
+const ncc = require("@vercel/ncc");
 
 // output directories
 const DIST_DIR = resolve(__dirname, "../dist");

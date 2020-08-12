@@ -18,7 +18,7 @@
     "chalk": "^2.4.1"
   },
   "devDependencies": {
-    "@zeit/ncc": "latest",
+    "@vercel/ncc": "latest",
     "concurrently": "^4.1.0",
     "strip-ansi": "^5.0.0"
   }

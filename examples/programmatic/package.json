@@ -11,7 +11,7 @@
     "node-fetch": "^2.3.0"
   },
   "devDependencies": {
-    "@zeit/ncc": "latest",
+    "@vercel/ncc": "latest",
     "bytes": "^3.0.0",
     "glob": "^7.1.3",
     "mkdirp": "^0.5.1"

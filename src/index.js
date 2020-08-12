@@ -223,7 +223,7 @@ module.exports = (
       mainFields: ["main"],
       plugins: resolvePlugins
     },
-    // https://github.com/zeit/ncc/pull/29#pullrequestreview-177152175
+    // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
     externals: async ({ context, request }, callback) => {
       if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);

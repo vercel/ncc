@@ -1,7 +1,7 @@
 # ncc
 
-[![CI Status](https://github.com/zeit/ncc/workflows/CI/badge.svg)](https://github.com/zeit/ncc/actions?workflow=CI)
-[![codecov](https://codecov.io/gh/zeit/ncc/branch/master/graph/badge.svg)](https://codecov.io/gh/zeit/ncc)
+[![CI Status](https://github.com/vercel/ncc/workflows/CI/badge.svg)](https://github.com/vercel/ncc/actions?workflow=CI)
+[![codecov](https://codecov.io/gh/vercel/ncc/branch/master/graph/badge.svg)](https://codecov.io/gh/vercel/ncc)
 
 Simple CLI for compiling a Node.js module into a single file,
 together with all its dependencies, gcc-style.
@@ -25,7 +25,7 @@ together with all its dependencies, gcc-style.
 
 ### Installation
 ```bash
-npm i -g @zeit/ncc
+npm i -g @vercel/ncc
 ```
 
 ### Usage
@@ -99,7 +99,7 @@ See [package-support.md](package-support.md) for some common packages and their 
 ### Programmatically From Node.js
 
 ```js
-require('@zeit/ncc')('/path/to/input', {
+require('@vercel/ncc')('/path/to/input', {
   // provide a custom cache path or disable caching
   cache: "./custom/cache/path" | false,
   // externals to leave as requires of the build
