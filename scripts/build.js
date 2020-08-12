@@ -16,6 +16,7 @@ async function main() {
     {
       filename: "cli.js",
       externals: ["./index.js"],
+      license: 'LICENSES.txt',
       minify: true,
       v8cache: true
     }
@@ -67,12 +68,13 @@ async function main() {
 
   // detect unexpected asset emissions from core build
   function checkUnknownAssets (buildName, assets) {
-    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js'));
+    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js') && name !== 'LICENSES.txt');
     if (!assets.length) return;
     console.error(`New assets are being emitted by the ${buildName} build`);
     console.log(assets);
   }
 
+  writeFileSync(__dirname + "/../dist/ncc/LICENSES.txt", cliAssets["LICENSES.txt"].source);
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache", cliAssets["cli.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/index.js.cache", indexAssets["index.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache", sourcemapAssets["sourcemap-register.js.cache"].source);
