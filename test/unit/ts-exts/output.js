@@ -1,5 +1,5 @@
 module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
+/******/ ((modules, runtime) => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -21,7 +21,7 @@ module.exports =
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			modules[moduleId](module, module.exports, __webpack_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete installedModules[moduleId];
@@ -40,7 +40,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(578);
+/******/ 		return __webpack_require__(368);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -49,20 +49,20 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
-/***/ 578:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ 43:
+/***/ ((__unusedmodule, exports, __webpack_require__) => {
 
 "use strict";
 
 exports.__esModule = true;
-var dep_js_1 = __webpack_require__(975);
-console.log(dep_js_1["default"]);
+var dep_dep_js_1 = __webpack_require__(119);
+exports["default"] = dep_dep_js_1["default"];
 
 
 /***/ }),
 
-/***/ 668:
-/***/ (function(__unusedmodule, exports) {
+/***/ 119:
+/***/ ((__unusedmodule, exports) => {
 
 "use strict";
 
@@ -72,14 +72,14 @@ exports["default"] = {};
 
 /***/ }),
 
-/***/ 975:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ 368:
+/***/ ((__unusedmodule, exports, __webpack_require__) => {
 
 "use strict";
 
 exports.__esModule = true;
-var dep_dep_js_1 = __webpack_require__(668);
-exports["default"] = dep_dep_js_1["default"];
+var dep_js_1 = __webpack_require__(43);
+console.log(dep_js_1["default"]);
 
 
 /***/ })
