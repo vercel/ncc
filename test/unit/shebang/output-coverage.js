@@ -1,6 +1,6 @@
 #!/bin/user/env node
 module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
+/******/ ((modules, runtime) => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -22,7 +22,7 @@ module.exports =
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			modules[moduleId](module, module.exports, __webpack_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete installedModules[moduleId];
@@ -51,7 +51,7 @@ module.exports =
 /******/ ({
 
 /***/ 937:
-/***/ (function(module) {
+/***/ ((module) => {
 
 module.exports = 'asdf';
 

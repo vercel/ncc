@@ -1,5 +1,5 @@
 module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
+/******/ ((modules, runtime) => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -21,7 +21,7 @@ module.exports =
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			modules[moduleId](module, module.exports, __webpack_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete installedModules[moduleId];
@@ -50,7 +50,7 @@ module.exports =
 /******/ ({
 
 /***/ 159:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ ((__unusedmodule, __unusedexports, __webpack_require__) => {
 
 __webpack_require__(464);
 __webpack_require__(497);
@@ -58,7 +58,7 @@ __webpack_require__(497);
 /***/ }),
 
 /***/ 464:
-/***/ (function(module) {
+/***/ ((module) => {
 
 module.exports = eval("require")("./not-found.js");
 
@@ -66,7 +66,7 @@ module.exports = eval("require")("./not-found.js");
 /***/ }),
 
 /***/ 497:
-/***/ (function(module) {
+/***/ ((module) => {
 
 module.exports = eval("require")("./not-foud2.js");
 

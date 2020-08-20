@@ -1,5 +1,5 @@
 module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
+/******/ ((modules, runtime) => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -21,7 +21,7 @@ module.exports =
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			modules[moduleId](module, module.exports, __webpack_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete installedModules[moduleId];
@@ -50,7 +50,7 @@ module.exports =
 /******/ ({
 
 /***/ 157:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ ((__unusedmodule, __unusedexports, __webpack_require__) => {
 
 const external = __webpack_require__(306);
 
@@ -60,7 +60,7 @@ console.log(external);
 /***/ }),
 
 /***/ 306:
-/***/ (function(module) {
+/***/ ((module) => {
 
 module.exports = require("externalmapped");
 
