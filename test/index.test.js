@@ -11,9 +11,9 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
       .trim()
       // Windows support
       .replace(/\r/g, "");
-    let expectedSoureMap;
+    let expectedSourceMap;
     try {
-      expectedSoureMap = fs
+      expectedSourceMap = fs
         .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js.map`)
         .toString()
         .trim()
@@ -55,7 +55,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
             // Windows support
             .replace(/\r/g, "");
           try {
-            expect(actualSourceMap).toBe(expectedSoureMap);
+            expect(actualSourceMap).toBe(expectedSourceMap);
           } catch (e) {
             // useful for updating fixtures
             fs.writeFileSync(`${testDir}/actual.js.map`, actualSourceMap);
