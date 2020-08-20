@@ -35,8 +35,6 @@ module.exports =
 /******/ 	}
 /******/
 /******/
-/******/ 	__webpack_require__.ab = __dirname + "/";
-/******/
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
@@ -118,6 +116,12 @@ exports.test = test;
 /******/ 				}
 /******/ 			}
 /******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/compat */
+/******/ 	!function() {
+/******/ 		
+/******/ 		__webpack_require__.ab = __dirname + "/";
 /******/ 	}();
 /******/ 	
 /******/ }

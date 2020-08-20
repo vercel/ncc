@@ -12744,7 +12744,7 @@ schema-utils@^1.0.0:
     ajv-errors "^1.0.0"
     ajv-keywords "^3.1.0"
 
-schema-utils@^2.1.0:
+schema-utils@^2.3.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/schema-utils/-/schema-utils-2.7.0.tgz#17151f76d8eae67fbbf77960c33c676ad9f4efc7"
   integrity sha512-0ilKFI6QQF5nxDZLFn2dMjvc4hjg/Wkg7rHd3jK6/A4a1Hl9VFdQWvgB1UMGoU94pad1P/8N7fMcEnLnSiju8A==
@@ -15011,10 +15011,10 @@ webidl-conversions@^6.1.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
 
-webpack-sources@2.0.0-beta.3:
-  version "2.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-2.0.0-beta.3.tgz#4da69f67f34e3a3d1633a82b6db8a6995f4a7f13"
-  integrity sha512-ncnvMMP5B/DDkqgPVG8eXTFD+Yk1ch6AKcyRRlvB9B/4DL1exaF1Xh78Y7xcTXwhpVsL2051KSEfl8MkP75yzg==
+webpack-sources@2.0.0-beta.4:
+  version "2.0.0-beta.4"
+  resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-2.0.0-beta.4.tgz#b92f912e16e5c49ebd3c268edf83b13972a3c8ef"
+  integrity sha512-Xa2Ul5hAlMICQsKN1hjoSTSxJ0UmET4gZXR1e/Sfpos0XNSc2K3fhJHz79CxLyYh0KFEaj6NeoMra9Pp66hRBQ==
   dependencies:
     source-list-map "^2.0.1"
     source-map "~0.6.1"
@@ -15027,10 +15027,10 @@ webpack-sources@^1.2.0, webpack-sources@^1.4.0:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@5.0.0-alpha.23:
-  version "5.0.0-alpha.23"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.0.0-alpha.23.tgz#7e9ea7c68c62a6dfae44b821d5b405092c8c7a79"
-  integrity sha512-VFPFJyLgv9U8szM30imIxYlhcyfOQH/4WZcHwloU3qZDvXaRZRsq2v4btVlnf/+HqQgei3c5mpZGcKrG4rPJPg==
+webpack@5.0.0-alpha.28:
+  version "5.0.0-alpha.28"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.0.0-alpha.28.tgz#8b70d3ab3408e9d8cd441b5d8e208e7b7a7568de"
+  integrity sha512-Wwj/QpZanJPtTwUFkmkAjHpGnOEUwJtQ1qbpkFlH1nuWDpubC2oViXCIeZS9k/mAy6s1qbtm5X7Y3JEh6ZzwUg==
   dependencies:
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/helper-module-context" "1.8.5"
@@ -15048,11 +15048,11 @@ webpack@5.0.0-alpha.23:
     loader-utils "^1.2.3"
     neo-async "^2.6.1"
     pkg-dir "^4.2.0"
-    schema-utils "^2.1.0"
+    schema-utils "^2.3.0"
     tapable "2.0.0-beta.8"
     terser-webpack-plugin "^1.4.1"
     watchpack "2.0.0-beta.7"
-    webpack-sources "2.0.0-beta.3"
+    webpack-sources "2.0.0-beta.4"
 
 websocket-driver@>=0.5.1:
   version "0.7.0"

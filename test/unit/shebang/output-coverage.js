@@ -36,13 +36,13 @@ module.exports =
 /******/ 	}
 /******/
 /******/
-/******/ 	__webpack_require__.ab = __dirname + "/";
-/******/
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
 /******/ 		return __webpack_require__(937);
 /******/ 	};
+/******/ 	// initialize runtime
+/******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// run startup
 /******/ 	return startup();
@@ -57,4 +57,15 @@ module.exports = 'asdf';
 
 /***/ })
 
-/******/ });
+/******/ },
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ 	"use strict";
+/******/ 
+/******/ 	/* webpack/runtime/compat */
+/******/ 	!function() {
+/******/ 		
+/******/ 		__webpack_require__.ab = __dirname + "/";
+/******/ 	}();
+/******/ 	
+/******/ }
+);
