@@ -106,7 +106,7 @@
     "vm2": "^3.6.6",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
-    "webpack": "5.0.0-alpha.28",
+    "webpack": "5.0.0-alpha.32",
     "when": "^3.7.8"
   }
 }
