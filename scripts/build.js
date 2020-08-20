@@ -68,7 +68,7 @@ async function main() {
 
   // detect unexpected asset emissions from core build
   function checkUnknownAssets (buildName, assets) {
-    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js') && name !== 'LICENSES.txt');
+    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js') && !name.endsWith('LICENSES.txt'));
     if (!assets.length) return;
     console.error(`New assets are being emitted by the ${buildName} build`);
     console.log(assets);
