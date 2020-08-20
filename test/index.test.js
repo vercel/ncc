@@ -3,7 +3,7 @@ const { fork } = require("child_process");
 const ncc = global.coverage ? require("../src/index") : require("../");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
-  it.skip(`should generate correct output for ${unitTest}`, async () => {
+  it(`should generate correct output for ${unitTest}`, async () => {
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
       .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js`)
