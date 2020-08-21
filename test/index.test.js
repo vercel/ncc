@@ -1,12 +1,13 @@
 const fs = require("fs");
 const { fork } = require("child_process");
-const ncc = global.coverage ? require("../src/index") : require("../");
+const coverage = global.coverage || true;
+const ncc = coverage ? require("../src/index") : require("../");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
-      .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js`)
+      .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js`)
       .toString()
       .trim()
       // Windows support
@@ -14,7 +15,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     let expectedSourceMap;
     try {
       expectedSourceMap = fs
-        .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js.map`)
+        .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js.map`)
         .toString()
         .trim()
         // Windows support
@@ -68,7 +69,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 }
 for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
   it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
-    const ps = fork(__dirname + (global.coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
+    const ps = fork(__dirname + (coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
       stdio: "pipe"
     });
     let stderr = "", stdout = "";
@@ -97,7 +98,7 @@ for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
 jest.setTimeout(200000);
 
 let nccRun;
-if (global.coverage) {
+if (coverage) {
   nccRun = require(__dirname + "/../src/cli.js");
 }
 else {

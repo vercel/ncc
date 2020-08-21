@@ -125,36 +125,6 @@ module.exports = (
   var plugins = [
     {
       apply(compiler) {
-        // override "not found" context to try built require first
-        compiler.hooks.compilation.tap("ncc", compilation => {
-          compilation.moduleTemplates.javascript.hooks.render.tap(
-            "ncc",
-            (
-              moduleSourcePostModule,
-              module,
-              options,
-              dependencyTemplates
-            ) => {
-              if (
-                module._contextDependencies &&
-                moduleSourcePostModule._value.match(
-                  /webpackEmptyAsyncContext|webpackEmptyContext/
-                )
-              ) {
-                // ensure __webpack_require__ is added to wrapper
-                module.type = 'custom';
-                return moduleSourcePostModule._value.replace(
-                  "var e = new Error",
-                  `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
-                  `  return __webpack_require__(req);\n` +
-                  `try { return require(req) }\n` +
-                  `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
-                  `var e = new Error`
-                );
-              }
-            }
-          );
-        });
         compiler.hooks.compilation.tap("relocate-loader", compilation => relocateLoader.initAssetCache(compilation));
         compiler.hooks.watchRun.tap("ncc", () => {
           if (rebuildHandler)

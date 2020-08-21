@@ -22,7 +22,7 @@ module.exports = function (input, map) {
     if (baseParts[baseParts.length - 2] === 'node_modules') {
       const pkgName = baseParts[baseParts.length - 1];
       if (pkgName in emptyModules) {
-        console.error(`ncc: Ignoring build of ${pkgName}, as it is not statically analyzable. Build with "--external ${pkgName}" if this package is needed.`);
+        console.warn(`ncc: Ignoring build of ${pkgName}, as it is not statically analyzable. Build with "--external ${pkgName}" if this package is needed.`);
         return '';
       }
     }
