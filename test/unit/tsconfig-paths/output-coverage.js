@@ -60,10 +60,10 @@ exports["default"] = {};
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
-/******/ 	!function() {
+/******/ 	(() => {
 /******/ 		
 /******/ 		__webpack_require__.ab = __dirname + "/";
-/******/ 	}();
+/******/ 	})();
 /******/ 	
 /************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled

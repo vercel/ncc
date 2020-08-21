@@ -1,25 +1,23 @@
 module.exports =
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 213:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
+"use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(119);
+var _module_1 = __webpack_require__(17);
 console.log(_module_1["default"]);
 
 
 /***/ }),
 
-/***/ 119:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 17:
+/***/ ((module) => {
 
-
-exports.__esModule = true;
-exports["default"] = {};
+module.exports = eval("require")("@module");
 
 
 /***/ })
@@ -60,10 +58,10 @@ exports["default"] = {};
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
-/******/ 	!function() {
+/******/ 	(() => {
 /******/ 		
 /******/ 		__webpack_require__.ab = __dirname + "/";
-/******/ 	}();
+/******/ 	})();
 /******/ 	
 /************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled

@@ -243,7 +243,7 @@ module.exports = (
         },
         {
           parser: { amd: false },
-          exclude: /\.node$/,
+          exclude: /\.(node|json)$/,
           use: [{
             loader: eval('__dirname + "/loaders/shebang-loader.js"')
           }]
