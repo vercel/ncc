@@ -6,6 +6,8 @@ const copy = promisify(require("copy"));
 const glob = promisify(require("glob"));
 const bytes = require("bytes");
 
+const minify = true;
+
 async function main() {
   for (const file of await glob(__dirname + "/../dist/**/*.@(js|cache|ts)")) {
     unlinkSync(file);
@@ -17,7 +19,7 @@ async function main() {
       filename: "cli.js",
       externals: ["./index.js"],
       license: 'LICENSES.txt',
-      minify: true,
+      minify,
       v8cache: true
     }
   );
@@ -32,7 +34,7 @@ async function main() {
       // chokidar, which is quite convenient
       externals: ["chokidar"],
       filename: "index.js",
-      minify: true,
+      minify,
       v8cache: true
     }
   );
@@ -40,13 +42,13 @@ async function main() {
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
-    { filename: "relocate-loader.js", minify: true, v8cache: true }
+    { filename: "relocate-loader.js", minify, v8cache: true }
   );
   checkUnknownAssets('relocate-loader', Object.keys(relocateLoaderAssets));
 
   const { code: shebangLoader, assets: shebangLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/shebang-loader",
-    { filename: "shebang-loader.js", minify: true, v8cache: true }
+    { filename: "shebang-loader.js", minify, v8cache: true }
   );
   checkUnknownAssets('shebang-loader', Object.keys(shebangLoaderAssets));
 
@@ -54,7 +56,7 @@ async function main() {
     __dirname + "/../src/loaders/ts-loader",
     {
       filename: "ts-loader.js",
-      minify: true,
+      minify,
       v8cache: true
     }
   );

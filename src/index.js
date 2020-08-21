@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname } = require("path");
+const { join, dirname, extname, relative } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -181,7 +181,7 @@ module.exports = (
       chunkIds: 'deterministic',
       mangleExports: false
     },
-    devtool: sourceMap ? "source-map" : false,
+    devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
     target: "node",
     stats: {
@@ -344,11 +344,19 @@ module.exports = (
       map.sources = map.sources.map(source => {
         // webpack:///webpack:/// happens too for some reason
         while (source.startsWith('webpack:///'))
-          source = source.substr(11);
+          source = source.slice(11);
+        if (source.startsWith('//'))
+          source = source.slice(1);
+        if (source.startsWith('/'))
+          source = relative(process.cwd(), source).replace(/\\/g, '/');
+        if (source.startsWith('external '))
+          source = 'node:' + source.slice(9);
         if (source.startsWith('./'))
-          source = source.substr(2);
+          source = source.slice(2);
+        if (source.startsWith('(webpack)'))
+          source = 'webpack' + source.slice(9);
         if (source.startsWith('webpack/'))
-          return '/webpack/' + source.substr(8);
+          return '/webpack/' + source.slice(8);
         return sourceMapBasePrefix + source;
       });
     }
