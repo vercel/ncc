@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { fork } = require("child_process");
-const coverage = global.coverage || true;
+const coverage = global.coverage;
 const ncc = coverage ? require("../src/index") : require("../");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {

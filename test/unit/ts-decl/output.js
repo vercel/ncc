@@ -3,19 +3,6 @@ module.exports =
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 250:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-exports.__esModule = true;
-function test(arg) {
-    return arg;
-}
-exports.test = test;
-
-
-/***/ }),
-
 /***/ 582:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -26,6 +13,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _test_ts__WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== "default") __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _test_ts__WEBPACK_IMPORTED_MODULE_0__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
 
+
+
+/***/ }),
+
+/***/ 250:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+exports.__esModule = true;
+function test(arg) {
+    return arg;
+}
+exports.test = test;
 
 
 /***/ })

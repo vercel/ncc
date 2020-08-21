@@ -1,23 +1,25 @@
 module.exports =
 /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 17:
-/***/ ((module) => {
-
-module.exports = eval("require")("@module");
-
-
-/***/ }),
 
 /***/ 213:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 exports.__esModule = true;
-var _module_1 = __webpack_require__(17);
+var _module_1 = __webpack_require__(119);
 console.log(_module_1["default"]);
+
+
+/***/ }),
+
+/***/ 119:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+exports.__esModule = true;
+exports["default"] = {};
 
 
 /***/ })

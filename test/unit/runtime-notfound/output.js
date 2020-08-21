@@ -10,18 +10,18 @@ __webpack_require__(695);
 
 /***/ }),
 
-/***/ 367:
-/***/ ((module) => {
-
-module.exports = eval("require")("./not-found.js");
-
-
-/***/ }),
-
 /***/ 695:
 /***/ ((module) => {
 
 module.exports = eval("require")("./not-foud2.js");
+
+
+/***/ }),
+
+/***/ 367:
+/***/ ((module) => {
+
+module.exports = eval("require")("./not-found.js");
 
 
 /***/ })

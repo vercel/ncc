@@ -3,16 +3,6 @@ module.exports =
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 520:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-exports.__esModule = true;
-exports["default"] = {};
-
-
-/***/ }),
-
 /***/ 532:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -20,6 +10,16 @@ exports["default"] = {};
 exports.__esModule = true;
 var _module_1 = __webpack_require__(520);
 console.log(_module_1["default"]);
+
+
+/***/ }),
+
+/***/ 520:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+exports.__esModule = true;
+exports["default"] = {};
 
 
 /***/ })
