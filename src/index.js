@@ -12,6 +12,9 @@ const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
 
+// set webpack log level to remove warnings
+require('webpack/lib/logging/runtime').configureDefaultLogger({ level: 'log' });
+
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
 
