@@ -181,6 +181,9 @@ module.exports = (
     devtool: sourceMap ? "source-map" : false,
     mode: "production",
     target: "node",
+    stats: {
+      warnings: false
+    },
     output: {
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
