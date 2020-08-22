@@ -12,9 +12,6 @@ const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
 
-// set webpack log level to remove warnings
-require('webpack/lib/logging/runtime').configureDefaultLogger({ level: 'log' });
-
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
 
@@ -179,13 +176,19 @@ module.exports = (
       minimize: false,
       moduleIds: 'deterministic',
       chunkIds: 'deterministic',
-      mangleExports: false
+      mangleExports: false,
+      concatenateModules: false,
+      innerGraph: false,
+      sideEffects: false
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
     target: "node",
     stats: {
-      warnings: false
+      logging: 'error'
+    },
+    infrastructureLogging: {
+      level: 'error'
     },
     output: {
       path: "/",

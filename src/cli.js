@@ -9,6 +9,10 @@ const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
+// License and TypeScript plugins have Webpack deprecation warnings
+// we don't want these on when running as a CLI utility
+process.noDeprecation = true;
+
 const usage = `Usage: ncc <cmd> <opts>
 
 Commands:

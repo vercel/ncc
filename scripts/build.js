@@ -38,7 +38,9 @@ async function main() {
       v8cache: true
     }
   );
-  checkUnknownAssets('index', Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js'));
+  checkUnknownAssets('index', Object.keys(indexAssets).filter(asset =>
+    !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js' && asset !== 'minify.js'
+  ));
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
