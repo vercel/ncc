@@ -28,11 +28,6 @@ async function main() {
   const { code: index, assets: indexAssets } = await ncc(
     __dirname + "/../src/index",
     {
-      // we dont care about watching, so we don't want
-      // to bundle it. even if we did want watching and a bigger
-      // bundle, webpack (and therefore ncc) cannot currently bundle
-      // chokidar, which is quite convenient
-      externals: ["chokidar"],
       filename: "index.js",
       minify,
       v8cache: true

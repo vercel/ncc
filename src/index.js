@@ -176,10 +176,10 @@ module.exports = (
       minimize: false,
       moduleIds: 'deterministic',
       chunkIds: 'deterministic',
-      mangleExports: false,
-      concatenateModules: false,
-      innerGraph: false,
-      sideEffects: false
+      mangleExports: true,
+      concatenateModules: true,
+      innerGraph: true,
+      sideEffects: true
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",

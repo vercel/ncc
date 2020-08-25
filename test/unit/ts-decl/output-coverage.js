@@ -8,8 +8,8 @@ module.exports =
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "__esModule": () => /* reexport safe */ _test_ts__WEBPACK_IMPORTED_MODULE_0__.__esModule,
-/* harmony export */   "test": () => /* reexport safe */ _test_ts__WEBPACK_IMPORTED_MODULE_0__.test
+/* harmony export */   "__esModule": () => /* reexport safe */ _test_ts__WEBPACK_IMPORTED_MODULE_0__.X,
+/* harmony export */   "test": () => /* reexport safe */ _test_ts__WEBPACK_IMPORTED_MODULE_0__.B
 /* harmony export */ });
 /* harmony import */ var _test_ts__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(563);
 
@@ -21,11 +21,11 @@ __webpack_require__.r(__webpack_exports__);
 /***/ ((__unused_webpack_module, exports) => {
 
 
-exports.__esModule = true;
+exports.X = true;
 function test(arg) {
     return arg;
 }
-exports.test = test;
+exports.B = test;
 
 
 /***/ })
