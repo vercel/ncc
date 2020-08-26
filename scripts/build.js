@@ -6,6 +6,8 @@ const copy = promisify(require("copy"));
 const glob = promisify(require("glob"));
 const bytes = require("bytes");
 
+const minify = true;
+
 async function main() {
   for (const file of await glob(__dirname + "/../dist/**/*.@(js|cache|ts)")) {
     unlinkSync(file);
@@ -17,7 +19,7 @@ async function main() {
       filename: "cli.js",
       externals: ["./index.js"],
       license: 'LICENSES.txt',
-      minify: true,
+      minify,
       v8cache: true
     }
   );
@@ -26,27 +28,24 @@ async function main() {
   const { code: index, assets: indexAssets } = await ncc(
     __dirname + "/../src/index",
     {
-      // we dont care about watching, so we don't want
-      // to bundle it. even if we did want watching and a bigger
-      // bundle, webpack (and therefore ncc) cannot currently bundle
-      // chokidar, which is quite convenient
-      externals: ["chokidar"],
       filename: "index.js",
-      minify: true,
+      minify,
       v8cache: true
     }
   );
-  checkUnknownAssets('index', Object.keys(indexAssets).filter(asset => !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js'));
+  checkUnknownAssets('index', Object.keys(indexAssets).filter(asset =>
+    !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js' && asset !== 'minify.js'
+  ));
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
-    { filename: "relocate-loader.js", minify: true, v8cache: true }
+    { filename: "relocate-loader.js", minify, v8cache: true }
   );
   checkUnknownAssets('relocate-loader', Object.keys(relocateLoaderAssets));
 
   const { code: shebangLoader, assets: shebangLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/shebang-loader",
-    { filename: "shebang-loader.js", minify: true, v8cache: true }
+    { filename: "shebang-loader.js", minify, v8cache: true }
   );
   checkUnknownAssets('shebang-loader', Object.keys(shebangLoaderAssets));
 
@@ -54,7 +53,7 @@ async function main() {
     __dirname + "/../src/loaders/ts-loader",
     {
       filename: "ts-loader.js",
-      minify: true,
+      minify,
       v8cache: true
     }
   );
@@ -68,7 +67,7 @@ async function main() {
 
   // detect unexpected asset emissions from core build
   function checkUnknownAssets (buildName, assets) {
-    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js') && name !== 'LICENSES.txt');
+    assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js') && !name.endsWith('LICENSES.txt') && name !== 'processChild.js');
     if (!assets.length) return;
     console.error(`New assets are being emitted by the ${buildName} build`);
     console.log(assets);

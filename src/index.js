@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname } = require("path");
+const { join, dirname, extname, relative } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -91,21 +91,23 @@ module.exports = (
     apply(resolver) {
       const resolve = resolver.resolve;
       resolver.resolve = function (context, path, request, resolveContext, callback) {
-        resolve.call(resolver, context, path, request, resolveContext, function (err, result) {
-          if (!err) return callback(null, result);
-          if (!err.missing || !err.missing.length)
+        const self = this;
+        resolve.call(self, context, path, request, resolveContext, function (err, innerPath, result) {
+          if (result) return callback(null, innerPath, result);
+          if (err && !err.message.startsWith('Can\'t resolve'))
             return callback(err);
           // Allow .js resolutions to .tsx? from .tsx?
-          if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx')))
-            return resolve.call(resolver, context, path, request.slice(0, -3), resolveContext, function (err, result) {
-              if (!err) return callback(null, result);
-              if (!err.missing || !err.missing.length)
+          if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx'))) {
+            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function (err, innerPath, result) {
+              if (result) return callback(null, innerPath, result);
+              if (err && !err.message.startsWith('Can\'t resolve'))
                 return callback(err);
               // make not found errors runtime errors
-              callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
+              callback(null, __dirname + '/@@notfound.js?' + (externalMap.get(request) || request), request);
             });
+          }
           // make not found errors runtime errors
-          callback(null, __dirname + '/@@notfound.js' + '?' + (externalMap.get(request) || request));
+          callback(null, __dirname + '/@@notfound.js?' + (externalMap.get(request) || request), request);
         });
       };
     }
@@ -123,36 +125,6 @@ module.exports = (
   var plugins = [
     {
       apply(compiler) {
-        // override "not found" context to try built require first
-        compiler.hooks.compilation.tap("ncc", compilation => {
-          compilation.moduleTemplates.javascript.hooks.render.tap(
-            "ncc",
-            (
-              moduleSourcePostModule,
-              module,
-              options,
-              dependencyTemplates
-            ) => {
-              if (
-                module._contextDependencies &&
-                moduleSourcePostModule._value.match(
-                  /webpackEmptyAsyncContext|webpackEmptyContext/
-                )
-              ) {
-                // ensure __webpack_require__ is added to wrapper
-                module.type = 'custom';
-                return moduleSourcePostModule._value.replace(
-                  "var e = new Error",
-                  `if (typeof req === 'number' && __webpack_require__.m[req])\n` +
-                  `  return __webpack_require__(req);\n` +
-                  `try { return require(req) }\n` +
-                  `catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\n` +
-                  `var e = new Error`
-                );
-              }
-            }
-          );
-        });
         compiler.hooks.compilation.tap("relocate-loader", compilation => relocateLoader.initAssetCache(compilation));
         compiler.hooks.watchRun.tap("ncc", () => {
           if (rebuildHandler)
@@ -204,11 +176,20 @@ module.exports = (
       minimize: false,
       moduleIds: 'deterministic',
       chunkIds: 'deterministic',
-      mangleExports: false
+      mangleExports: true,
+      concatenateModules: true,
+      innerGraph: true,
+      sideEffects: true
     },
-    devtool: sourceMap ? "source-map" : false,
+    devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
     target: "node",
+    stats: {
+      logging: 'error'
+    },
+    infrastructureLogging: {
+      level: 'error'
+    },
     output: {
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
@@ -271,7 +252,7 @@ module.exports = (
         },
         {
           parser: { amd: false },
-          exclude: /\.node$/,
+          exclude: /\.(node|json)$/,
           use: [{
             loader: eval('__dirname + "/loaders/shebang-loader.js"')
           }]
@@ -366,11 +347,19 @@ module.exports = (
       map.sources = map.sources.map(source => {
         // webpack:///webpack:/// happens too for some reason
         while (source.startsWith('webpack:///'))
-          source = source.substr(11);
+          source = source.slice(11);
+        if (source.startsWith('//'))
+          source = source.slice(1);
+        if (source.startsWith('/'))
+          source = relative(process.cwd(), source).replace(/\\/g, '/');
+        if (source.startsWith('external '))
+          source = 'node:' + source.slice(9);
         if (source.startsWith('./'))
-          source = source.substr(2);
+          source = source.slice(2);
+        if (source.startsWith('(webpack)'))
+          source = 'webpack' + source.slice(9);
         if (source.startsWith('webpack/'))
-          return '/webpack/' + source.substr(8);
+          return '/webpack/' + source.slice(8);
         return sourceMapBasePrefix + source;
       });
     }

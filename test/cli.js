@@ -49,7 +49,7 @@
   {
     args: ["run", "test/fixtures/ts-error2/ts-error.ts"],
     expect (code, stdout, stderr) {
-      return code === 1 && stderr.toString().indexOf('ts-error.ts(3,16)') !== -1 && stderr.toString().split('\n').length < 10;
+      return code === 1 && stderr.toString().indexOf('ts-error.ts(3,16)') !== -1 && stderr.toString().split('\n').length < 11;
     }
   },
   {

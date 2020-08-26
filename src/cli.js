@@ -9,6 +9,10 @@ const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
+// License and TypeScript plugins have Webpack deprecation warnings
+// we don't want these on when running as a CLI utility
+process.noDeprecation = true;
+
 const usage = `Usage: ncc <cmd> <opts>
 
 Commands:
@@ -246,7 +250,7 @@ async function runCmd (argv, stdout, stderr) {
           return;
         }
 
-        outDir = outDir || resolve("dist");
+        outDir = outDir || resolve(eval("'dist'"));
         mkdirp.sync(outDir);
         // remove all existing ".js" and ".cjs" files in the out directory
         await Promise.all(

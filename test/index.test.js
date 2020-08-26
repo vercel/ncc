@@ -1,20 +1,21 @@
 const fs = require("fs");
 const { fork } = require("child_process");
-const ncc = global.coverage ? require("../src/index") : require("../");
+const coverage = global.coverage;
+const ncc = coverage ? require("../src/index") : require("../");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
-      .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js`)
+      .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js`)
       .toString()
       .trim()
       // Windows support
       .replace(/\r/g, "");
-    let expectedSoureMap;
+    let expectedSourceMap;
     try {
-      expectedSoureMap = fs
-        .readFileSync(`${testDir}/output${global.coverage ? '-coverage' : ''}.js.map`)
+      expectedSourceMap = fs
+        .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js.map`)
         .toString()
         .trim()
         // Windows support
@@ -55,7 +56,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
             // Windows support
             .replace(/\r/g, "");
           try {
-            expect(actualSourceMap).toBe(expectedSoureMap);
+            expect(actualSourceMap).toBe(expectedSourceMap);
           } catch (e) {
             // useful for updating fixtures
             fs.writeFileSync(`${testDir}/actual.js.map`, actualSourceMap);
@@ -63,12 +64,12 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
           }
         }
       }
-    );
+    )
   });
 }
 for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
   it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
-    const ps = fork(__dirname + (global.coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
+    const ps = fork(__dirname + (coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
       stdio: "pipe"
     });
     let stderr = "", stdout = "";
@@ -97,7 +98,7 @@ for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
 jest.setTimeout(200000);
 
 let nccRun;
-if (global.coverage) {
+if (coverage) {
   nccRun = require(__dirname + "/../src/cli.js");
 }
 else {
