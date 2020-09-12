@@ -6,6 +6,7 @@ const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
+const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
@@ -74,7 +75,7 @@ module.exports = (
   // error if there's no tsconfig in the working directory
   try {
     const tsconfig = tsconfigPaths.loadConfig();
-    const fullTsconfig = require(tsconfig.configFileAbsolutePath)
+    const fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath)
 
     const tsconfigPathsOptions = { silent: true }
     if (fullTsconfig.compilerOptions.allowJs) {
