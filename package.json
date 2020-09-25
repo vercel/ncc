@@ -81,6 +81,7 @@
     "pdf2json": "^1.1.8",
     "pdfkit": "^0.8.3",
     "pg": "^7.6.1",
+    "pnp-webpack-plugin": "^1.6.4",
     "pug": "^2.0.3",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
@@ -108,8 +109,5 @@
     "vue-server-renderer": "^2.5.17",
     "webpack": "5.0.0-beta.28",
     "when": "^3.7.8"
-  },
-  "dependencies": {
-    "pnp-webpack-plugin": "^1.6.4"
   }
 }
