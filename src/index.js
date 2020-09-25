@@ -11,6 +11,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
+const PnpWebpackPlugin = require('pnp-webpack-plugin');
 const { version: nccVersion } = require('../package.json');
 
 // support glob graceful-fs
@@ -69,7 +70,7 @@ module.exports = (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
-  const resolvePlugins = [];
+  const resolvePlugins = [PnpWebpackPlugin];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
