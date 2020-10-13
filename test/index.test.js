@@ -41,7 +41,8 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         const actual = code
           .trim()
           // Windows support
-          .replace(/\r/g, "");
+          .replace(/\r/g, "")
+          .replace(/;+/g, ";");
         try {
           expect(actual).toBe(expected);
         } catch (e) {
