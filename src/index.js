@@ -49,6 +49,9 @@ module.exports = (
     license = ''
   } = {}
 ) => {
+  process.env.__NCC_OPTS = JSON.stringify({
+    quiet
+  });
   const ext = extname(filename);
 
   if (!quiet) {

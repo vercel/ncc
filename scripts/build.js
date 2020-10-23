@@ -90,21 +90,7 @@ async function main() {
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli, { mode: 0o777 });
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
-  writeFileSync(__dirname + "/../dist/ncc/typescript.js", `
-const { Module } = require('module');
-const m = new Module('', null);
-m.paths = Module._nodeModulePaths(process.env.TYPESCRIPT_LOOKUP_PATH || (process.cwd() + '/'));
-let typescript;
-try {
-  typescript = m.require('typescript');
-  console.log("ncc: Using typescript@" + typescript.version + " (local user-provided)");
-}
-catch (e) {
-  typescript = require('./loaders/ts-loader.js').typescript;
-  console.log("ncc: Using typescript@" + typescript.version + " (ncc built-in)");
-}
-module.exports = typescript;
-`);
+  writeFileSync(__dirname + "/../dist/ncc/typescript.js", readFileSync(__dirname + "/../src/typescript.js"));
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
