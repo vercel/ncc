@@ -97,7 +97,7 @@ jest.setTimeout(30000);
 
 it('Should support custom watch API', async () => {
   let buildCnt = 0;
-  const buildFile = path.resolve('./test/integration/twilio.js');
+  const buildFile = path.resolve('./test/integration/request.js');
   await new Promise((resolve, reject) => {
     const watcher = new CustomWatchFileSystem(function watchStart (files, dirs, missing) {
       expect(files._set.size).toBeGreaterThan(100);
