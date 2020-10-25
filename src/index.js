@@ -8,10 +8,19 @@ const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
 const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const nodeLibsBrowser = require('node-libs-browser');
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
+
+const nodeLibsFallbacks = Object.keys(nodeLibsBrowser)
+  .reduce((r, key) => {
+    if (nodeLibsBrowser[key] !== null) {
+      r[key] = nodeLibsBrowser[key];
+    }
+    return r;
+  }, {});
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -203,6 +212,7 @@ module.exports = (
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
+      fallback: nodeLibsFallbacks,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
