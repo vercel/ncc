@@ -205,11 +205,7 @@ module.exports = (
       mainFields: ["main"],
       plugins: resolvePlugins
     },
-    node: {
-      global: true,
-      __filename: true,
-      __dirname: true,
-    },
+    node: {},
     externals: async ({ context, request }, callback) => {
       if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
       return callback();
