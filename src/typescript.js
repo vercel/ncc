@@ -1,14 +1,15 @@
 
 const { Module } = require('module');
 const m = new Module('', null);
+const {quiet} = JSON.parse(process.env.__NCC_OPTS || '{}');
 m.paths = Module._nodeModulePaths(process.env.TYPESCRIPT_LOOKUP_PATH || (process.cwd() + '/'));
 let typescript;
 try {
   typescript = m.require('typescript');
-  console.log("ncc: Using typescript@" + typescript.version + " (local user-provided)");
+  if (!quiet) console.log("ncc: Using typescript@" + typescript.version + " (local user-provided)");
 }
 catch (e) {
   typescript = require('typescript');
-  console.log("ncc: Using typescript@" + typescript.version + " (ncc built-in)");
+  if (!quiet) console.log("ncc: Using typescript@" + typescript.version + " (ncc built-in)");
 }
 module.exports = typescript;

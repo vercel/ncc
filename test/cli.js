@@ -79,5 +79,12 @@
       }
       return true;
     }
+  },
+  {
+    args: ["build", "--quiet", "test/integration/test.ts"],
+    expect (code, stdout) {
+      stdout = stdout.toString().replace(/[\r\n\s]/g, '').trim();
+      return stdout.length === 0;
+    }
   }
 ]
