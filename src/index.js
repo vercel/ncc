@@ -205,7 +205,8 @@ module.exports = (
       mainFields: ["main"],
       plugins: resolvePlugins
     },
-    node: {},
+    // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
+    node: false,
     externals: async ({ context, request }, callback) => {
       if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
       return callback();
