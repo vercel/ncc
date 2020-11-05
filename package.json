@@ -23,6 +23,7 @@
     "@google-cloud/bigquery": "^2.0.1",
     "@google-cloud/firestore": "^2.2.0",
     "@sentry/node": "^4.3.0",
+    "@slack/web-api": "^5.13.0",
     "@tensorflow/tfjs-node": "^0.3.0",
     "@zeit/webpack-asset-relocator-loader": "0.8.0",
     "analytics-node": "^3.3.0",
