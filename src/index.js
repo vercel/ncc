@@ -46,7 +46,8 @@ module.exports = (
     quiet = false,
     debugLog = false,
     transpileOnly = false,
-    license = ''
+    license = '',
+    target
   } = {}
 ) => {
   process.env.__NCC_OPTS = JSON.stringify({
@@ -187,7 +188,7 @@ module.exports = (
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
-    target: "node",
+    target: target || "node",
     stats: {
       logging: 'error'
     },
