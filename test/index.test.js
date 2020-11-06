@@ -167,7 +167,7 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   const tmpOut = path.join(os.tmpdir(), `ncc_${Math.random()}`)
 
   try {
-    await nccRun(["build", "-o", tmpOut, "--webpack-target", "node,es5", require.resolve('web-vitals/dist/web-vitals.es5.min.js')], stdout, stderr);
+    await nccRun(["build", "-o", tmpOut, "--target", "es5", require.resolve('web-vitals/dist/web-vitals.es5.min.js')], stdout, stderr);
   }
   catch (e) {
     if (e.silent) {
@@ -186,8 +186,6 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   // cleanup tmp output
   fs.unlinkSync(outFile)
   fs.rmdirSync(tmpOut)
-
-  console.log(output)
 
   expect(output).toContain('function')
   // make sure es6 wrapper wasn't used

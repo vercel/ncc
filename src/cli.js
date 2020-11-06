@@ -35,7 +35,7 @@ Options:
   --v8-cache               Emit a build using the v8 compile cache
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
-  --webpack-target         What build target to use for webpack (default: node)
+  --target                  What build target to use for webpack (default: es6)
 `;
 
 // support an API mode for CLI testing
@@ -148,7 +148,7 @@ async function runCmd (argv, stdout, stderr) {
       "-t": "--transpile-only",
       "--license": String,
       "--stats-out": String,
-      "--webpack-target": String
+      "--target": String
     }, {
       permissive: false,
       argv
@@ -241,9 +241,7 @@ async function runCmd (argv, stdout, stderr) {
           transpileOnly: args["--transpile-only"],
           license: args["--license"],
           quiet,
-          target: args["--webpack-target"]
-            ? args["--webpack-target"].split(',')
-            : undefined
+          target: args["--target"]
         }
       );
 
