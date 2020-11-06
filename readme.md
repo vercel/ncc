@@ -66,6 +66,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   --v8-cache               Emit a build using the v8 compile cache
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
+  --target [es2015|es2020] Select ecmascript target to use for output
 ```
 
 ### Execution Testing
@@ -89,6 +90,8 @@ file is necessary. Most likely you want to indicate `es2015` support:
   }
 }
 ```
+
+If typescript is found in `devDependencies`, that version will be used.
 
 ### Package Support
 
