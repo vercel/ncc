@@ -1,4 +1,6 @@
+const os = require("os");
 const fs = require("fs");
+const path = require("path");
 const { fork } = require("child_process");
 const coverage = global.coverage;
 const ncc = coverage ? require("../src/index") : require("../");
@@ -106,24 +108,25 @@ else {
   nccRun = require(__dirname + "/../dist/ncc/cli.js");
 }
 
+const { Writable } = require('stream');
+
+class StoreStream extends Writable {
+  constructor (options) {
+    super(options);
+    this.data = [];
+  }
+  _write(chunk, encoding, callback) {
+    this.data.push(chunk);
+    callback();
+  }
+}
+
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!/\.(mjs|tsx?|js)$/.test(integrationTest)) continue;
 
   // disabled pending https://github.com/zeit/ncc/issues/141
   if (integrationTest.endsWith('loopback.js')) continue;
-
-  const { Writable } = require('stream');
-  class StoreStream extends Writable {
-    constructor (options) {
-      super(options);
-      this.data = [];
-    }
-    _write(chunk, encoding, callback) {
-      this.data.push(chunk);
-      callback();
-    }
-  }
 
   it(`should execute "ncc run ${integrationTest}"`, async () => {
     let expectedStdout;
@@ -155,6 +158,39 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     }
   });
 }
+
+it(`should execute "ncc build web-vitals" with target config`, async () => {
+  if (global.gc) global.gc();
+  const stdout = new StoreStream();
+  const stderr = new StoreStream();
+
+  const tmpOut = path.join(os.tmpdir(), `ncc_${Math.random()}`)
+
+  try {
+    await nccRun(["build", "-o", tmpOut, "--target", "es5", require.resolve('web-vitals/dist/web-vitals.es5.min.js')], stdout, stderr);
+  }
+  catch (e) {
+    if (e.silent) {
+      let lastErr = stderr.data[stderr.data.length - 1];
+      if (lastErr)
+        throw new Error(lastErr);
+      else
+        throw new Error('Process exited with code ' + e.exitCode);
+    }
+    throw e;
+  }
+
+  const outFile = path.join(tmpOut, 'index.js')
+  const output = fs.readFileSync(outFile, 'utf8')
+
+  // cleanup tmp output
+  fs.unlinkSync(outFile)
+  fs.rmdirSync(tmpOut)
+
+  expect(output).toContain('function')
+  // make sure es6 wrapper wasn't used
+  expect(output).not.toContain('=>')
+});
 
 // remove me when node.js makes this the default behavior
 process.on("unhandledRejection", e => {

@@ -46,7 +46,8 @@ module.exports = (
     quiet = false,
     debugLog = false,
     transpileOnly = false,
-    license = ''
+    license = '',
+    target
   } = {}
 ) => {
   process.env.__NCC_OPTS = JSON.stringify({
@@ -58,6 +59,11 @@ module.exports = (
     console.log(`ncc: Version ${nccVersion}`);
     console.log(`ncc: Compiling file ${filename}`);
   }
+
+  if (target && !target.startsWith('es')) {
+    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es5`)
+  }
+
   const resolvedEntry = resolve.sync(entry);
   process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
@@ -187,7 +193,7 @@ module.exports = (
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
-    target: "node",
+    target: target ? ["node", target] : "node",
     stats: {
       logging: 'error'
     },
