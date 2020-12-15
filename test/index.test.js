@@ -35,11 +35,17 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
     await ncc(`${testDir}/${inputFile}`, Object.assign({
+      transpileOnly: true,
       externals: {
+        'piscina': 'piscina',
         'externaltest': 'externalmapped'
       }
     }, opts)).then(
       async ({ code, assets, map }) => {
+        if (unitTest.startsWith('bundle-subasset')) {
+          expect(assets['pi-bridge.js']).toBeDefined();
+          expect(assets['pi-bridge.js'].source.toString()).toContain('Math.PI');
+        }
         const actual = code
           .trim()
           // Windows support
@@ -138,7 +144,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     const stdout = new StoreStream();
     const stderr = new StoreStream();
     try {
-      await nccRun(["run", "--no-cache", `${__dirname}/integration/${integrationTest}`], stdout, stderr);
+      await nccRun(["run", "--no-cache", "--no-asset-builds", `${__dirname}/integration/${integrationTest}`], stdout, stderr);
     }
     catch (e) {
       if (e.silent) {
