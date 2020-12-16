@@ -47,7 +47,8 @@ module.exports = (
     debugLog = false,
     transpileOnly = false,
     license = '',
-    target
+    target,
+    outDir
   } = {}
 ) => {
   process.env.__NCC_OPTS = JSON.stringify({
@@ -336,7 +337,7 @@ module.exports = (
 
   function finalizeHandler (stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions, outDir);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -433,18 +434,28 @@ module.exports = (
 };
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
-  for (const path of Object.keys(mfsData)) {
-    const item = mfsData[path];
-    const curPath = `${curBase}/${path}`;
+function getFlatFiles(mfsData, output, getAssetPermissions, outDir, curBase = "") {
+  for (const filePath of Object.keys(mfsData)) {
+    const item = mfsData[filePath];
+    const curPath = `${curBase}/${filePath}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetPermissions, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetPermissions, outDir, curPath);
     // file
     else if (!curPath.endsWith("/")) {
-      output[curPath.substr(1)] = {
-        source: mfsData[path],
-        permissions: getAssetPermissions(curPath.substr(1))
-      };
+      if(curPath.endsWith(".d.ts")) {
+        const temp = curPath
+          .replace(outDir, "")
+          .replace(process.cwd(), "");
+        output[temp.substr(1)] = {
+          source: mfsData[filePath],
+          permissions: getAssetPermissions(curPath.substr(1))
+        };
+      } else {
+        output[curPath.substr(1)] = {
+          source: mfsData[filePath],
+          permissions: getAssetPermissions(curPath.substr(1))
+        };
+      }
     }
   }
 }

@@ -241,7 +241,8 @@ async function runCmd (argv, stdout, stderr) {
           transpileOnly: args["--transpile-only"],
           license: args["--license"],
           quiet,
-          target: args["--target"]
+          target: args["--target"],
+          outDir: outDir ? resolve(outDir) : resolve('dist'),
         }
       );
 
@@ -267,12 +268,6 @@ async function runCmd (argv, stdout, stderr) {
         if (map) writeFileSync(`${outDir}/index${ext}.map`, map);
 
         for (let asset of Object.keys(assets)) {
-          if(/\.d\.ts/.test(asset)) {
-            const temp = asset;
-            asset = `/${asset}`.split(outDir + '/')[1];
-            assets[asset] = assets[temp];
-            delete assets[temp];
-          }
           const assetPath = outDir + "/" + asset;
           mkdirp.sync(dirname(assetPath));
           writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
