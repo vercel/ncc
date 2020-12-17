@@ -135,10 +135,15 @@ function ncc (
 
   let watcher, watchHandler, rebuildHandler;
 
+  const compilationStack = [];
+
   var plugins = [
     {
       apply(compiler) {
-        compiler.hooks.compilation.tap("relocate-loader", compilation => relocateLoader.initAssetCache(compilation));
+        compiler.hooks.compilation.tap("relocate-loader", compilation => {
+          compilationStack.push(compilation);
+          relocateLoader.initAssetCache(compilation);
+        });
         compiler.hooks.watchRun.tap("ncc", () => {
           if (rebuildHandler)
             rebuildHandler();
@@ -289,7 +294,10 @@ function ncc (
         });
       });
     })
-    .then(finalizeHandler);
+    .then(finalizeHandler, function (err) {
+      compilationStack.pop();
+      throw err;
+    });
   }
   else {
     if (typeof watch === 'object') {
@@ -300,10 +308,14 @@ function ncc (
     }
     let cachedResult;
     watcher = compiler.watch({}, async (err, stats) => {
-      if (err)
+      if (err) {
+        compilationStack.pop();
         return watchHandler({ err });
-      if (stats.hasErrors())
+      }
+      if (stats.hasErrors()) {
+        compilationStack.pop();
         return watchHandler({ err: stats.toString() });
+      }
       const returnValue = await finalizeHandler(stats);
       if (watchHandler)
         watchHandler(returnValue);
@@ -434,13 +446,13 @@ function ncc (
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
     if (!noAssetBuilds) {
-      let assetNames = Object.keys(assets);
-      assetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
+      const compilation = compilationStack[compilationStack.length - 1];
+      const assetNames = Object.keys(assets);
       for (const asset of assetNames) {
         if (!asset.endsWith('.js') && !asset.endsWith('.cjs') && !asset.endsWith('.ts') && !asset.endsWith('.mjs') ||
-            asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs'))
+            asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs') || asset.endsWith('.d.ts'))
           continue;
-        const assetMeta = relocateLoader.getAssetMeta(asset);
+        const assetMeta = relocateLoader.getAssetMeta(asset, compilation);
         if (!assetMeta)
           continue;
         const path = assetMeta.path;
@@ -458,7 +470,7 @@ function ncc (
             noAssetBuilds: true,
             v8cache,
             filterAssetBase,
-            existingAssetNames: assetNames,
+            existingAssetNames: [...assetNames, `${filename}${ext === '.cjs' ? '.js' : ''}`],
             quiet,
             debugLog,
             transpileOnly,
@@ -472,6 +484,8 @@ function ncc (
         }
       }
     }
+
+    compilationStack.pop();
 
     return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks, stats };
   }
