@@ -470,7 +470,7 @@ function ncc (
             noAssetBuilds: true,
             v8cache,
             filterAssetBase,
-            existingAssetNames: [...assetNames, `${filename}${ext === '.cjs' ? '.js' : ''}`],
+            existingAssetNames: [...Object.keys(assets), `${filename}${ext === '.cjs' ? '.js' : ''}`],
             quiet,
             debugLog,
             transpileOnly,
