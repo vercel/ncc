@@ -135,10 +135,15 @@ function ncc (
 
   let watcher, watchHandler, rebuildHandler;
 
+  const compilationStack = [];
+
   var plugins = [
     {
       apply(compiler) {
-        compiler.hooks.compilation.tap("relocate-loader", compilation => relocateLoader.initAssetCache(compilation));
+        compiler.hooks.compilation.tap("relocate-loader", compilation => {
+          compilationStack.push(compilation);
+          relocateLoader.initAssetCache(compilation);
+        });
         compiler.hooks.watchRun.tap("ncc", () => {
           if (rebuildHandler)
             rebuildHandler();
@@ -289,7 +294,10 @@ function ncc (
         });
       });
     })
-    .then(finalizeHandler);
+    .then(finalizeHandler, function (err) {
+      compilationStack.pop();
+      throw err;
+    });
   }
   else {
     if (typeof watch === 'object') {
@@ -300,10 +308,14 @@ function ncc (
     }
     let cachedResult;
     watcher = compiler.watch({}, async (err, stats) => {
-      if (err)
+      if (err) {
+        compilationStack.pop();
         return watchHandler({ err });
-      if (stats.hasErrors())
+      }
+      if (stats.hasErrors()) {
+        compilationStack.pop();
         return watchHandler({ err: stats.toString() });
+      }
       const returnValue = await finalizeHandler(stats);
       if (watchHandler)
         watchHandler(returnValue);
@@ -434,44 +446,58 @@ function ncc (
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
     if (!noAssetBuilds) {
-      let assetNames = Object.keys(assets);
-      assetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
-      for (const asset of assetNames) {
+      const compilation = compilationStack[compilationStack.length - 1];
+      let existingAssetNames = Object.keys(assets);
+      existingAssetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
+      const subbuildAssets = [];
+      for (const asset of Object.keys(assets)) {
         if (!asset.endsWith('.js') && !asset.endsWith('.cjs') && !asset.endsWith('.ts') && !asset.endsWith('.mjs') ||
-            asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs'))
+            asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs') || asset.endsWith('.d.ts')) {
+          existingAssetNames.push(asset);
           continue;
-        const assetMeta = relocateLoader.getAssetMeta(asset);
-        if (!assetMeta)
-          continue;
-        const path = assetMeta.path;
-        if (path) {
-          const { code, assets: subbuildAssets, symlinks: subbuildSymlinks, stats: subbuildStats } = await ncc(path, {
-            cache,
-            externals,
-            filename: asset,
-            minify,
-            sourceMap,
-            sourceMapRegister,
-            sourceMapBasePrefix,
-            // dont recursively asset build
-            // could be supported with seen tracking
-            noAssetBuilds: true,
-            v8cache,
-            filterAssetBase,
-            existingAssetNames: assetNames,
-            quiet,
-            debugLog,
-            transpileOnly,
-            license,
-            target
-          });
-          Object.assign(symlinks, subbuildSymlinks);
-          Object.assign(stats, subbuildStats);
-          assets[asset] = { source: code, permissions: assetMeta.permissions };
-          Object.assign(assets, subbuildAssets);
         }
+        const assetMeta = relocateLoader.getAssetMeta(asset, compilation);
+        if (!assetMeta || !assetMeta.path) {
+          existingAssetNames.push(asset);
+          continue;
+        }
+        subbuildAssets.push(asset);
+      }
+      for (const asset of subbuildAssets) {
+        const assetMeta = relocateLoader.getAssetMeta(asset, compilation);
+        const path = assetMeta.path;
+        const { code, assets: subbuildAssets, symlinks: subbuildSymlinks, stats: subbuildStats } = await ncc(path, {
+          cache,
+          externals,
+          filename: asset,
+          minify,
+          sourceMap,
+          sourceMapRegister,
+          sourceMapBasePrefix,
+          // dont recursively asset build
+          // could be supported with seen tracking
+          noAssetBuilds: true,
+          v8cache,
+          filterAssetBase,
+          existingAssetNames,
+          quiet,
+          debugLog,
+          transpileOnly,
+          license,
+          target
+        });
+        Object.assign(symlinks, subbuildSymlinks);
+        Object.assign(stats, subbuildStats);
+        for (const subasset of Object.keys(subbuildAssets)) {
+          assets[subasset] = subbuildAssets[subasset];
+          if (!existingAssetNames.includes(subasset))
+            existingAssetNames.push(subasset);
+        }
+        assets[asset] = { source: code, permissions: assetMeta.permissions };
       }
     }
+
+    compilationStack.pop();
 
     return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks, stats };
   }
