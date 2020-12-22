@@ -519,7 +519,7 @@ function getFlatFiles(mfsData, output, getAssetMeta, outDir, curBase = "") {
           .replace(outDir, "")
           .replace(process.cwd(), "");
         output[temp.substr(1)] = {
-          source: mfsData[filePath],
+          source: mfsData[path],
           permissions: meta.permissions
         };
       } else {
