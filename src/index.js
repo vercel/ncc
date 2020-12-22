@@ -30,7 +30,8 @@ const defaultPermissions = 0o666;
 
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
-module.exports = (
+module.exports = ncc;
+function ncc (
   entry,
   {
     cache,
@@ -40,16 +41,18 @@ module.exports = (
     sourceMap = false,
     sourceMapRegister = true,
     sourceMapBasePrefix = '../',
+    noAssetBuilds = false,
     watch = false,
     v8cache = false,
     filterAssetBase = process.cwd(),
+    existingAssetNames = [],
     quiet = false,
     debugLog = false,
     transpileOnly = false,
     license = '',
     target
   } = {}
-) => {
+) {
   process.env.__NCC_OPTS = JSON.stringify({
     quiet
   });
@@ -69,7 +72,7 @@ module.exports = (
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
 
-  const existingAssetNames = [filename];
+  existingAssetNames.push(filename);
   if (sourceMap) {
     existingAssetNames.push(`${filename}.map`);
     existingAssetNames.push(`sourcemap-register${ext}`);
@@ -132,10 +135,15 @@ module.exports = (
 
   let watcher, watchHandler, rebuildHandler;
 
+  const compilationStack = [];
+
   var plugins = [
     {
       apply(compiler) {
-        compiler.hooks.compilation.tap("relocate-loader", compilation => relocateLoader.initAssetCache(compilation));
+        compiler.hooks.compilation.tap("relocate-loader", compilation => {
+          compilationStack.push(compilation);
+          relocateLoader.initAssetCache(compilation);
+        });
         compiler.hooks.watchRun.tap("ncc", () => {
           if (rebuildHandler)
             rebuildHandler();
@@ -286,7 +294,10 @@ module.exports = (
         });
       });
     })
-    .then(finalizeHandler);
+    .then(finalizeHandler, function (err) {
+      compilationStack.pop();
+      throw err;
+    });
   }
   else {
     if (typeof watch === 'object') {
@@ -296,12 +307,16 @@ module.exports = (
       watch.inputFileSystem = compiler.inputFileSystem;
     }
     let cachedResult;
-    watcher = compiler.watch({}, (err, stats) => {
-      if (err)
+    watcher = compiler.watch({}, async (err, stats) => {
+      if (err) {
+        compilationStack.pop();
         return watchHandler({ err });
-      if (stats.hasErrors())
+      }
+      if (stats.hasErrors()) {
+        compilationStack.pop();
         return watchHandler({ err: stats.toString() });
-      const returnValue = finalizeHandler(stats);
+      }
+      const returnValue = await finalizeHandler(stats);
       if (watchHandler)
         watchHandler(returnValue);
       else
@@ -334,9 +349,9 @@ module.exports = (
     };
   }
 
-  function finalizeHandler (stats) {
+  async function finalizeHandler (stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetPermissions);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -344,6 +359,7 @@ module.exports = (
       if (resolved in assets)
         symlinks[key] = value;
     }
+
     // Webpack only emits sourcemaps for .js files
     // so we need to adjust the .cjs extension handling
     delete assets[filename + (ext === '.cjs' ? '.js' : '')];
@@ -428,22 +444,78 @@ module.exports = (
         map.mappings = ";" + map.mappings;
     }
 
+    // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
+    if (!noAssetBuilds) {
+      const compilation = compilationStack[compilationStack.length - 1];
+      let existingAssetNames = Object.keys(assets);
+      existingAssetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
+      const subbuildAssets = [];
+      for (const asset of Object.keys(assets)) {
+        if (!asset.endsWith('.js') && !asset.endsWith('.cjs') && !asset.endsWith('.ts') && !asset.endsWith('.mjs') ||
+            asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs') || asset.endsWith('.d.ts')) {
+          existingAssetNames.push(asset);
+          continue;
+        }
+        const assetMeta = relocateLoader.getAssetMeta(asset, compilation);
+        if (!assetMeta || !assetMeta.path) {
+          existingAssetNames.push(asset);
+          continue;
+        }
+        subbuildAssets.push(asset);
+      }
+      for (const asset of subbuildAssets) {
+        const assetMeta = relocateLoader.getAssetMeta(asset, compilation);
+        const path = assetMeta.path;
+        const { code, assets: subbuildAssets, symlinks: subbuildSymlinks, stats: subbuildStats } = await ncc(path, {
+          cache,
+          externals,
+          filename: asset,
+          minify,
+          sourceMap,
+          sourceMapRegister,
+          sourceMapBasePrefix,
+          // dont recursively asset build
+          // could be supported with seen tracking
+          noAssetBuilds: true,
+          v8cache,
+          filterAssetBase,
+          existingAssetNames,
+          quiet,
+          debugLog,
+          transpileOnly,
+          license,
+          target
+        });
+        Object.assign(symlinks, subbuildSymlinks);
+        Object.assign(stats, subbuildStats);
+        for (const subasset of Object.keys(subbuildAssets)) {
+          assets[subasset] = subbuildAssets[subasset];
+          if (!existingAssetNames.includes(subasset))
+            existingAssetNames.push(subasset);
+        }
+        assets[asset] = { source: code, permissions: assetMeta.permissions };
+      }
+    }
+
+    compilationStack.pop();
+
     return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks, stats };
   }
-};
+}
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetPermissions, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetMeta, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     const curPath = `${curBase}/${path}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetPermissions, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, curPath);
     // file
     else if (!curPath.endsWith("/")) {
+      const meta = getAssetMeta(curPath.substr(1)) || {};
       output[curPath.substr(1)] = {
         source: mfsData[path],
-        permissions: getAssetPermissions(curPath.substr(1))
+        permissions: meta.permissions
       };
     }
   }

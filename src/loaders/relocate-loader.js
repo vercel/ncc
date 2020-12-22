@@ -1,1 +1,1 @@
-module.exports = require('@zeit/webpack-asset-relocator-loader');
+module.exports = require('@vercel/webpack-asset-relocator-loader');
