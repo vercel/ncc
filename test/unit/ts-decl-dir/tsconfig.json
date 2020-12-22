@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "dist/types"
+  }
+}
