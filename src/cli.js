@@ -269,7 +269,7 @@ async function runCmd (argv, stdout, stderr) {
         writeFileSync(`${outDir}/index${ext}`, code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
         if (map) writeFileSync(`${outDir}/index${ext}.map`, map);
 
-        for (let asset of Object.keys(assets)) {
+        for (const asset of Object.keys(assets)) {
           const assetPath = outDir + "/" + asset;
           mkdirp.sync(dirname(assetPath));
           writeFileSync(assetPath, assets[asset].source, { mode: assets[asset].permissions });
