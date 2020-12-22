@@ -54,8 +54,9 @@ async function main() {
     {
       filename: "ts-loader.js",
       minify,
-      v8cache: true
-    }
+      v8cache: true,
+      noAssetBuilds: true
+    },
   );
   checkUnknownAssets('ts-loader', Object.keys(tsLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')));
 
