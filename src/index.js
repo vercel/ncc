@@ -508,26 +508,21 @@ function ncc (
 function getFlatFiles(mfsData, output, getAssetMeta, outDir, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
-    const curPath = `${curBase}/${path}`;
+    let curPath = `${curBase}/${path}`;
     // directory
     if (item[""] === true) getFlatFiles(item, output, getAssetMeta, outDir, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.substr(1)) || {};
       if(curPath.endsWith(".d.ts")) {
-        const temp = curPath
+        curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "");
-        output[temp.substr(1)] = {
-          source: mfsData[path],
-          permissions: meta.permissions
-        };
-      } else {
-        output[curPath.substr(1)] = {
-          source: mfsData[path],
-          permissions: meta.permissions
-        };
       }
+      output[curPath.substr(1)] = {
+        source: mfsData[path],
+        permissions: meta.permissions
+      };
     }
   }
 }
