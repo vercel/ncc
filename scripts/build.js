@@ -62,7 +62,7 @@ async function main() {
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
-    { filename: "sourcemap-register.js", minfiy: true, v8cache: true }
+    { filename: "sourcemap-register.js", minify, v8cache: true }
   );
   checkUnknownAssets('source-map-support/register', Object.keys(sourcemapAssets));
 
