@@ -243,8 +243,7 @@ async function runCmd (argv, stdout, stderr) {
           transpileOnly: args["--transpile-only"],
           license: args["--license"],
           quiet,
-          target: args["--target"],
-          outDir: outDir ? resolve(outDir) : resolve('dist'),
+          target: args["--target"]
         }
       );
 
