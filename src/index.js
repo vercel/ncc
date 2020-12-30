@@ -447,7 +447,8 @@ function ncc (
     // __webpack_require__ can conflict with webpack injections in module scopes
     // to avoid this without recomputing the source map we replace it with an
     // identical length identifier
-    code = code.replace(/__webpack_require__/g, '__nccwpck_require__');
+    if (code.indexOf('"__webpack_require__"') === -1)
+      code = code.replace(/__webpack_require__/g, '__nccwpck_require__');
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
     if (!noAssetBuilds) {
