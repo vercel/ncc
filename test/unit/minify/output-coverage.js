@@ -1,2 +1,2 @@
-module.exports=(()=>{var e={894:(e,r)=>{const _="qux";r.foobar=_}};var r={};function __webpack_require__(_){if(r[_]){return r[_].exports}var a=r[_]={exports:{}};var t=true;try{e[_](a,a.exports,__webpack_require__);t=false}finally{if(t)delete r[_]}return a.exports}__webpack_require__.ab=__dirname+"/";return __webpack_require__(894)})();
+module.exports=(()=>{var e={894:(e,r)=>{const _="qux";r.foobar=_}};var r={};function __nccwpck_require__(_){if(r[_]){return r[_].exports}var a=r[_]={exports:{}};var t=true;try{e[_](a,a.exports,__nccwpck_require__);t=false}finally{if(t)delete r[_]}return a.exports}__nccwpck_require__.ab=__dirname+"/";return __nccwpck_require__(894)})();
 //# sourceMappingURL=index.js.map
