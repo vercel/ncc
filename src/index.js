@@ -35,6 +35,7 @@ function ncc (
   entry,
   {
     cache,
+    customEmit = undefined,
     externals = [],
     filename = 'index' + (entry.endsWith('.cjs') ? '.cjs' : '.js'),
     minify = false,
@@ -243,6 +244,7 @@ function ncc (
           }, {
             loader: eval('__dirname + "/loaders/relocate-loader.js"'),
             options: {
+              customEmit,
               filterAssetBase,
               existingAssetNames,
               escapeNonAnalyzableRequires: true,
