@@ -488,7 +488,8 @@ function ncc (
           existingAssetNames,
           quiet,
           debugLog,
-          transpileOnly,
+          // don't re-run type checking on a sub-build, as it is a waste of CPU
+          transpileOnly: true,
           license,
           target
         });
