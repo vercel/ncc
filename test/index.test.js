@@ -81,7 +81,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   });
 }
 for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
-  it.skip(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
+  it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
     const ps = fork(__dirname + (coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
       stdio: "pipe"
     });
@@ -138,7 +138,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // disabled pending https://github.com/zeit/ncc/issues/141
   if (integrationTest.endsWith('loopback.js')) continue;
 
-  it.skip(`should execute "ncc run ${integrationTest}"`, async () => {
+  it(`should execute "ncc run ${integrationTest}"`, async () => {
     let expectedStdout;
     try {
       expectedStdout = fs.readFileSync(`${__dirname}/integration/${integrationTest}.stdout`).toString();
@@ -169,7 +169,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   });
 }
 
-it.skip(`should execute "ncc build web-vitals" with target config`, async () => {
+it(`should execute "ncc build web-vitals" with target config`, async () => {
   if (global.gc) global.gc();
   const stdout = new StoreStream();
   const stderr = new StoreStream();
