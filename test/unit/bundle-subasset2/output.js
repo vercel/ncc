@@ -4,7 +4,7 @@ module.exports =
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 886:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -43,10 +43,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var piscina_1 = __webpack_require__(409);
-var path = __webpack_require__(622);
+var piscina_1 = __nccwpck_require__(409);
+var path = __nccwpck_require__(622);
 var piscina = new piscina_1["default"]({
-    filename: __webpack_require__.ab + "pi-bridge.js"
+    filename: __nccwpck_require__.ab + "pi-bridge.js"
 });
 (function () {
     return __awaiter(this, void 0, void 0, function () {
@@ -86,7 +86,7 @@ module.exports = require("piscina");
 /******/ 	var __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
+/******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		if(__webpack_module_cache__[moduleId]) {
 /******/ 			return __webpack_module_cache__[moduleId].exports;
@@ -101,7 +101,7 @@ module.exports = require("piscina");
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
@@ -114,10 +114,10 @@ module.exports = require("piscina");
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__webpack_require__.ab = __dirname + "/";/************************************************************************/
+/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(886);
+/******/ 	return __nccwpck_require__(886);
 /******/ })()
 ;
