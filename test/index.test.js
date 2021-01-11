@@ -36,6 +36,10 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
     await ncc(`${testDir}/${inputFile}`, Object.assign({
       transpileOnly: true,
+      customEmit (path) {
+        if (path.endsWith('test.json'))
+          return false;
+      },
       externals: {
         'piscina': 'piscina',
         'externaltest': 'externalmapped'
