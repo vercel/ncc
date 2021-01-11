@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname, relative } = require("path");
+const { join, dirname, extname, relative, resolve: pathResolve } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -51,7 +51,7 @@ function ncc (
     debugLog = false,
     transpileOnly = false,
     license = '',
-    target
+    target,
   } = {}
 ) {
   process.env.__NCC_OPTS = JSON.stringify({
@@ -86,9 +86,12 @@ function ncc (
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
+  let fullTsconfig;
   try {
     const tsconfig = tsconfigPaths.loadConfig();
-    const fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath)
+    fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath) || {
+      compilerOptions: {}
+    };
 
     const tsconfigPathsOptions = { silent: true }
     if (fullTsconfig.compilerOptions.allowJs) {
@@ -353,7 +356,7 @@ function ncc (
 
   async function finalizeHandler (stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, fullTsconfig);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -513,15 +516,21 @@ function ncc (
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetMeta, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
-    const curPath = `${curBase}/${path}`;
+    let curPath = `${curBase}/${path}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfig, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.substr(1)) || {};
+      if(curPath.endsWith(".d.ts")) {
+        const outDir = tsconfig.compilerOptions.outDir ? pathResolve(tsconfig.compilerOptions.outDir) : pathResolve('dist');
+        curPath = curPath
+          .replace(outDir, "")
+          .replace(process.cwd(), "")
+      }
       output[curPath.substr(1)] = {
         source: mfsData[path],
         permissions: meta.permissions

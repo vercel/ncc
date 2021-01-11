@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist/types"
+  }
+}
