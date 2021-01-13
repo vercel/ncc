@@ -33,6 +33,7 @@ Options:
   -w, --watch              Start a watched build
   -t, --transpile-only     Use transpileOnly option with the ts-loader
   --v8-cache               Emit a build using the v8 compile cache
+  -f, --filename [file]    Name of built file (default: index.c|js)
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
   --target                  What build target to use for webpack (default: es6)
@@ -57,13 +58,13 @@ else {
   api = true;
 }
 
-function renderSummary(code, map, assets, ext, outDir, buildTime) {
+function renderSummary(code, map, assets, filename, outDir, buildTime) {
   if (outDir && !outDir.endsWith(sep)) outDir += sep;
   const codeSize = Math.round(Buffer.byteLength(code, "utf8") / 1024);
   const mapSize = map ? Math.round(Buffer.byteLength(map, "utf8") / 1024) : 0;
   const assetSizes = Object.create(null);
   let totalSize = codeSize;
-  let maxAssetNameLength = 8 + (map ? 4 : 0); // length of index.js(.map)?
+  let maxAssetNameLength = filename.length + (map ? 4 : 0); // length of filename(.map)?
   for (const asset of Object.keys(assets)) {
     const assetSource = assets[asset].source;
     const assetSize = Math.round(
@@ -81,10 +82,10 @@ function renderSummary(code, map, assets, ext, outDir, buildTime) {
 
   let indexRender = `${codeSize
     .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}index${ext}`;
+    .padStart(sizePadding, " ")}kB  ${outDir}${filename}`;
   let indexMapRender = map ? `${mapSize
     .toString()
-    .padStart(sizePadding, " ")}kB  ${outDir}index${ext}.map` : '';
+    .padStart(sizePadding, " ")}kB  ${outDir}${filename}.map` : '';
 
   let output = "",
     first = true;
@@ -148,6 +149,8 @@ async function runCmd (argv, stdout, stderr) {
       "--transpile-only": Boolean,
       "-t": "--transpile-only",
       "--license": String,
+      "--filename": String,
+      "-f": "--filename",
       "--stats-out": String,
       "--target": String
     }, {
@@ -227,7 +230,13 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
+      console.log('buildfile', buildFile)
       const ext = buildFile.endsWith('.cjs') ? '.cjs' : '.js';
+      let filename = args["--filename"] || `index${ext}`;
+      let baseFileName = filename.replace(/\.[^/.]+$/, "");
+      console.log('set filename', filename)
+      console.log('baseFileName', baseFileName)
+    
       const ncc = require("./index.js")(
         buildFile,
         {
@@ -241,6 +250,7 @@ async function runCmd (argv, stdout, stderr) {
           watch: args["--watch"],
           v8cache: args["--v8-cache"],
           transpileOnly: args["--transpile-only"],
+          filename: args["--filename"],
           license: args["--license"],
           quiet,
           target: args["--target"]
@@ -265,8 +275,8 @@ async function runCmd (argv, stdout, stderr) {
             new Promise((resolve, reject) => unlink(file, err => err ? reject(err) : resolve())
           ))
         );
-        writeFileSync(`${outDir}/index${ext}`, code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
-        if (map) writeFileSync(`${outDir}/index${ext}.map`, map);
+        writeFileSync(`${outDir}/${baseFileName}${ext}`, code, { mode: code.match(shebangRegEx) ? 0o777 : 0o666 });
+        if (map) writeFileSync(`${outDir}/${baseFileName}${ext}.map`, map);
 
         for (const asset of Object.keys(assets)) {
           const assetPath = outDir + "/" + asset;
@@ -285,7 +295,7 @@ async function runCmd (argv, stdout, stderr) {
               code,
               map,
               assets,
-              ext,
+              filename,
               run ? "" : relative(process.cwd(), outDir),
               Date.now() - startTime,
             ) + '\n'
@@ -312,7 +322,7 @@ async function runCmd (argv, stdout, stderr) {
           } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
           if (nodeModulesDir)
             symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
-          ps = require("child_process").fork(`${outDir}/index${ext}`, {
+          ps = require("child_process").fork(`${outDir}/${baseFileName}${ext}`, {
             stdio: api ? 'pipe' : 'inherit'
           });
           if (api) {
