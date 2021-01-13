@@ -64,6 +64,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   -q, --quiet              Disable build summaries / non-error outputs
   -w, --watch              Start a watched build
   --v8-cache               Emit a build using the v8 compile cache
+  -f, --filename [file]    Name of built file (default: index.c|js)
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
   --target [es2015|es2020] Select ecmascript target to use for output
