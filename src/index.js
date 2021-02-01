@@ -416,7 +416,7 @@ function ncc (
           map: sourceMap ? JSON.parse(result.map) : undefined
         });
       } else {
-	console.log('Error happens when minifying. The result will not be minified.')
+        console.log('Error happens when minifying. The result will not be minified.')
       }
     }
 
