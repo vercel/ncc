@@ -146,7 +146,32 @@ function ncc (
     }
   });
 
-  const externalMap = new Map();
+  const externalMap = (() => {
+    const aliasMap = new Map();
+    const regexes = []; // new Set()
+
+    function set(key, value) {
+      if (value instanceof RegExp) {
+        // regexes.add(_value);
+        regexes.push(value);
+      } else {
+        aliasMap.set(key, value);
+      }
+    }
+
+    function get(key) {
+      if (aliasMap.has(key)) {
+        return aliasMap.get(key);
+      }
+      const matchedRegex = regexes.find(regex => regex.test(key))
+      return matchedRegex != null ? key : null;
+    }
+
+    return {
+      get,
+      set,
+    }
+  })();
 
   if (Array.isArray(externals))
     externals.forEach(external => externalMap.set(external, external));
@@ -260,8 +285,10 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: ({ context, request }, callback) => {
-      if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
+    externals: async ({ context, request }, callback) => {
+      const external = externalMap.get(request);
+      if (external !== null)
+        return callback(null, `commonjs ${external}`);
       return callback();
     },
     module: {
