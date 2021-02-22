@@ -147,30 +147,24 @@ function ncc (
   });
 
   const externalMap = (() => {
+    const regexps = [];
     const aliasMap = new Map();
-    const regexes = []; // new Set()
 
     function set(key, value) {
-      if (value instanceof RegExp) {
-        // regexes.add(_value);
-        regexes.push(value);
-      } else {
+      if (value instanceof RegExp)
+        regexps.push(value);
+      else
         aliasMap.set(key, value);
-      }
     }
 
     function get(key) {
-      if (aliasMap.has(key)) {
-        return aliasMap.get(key);
-      }
-      const matchedRegex = regexes.find(regex => regex.test(key))
+      if (aliasMap.has(key)) return aliasMap.get(key);
+
+      const matchedRegex = regexps.find(regex => regex.test(key))
       return matchedRegex != null ? key : null;
     }
 
-    return {
-      get,
-      set,
-    }
+    return { get, set };
   })();
 
   if (Array.isArray(externals))
