@@ -110,5 +110,8 @@
     "web-vitals": "^0.2.4",
     "webpack": "5.2.0",
     "when": "^3.7.8"
+  },
+  "resolutions": {
+    "grpc": "1.24.6"
   }
 }
