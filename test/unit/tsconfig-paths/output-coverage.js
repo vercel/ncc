@@ -2,7 +2,7 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 660:
+/***/ 520:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -53,7 +53,7 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 
 exports.__esModule = true;
-var _module_1 = __nccwpck_require__(660);
+var _module_1 = __nccwpck_require__(520);
 console.log(_module_1["default"]);
 
 })();
