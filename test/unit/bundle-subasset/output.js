@@ -1,26 +1,6 @@
-module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 743:
-/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
-
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(622);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
-
-
-const file = __nccwpck_require__.ab + "pi-bridge.js";
-
-const obscureRequire = eval(`function obscureRequire (file) {
-    require(file);
-}`);
-
-console.log(obscureRequire(__nccwpck_require__.ab + "pi-bridge.js"));
-
-
-/***/ }),
 
 /***/ 622:
 /***/ ((module) => {
@@ -66,8 +46,8 @@ module.exports = require("path");
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__nccwpck_require__.n = (module) => {
 /******/ 			var getter = module && module.__esModule ?
-/******/ 				() => module['default'] :
-/******/ 				() => module;
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
 /******/ 			__nccwpck_require__.d(getter, { a: getter });
 /******/ 			return getter;
 /******/ 		};
@@ -87,7 +67,7 @@ module.exports = require("path");
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
@@ -103,10 +83,25 @@ module.exports = require("path");
 /******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(743);
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(622);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const file = __nccwpck_require__.ab + "pi-bridge.js";
+
+const obscureRequire = eval(`function obscureRequire (file) {
+    require(file);
+}`);
+
+console.log(obscureRequire(__nccwpck_require__.ab + "pi-bridge.js"));
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;

@@ -1,16 +1,5 @@
-module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 954:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const { readFileSync } = __nccwpck_require__(747);
-console.log(readFileSync(__dirname + './test.json'));
-
-
-
-/***/ }),
 
 /***/ 747:
 /***/ ((module) => {
@@ -54,10 +43,16 @@ module.exports = require("fs");
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(954);
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+const { readFileSync } = __nccwpck_require__(747);
+console.log(readFileSync(__dirname + './test.json'));
+
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
