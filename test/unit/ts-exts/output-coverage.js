@@ -1,4 +1,3 @@
-module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
@@ -20,17 +19,6 @@ exports.default = {};
 exports.__esModule = true;
 var dep_dep_js_1 = __nccwpck_require__(119);
 exports.default = dep_dep_js_1["default"];
-
-
-/***/ }),
-
-/***/ 368:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-exports.__esModule = true;
-var dep_js_1 = __nccwpck_require__(43);
-console.log(dep_js_1["default"]);
 
 
 /***/ })
@@ -69,10 +57,18 @@ console.log(dep_js_1["default"]);
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(368);
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+var exports = __webpack_exports__;
+
+exports.__esModule = true;
+var dep_js_1 = __nccwpck_require__(43);
+console.log(dep_js_1["default"]);
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
