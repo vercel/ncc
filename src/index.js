@@ -52,8 +52,24 @@ function ncc (
     transpileOnly = false,
     license = '',
     target,
+    production = true,
   } = {}
 ) {
+  const cjsDeps = () => ({
+    mainFields: ["main"],
+    extensions: SUPPORTED_EXTENSIONS,
+    exportsFields: ["exports"],
+    importsFields: ["imports"],
+    conditionNames: ["require", "node", production ? "production" : "development"]
+  });
+  const esmDeps = () => ({
+    mainFields: ["main"],
+    extensions: SUPPORTED_EXTENSIONS,
+    exportsFields: ["exports"],
+    importsFields: ["imports"],
+    conditionNames: ["import", "node", production ? "production": "development"]
+  });
+
   process.env.__NCC_OPTS = JSON.stringify({
     quiet
   });
@@ -221,6 +237,22 @@ function ncc (
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
+      exportsFields: ["exports"],
+      importsFields: ["imports"],
+      byDependency: {
+        wasm: esmDeps(),
+        esm: esmDeps(),
+        url: { preferRelative: true },
+        worker: { ...esmDeps(), preferRelative: true },
+        commonjs: cjsDeps(),
+        amd: cjsDeps(),
+        // for backward-compat: loadModule
+        loader: cjsDeps(),
+        // for backward-compat: Custom Dependency
+        unknown: cjsDeps(),
+        // for backward-compat: getResolve without dependencyType
+        undefined: cjsDeps()
+      },
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
