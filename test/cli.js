@@ -1,6 +1,6 @@
 [
   {
-    args: ["run", "test/fixtures/interop-test.js"],
+    args: ["run", "test/fixtures/interop-test.mjs"],
     expect: { code: 0 }
   },
   {
