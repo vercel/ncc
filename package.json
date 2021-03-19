@@ -96,7 +96,7 @@
     "source-map-support": "^0.5.9",
     "stripe": "^6.15.0",
     "swig": "^1.4.2",
-    "terser": "^3.11.0",
+    "terser": "^5.6.1",
     "the-answer": "^1.0.0",
     "tiny-json-http": "^7.0.2",
     "ts-loader": "^5.3.1",

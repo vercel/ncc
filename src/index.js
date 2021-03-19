@@ -428,7 +428,7 @@ function ncc (
     }
 
     if (minify) {
-      const result = terser.minify(code, {
+      const result = await terser.minify(code, {
         compress: false,
         mangle: {
           keep_classnames: true,
