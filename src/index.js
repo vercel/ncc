@@ -318,6 +318,8 @@ function ncc (
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
+                allowSyntheticDefaultImports: true,
+                module: 'esnext',
                 outDir: '//',
                 noEmit: false
               }
