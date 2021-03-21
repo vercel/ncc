@@ -1,5 +1,9 @@
 [
   {
+    args: ["run", "test/fixtures/ts-interop/interop.ts"],
+    expect: { code: 0 }
+  },
+  {
     args: ["run", "test/fixtures/interop-test.mjs"],
     expect: { code: 0 }
   },
