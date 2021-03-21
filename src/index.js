@@ -146,12 +146,30 @@ function ncc (
     }
   });
 
-  const externalMap = new Map();
+  const externalMap = (() => {
+    const regexps = [];
+    const aliasMap = new Map();
+
+    function set(key, value) {
+      if (key instanceof RegExp)
+        regexps.push(key);
+      aliasMap.set(key, value);
+    }
+
+    function get(key) {
+      if (aliasMap.has(key)) return aliasMap.get(key);
+
+      const matchedRegex = regexps.find(regex => regex.test(key));
+      return matchedRegex !== null ? aliasMap.get(matchedRegex) : null;
+    }
+
+    return { get, set };
+  })();
 
   if (Array.isArray(externals))
     externals.forEach(external => externalMap.set(external, external));
   else if (typeof externals === 'object')
-    Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
+    Object.keys(externals).forEach(external => externalMap.set(external[0] === '/' && external[external.length - 1] === '/' ? new RegExp(external.slice(1, -1)) : external, externals[external]));
 
   let watcher, watchHandler, rebuildHandler;
 
@@ -260,8 +278,9 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: ({ context, request }, callback) => {
-      if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
+    externals ({ context, request }, callback) {
+      const external = externalMap.get(request);
+      if (external) return callback(null, `commonjs ${external}`);
       return callback();
     },
     module: {

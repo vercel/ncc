@@ -42,7 +42,8 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
       },
       externals: {
         'piscina': 'piscina',
-        'externaltest': 'externalmapped'
+        'externaltest': 'externalmapped',
+        '/\\w+-regex/': 'regexexternal',
       }
     }, opts)).then(
       async ({ code, assets, map }) => {
