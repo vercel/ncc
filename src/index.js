@@ -151,8 +151,8 @@ function ncc (
     const aliasMap = new Map();
 
     function set(key, value) {
-      if (value instanceof RegExp)
-        regexps.push(value);
+      if (key instanceof RegExp)
+        regexps.push(key);
       else
         aliasMap.set(key, value);
     }
@@ -161,7 +161,7 @@ function ncc (
       if (aliasMap.has(key)) return aliasMap.get(key);
 
       const matchedRegex = regexps.find(regex => regex.test(key))
-      return matchedRegex != null ? key : null;
+      return matchedRegex != null ? aliasMap.get(matchedRegex) : null;
     }
 
     return { get, set };
@@ -170,7 +170,7 @@ function ncc (
   if (Array.isArray(externals))
     externals.forEach(external => externalMap.set(external, external));
   else if (typeof externals === 'object')
-    Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
+    Object.keys(externals).forEach(external => externalMap.set(external[0] === '/' && external[external.length - 1] === '/' ? new RegExp(external.slice(1, -1)) : external, externals[external]));
 
   let watcher, watchHandler, rebuildHandler;
 
