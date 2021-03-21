@@ -7,8 +7,6 @@ const ncc = coverage ? require("../src/index") : require("../");
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
   it(`should generate correct output for ${unitTest}`, async () => {
-    if (unitTest !== 'externals')
-      return;
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = fs
       .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js`)
