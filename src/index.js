@@ -153,15 +153,14 @@ function ncc (
     function set(key, value) {
       if (key instanceof RegExp)
         regexps.push(key);
-      else
-        aliasMap.set(key, value);
+      aliasMap.set(key, value);
     }
 
     function get(key) {
       if (aliasMap.has(key)) return aliasMap.get(key);
 
-      const matchedRegex = regexps.find(regex => regex.test(key))
-      return matchedRegex != null ? aliasMap.get(matchedRegex) : null;
+      const matchedRegex = regexps.find(regex => regex.test(key));
+      return matchedRegex !== null ? aliasMap.get(matchedRegex) : null;
     }
 
     return { get, set };
@@ -279,10 +278,9 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: ({ context, request }, callback) => {
+    externals ({ context, request }, callback) {
       const external = externalMap.get(request);
-      if (external !== null)
-        return callback(null, `commonjs ${external}`);
+      if (external) return callback(null, `commonjs ${external}`);
       return callback();
     },
     module: {
