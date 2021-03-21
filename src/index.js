@@ -279,7 +279,7 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async ({ context, request }, callback) => {
+    externals: ({ context, request }, callback) => {
       const external = externalMap.get(request);
       if (external !== null)
         return callback(null, `commonjs ${external}`);
