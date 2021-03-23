@@ -321,6 +321,7 @@ function ncc (
                 allowSyntheticDefaultImports: true,
                 module: 'esnext',
                 outDir: '//',
+                incremental: false,
                 noEmit: false
               }
             }
