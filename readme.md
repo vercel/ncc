@@ -55,7 +55,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
 #### Options:
 ```
-  -o, --out [file]         Output directory for build (defaults to dist)
+  -o, --out [dir]          Output directory for build (defaults to dist)
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
