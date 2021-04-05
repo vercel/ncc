@@ -15,12 +15,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: [10, 12, 14]
+        node: [12, 14]
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Cancel Previous Runs
+      uses: styfle/cancel-workflow-action@0.8.0
+      with:
+        access_token: ${{ github.token }}
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node }}
     - name: Print Node Version
@@ -34,5 +38,5 @@ jobs:
     - name: Run Tests
       run: yarn test
     - name: Coverage
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 14 # only run once
       run: yarn test-coverage
