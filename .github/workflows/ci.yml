@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: [10, 12, 14]
+        node: [12, 14]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -34,5 +34,5 @@ jobs:
     - name: Run Tests
       run: yarn test
     - name: Coverage
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 14 # only run once
       run: yarn test-coverage
