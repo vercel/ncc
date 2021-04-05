@@ -3,6 +3,7 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"baseUrl": ".",
+		"incremental": true,
 		"paths": {
 			"@*": ["./*"]
 		}

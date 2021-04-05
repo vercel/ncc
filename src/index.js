@@ -70,9 +70,6 @@ function ncc (
     conditionNames: ["import", "node", production ? "production": "development"]
   });
 
-  process.env.__NCC_OPTS = JSON.stringify({
-    quiet
-  });
   const ext = extname(filename);
 
   if (!quiet) {
@@ -85,7 +82,11 @@ function ncc (
   }
 
   const resolvedEntry = resolve.sync(entry);
-  process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
+  process.env.__NCC_OPTS = JSON.stringify({
+    quiet,
+    typescriptLookupPath: resolvedEntry,
+  });
+
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
 
@@ -321,6 +322,7 @@ function ncc (
                 allowSyntheticDefaultImports: true,
                 module: 'esnext',
                 outDir: '//',
+                incremental: false,
                 noEmit: false
               }
             }

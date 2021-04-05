@@ -94,5 +94,14 @@
       stdout = stdout.toString().replace(/[\r\n\s]/g, '').trim();
       return stdout.length === 0;
     }
+  },
+  {
+    args: ["build", "test/integration/test.ts"],
+    env: {
+      TYPESCRIPT_LOOKUP_PATH: '/tmp/nowhere'
+    },
+    expect (code, stdout) { 
+      return code === 0 && stdout.indexOf('ncc built-in') !== -1;
+    },
   }
 ]

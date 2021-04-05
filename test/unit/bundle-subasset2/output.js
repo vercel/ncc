@@ -85,10 +85,11 @@ var external_piscina_default = /*#__PURE__*/__nccwpck_require__.n(external_pisci
 const external_path_namespaceObject = require("path");
 ;// CONCATENATED MODULE: ./test/unit/bundle-subasset2/input.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -122,7 +123,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 
 var piscina = new (external_piscina_default())({
-    filename: __nccwpck_require__.ab + "pi-bridge.js"
+    filename: __nccwpck_require__.ab + "pi-bridge.js",
 });
 (function () {
     return __awaiter(this, void 0, void 0, function () {
