@@ -8,6 +8,9 @@
   "bin": {
     "ncc": "./dist/ncc/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "node scripts/build",
     "build-test-binary": "cd test/binary && node-gyp rebuild && cp build/Release/hello.node ../integration/hello.node",
