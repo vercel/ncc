@@ -322,7 +322,11 @@ function ncc (
                 allowSyntheticDefaultImports: true,
                 module: 'esnext',
                 outDir: '//',
-                incremental: false,
+                ...(fullTsconfig &&
+                  fullTsconfig.compilerOptions &&
+                  fullTsconfig.compilerOptions.incremental
+                    ? { incremental: false }
+                    : {}),
                 noEmit: false
               }
             }
