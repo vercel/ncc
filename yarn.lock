@@ -9041,10 +9041,10 @@ libnpx@^10.2.4:
     y18n "^4.0.0"
     yargs "^14.2.3"
 
-license-webpack-plugin@^2.3.0:
-  version "2.3.16"
-  resolved "https://registry.yarnpkg.com/license-webpack-plugin/-/license-webpack-plugin-2.3.16.tgz#afd6dcec30b2f7ddca96be090ff8cbf3d08eced1"
-  integrity sha512-9FbbsQrcbPADbt4ksSoT+A0VvHGFJRN5zXREx4y3W5tzLAJEM6ywEVuBHeRLrGxHAg6kq563P4BYxyBm8Wmqiw==
+license-webpack-plugin@2.3.11:
+  version "2.3.11"
+  resolved "https://registry.yarnpkg.com/license-webpack-plugin/-/license-webpack-plugin-2.3.11.tgz#0d93188a31fce350a44c86212badbaf33dcd29d8"
+  integrity sha512-0iVGoX5vx0WDy8dmwTTpOOMYiGqILyUbDeVMFH52AjgBlS58lHwOlFMSoqg5nY8Kxl6+FRKyUZY/UdlQaOyqDw==
   dependencies:
     "@types/webpack-sources" "^0.1.5"
     webpack-sources "^1.2.0"
