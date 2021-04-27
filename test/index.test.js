@@ -42,7 +42,8 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
       },
       externals: {
         'piscina': 'piscina',
-        'externaltest': 'externalmapped'
+        'externaltest': 'externalmapped',
+        '/\\w+-regex/': 'regexexternal',
       }
     }, opts)).then(
       async ({ code, assets, map }) => {
@@ -83,7 +84,8 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
 for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
   it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
     const ps = fork(__dirname + (coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
-      stdio: "pipe"
+      stdio: "pipe",
+      env: { ...process.env, ...cliTest.env },
     });
     let stderr = "", stdout = "";
     ps.stderr.on("data", chunk => stderr += chunk.toString());

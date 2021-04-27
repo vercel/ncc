@@ -52,11 +52,24 @@ function ncc (
     transpileOnly = false,
     license = '',
     target,
+    production = true,
   } = {}
 ) {
-  process.env.__NCC_OPTS = JSON.stringify({
-    quiet
+  const cjsDeps = () => ({
+    mainFields: ["main"],
+    extensions: SUPPORTED_EXTENSIONS,
+    exportsFields: ["exports"],
+    importsFields: ["imports"],
+    conditionNames: ["require", "node", production ? "production" : "development"]
   });
+  const esmDeps = () => ({
+    mainFields: ["main"],
+    extensions: SUPPORTED_EXTENSIONS,
+    exportsFields: ["exports"],
+    importsFields: ["imports"],
+    conditionNames: ["import", "node", production ? "production": "development"]
+  });
+
   const ext = extname(filename);
 
   if (!quiet) {
@@ -69,7 +82,11 @@ function ncc (
   }
 
   const resolvedEntry = resolve.sync(entry);
-  process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
+  process.env.__NCC_OPTS = JSON.stringify({
+    quiet,
+    typescriptLookupPath: resolvedEntry,
+  });
+
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
 
@@ -130,12 +147,30 @@ function ncc (
     }
   });
 
-  const externalMap = new Map();
+  const externalMap = (() => {
+    const regexps = [];
+    const aliasMap = new Map();
+
+    function set(key, value) {
+      if (key instanceof RegExp)
+        regexps.push(key);
+      aliasMap.set(key, value);
+    }
+
+    function get(key) {
+      if (aliasMap.has(key)) return aliasMap.get(key);
+
+      const matchedRegex = regexps.find(regex => regex.test(key));
+      return matchedRegex !== null ? aliasMap.get(matchedRegex) : null;
+    }
+
+    return { get, set };
+  })();
 
   if (Array.isArray(externals))
     externals.forEach(external => externalMap.set(external, external));
   else if (typeof externals === 'object')
-    Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
+    Object.keys(externals).forEach(external => externalMap.set(external[0] === '/' && external[external.length - 1] === '/' ? new RegExp(external.slice(1, -1)) : external, externals[external]));
 
   let watcher, watchHandler, rebuildHandler;
 
@@ -225,6 +260,22 @@ function ncc (
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
+      exportsFields: ["exports"],
+      importsFields: ["imports"],
+      byDependency: {
+        wasm: esmDeps(),
+        esm: esmDeps(),
+        url: { preferRelative: true },
+        worker: { ...esmDeps(), preferRelative: true },
+        commonjs: cjsDeps(),
+        amd: cjsDeps(),
+        // for backward-compat: loadModule
+        loader: cjsDeps(),
+        // for backward-compat: Custom Dependency
+        unknown: cjsDeps(),
+        // for backward-compat: getResolve without dependencyType
+        undefined: cjsDeps()
+      },
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
@@ -232,8 +283,9 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async ({ context, request }, callback) => {
-      if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
+    externals ({ context, request }, callback) {
+      const external = externalMap.get(request);
+      if (external) return callback(null, `commonjs ${external}`);
       return callback();
     },
     module: {
@@ -271,7 +323,14 @@ function ncc (
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
+                allowSyntheticDefaultImports: true,
+                module: 'esnext',
                 outDir: '//',
+                ...(fullTsconfig &&
+                  fullTsconfig.compilerOptions &&
+                  fullTsconfig.compilerOptions.incremental
+                    ? { incremental: false }
+                    : {}),
                 noEmit: false
               }
             }
@@ -400,7 +459,7 @@ function ncc (
     }
 
     if (minify) {
-      const result = terser.minify(code, {
+      const result = await terser.minify(code, {
         compress: false,
         mangle: {
           keep_classnames: true,
@@ -414,11 +473,14 @@ function ncc (
       });
       // For some reason, auth0 returns "undefined"!
       // custom terser phase used over Webpack integration for this reason
-      if (result.code !== undefined)
+      if (result.code !== undefined) {
         ({ code, map } = {
           code: result.code,
           map: sourceMap ? JSON.parse(result.map) : undefined
         });
+      } else {
+        console.log('An error occurred while minifying. The result will not be minified.')
+      }
     }
 
     if (v8cache) {

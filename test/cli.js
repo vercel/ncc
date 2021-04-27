@@ -1,5 +1,13 @@
 [
   {
+    args: ["run", "test/fixtures/ts-interop/interop.ts"],
+    expect: { code: 0 }
+  },
+  {
+    args: ["run", "test/fixtures/interop-test.mjs"],
+    expect: { code: 0 }
+  },
+  {
     args: ["run", "test/integration/test.ts"],
     expect: { code: 0 }
   },
@@ -86,5 +94,14 @@
       stdout = stdout.toString().replace(/[\r\n\s]/g, '').trim();
       return stdout.length === 0;
     }
+  },
+  {
+    args: ["build", "test/integration/test.ts"],
+    env: {
+      TYPESCRIPT_LOOKUP_PATH: '/tmp/nowhere'
+    },
+    expect (code, stdout) { 
+      return code === 0 && stdout.indexOf('ncc built-in') !== -1;
+    },
   }
 ]

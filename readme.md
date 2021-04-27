@@ -1,7 +1,7 @@
 # ncc
 
 [![CI Status](https://github.com/vercel/ncc/workflows/CI/badge.svg)](https://github.com/vercel/ncc/actions?workflow=CI)
-[![codecov](https://codecov.io/gh/vercel/ncc/branch/master/graph/badge.svg)](https://codecov.io/gh/vercel/ncc)
+[![codecov](https://codecov.io/gh/vercel/ncc/branch/main/graph/badge.svg)](https://codecov.io/gh/vercel/ncc)
 
 Simple CLI for compiling a Node.js module into a single file,
 together with all its dependencies, gcc-style.
@@ -55,7 +55,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
 #### Options:
 ```
-  -o, --out [file]         Output directory for build (defaults to dist)
+  -o, --out [dir]          Output directory for build (defaults to dist)
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
