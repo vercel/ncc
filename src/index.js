@@ -227,6 +227,10 @@ function ncc (
       name: `ncc_${hashOf(entry)}`,
       version: nccVersion
     },
+    snapshot: {
+      managedPaths: [],
+      module: { hash: true }
+    },
     amd: false,
     optimization: {
       nodeEnv: false,
