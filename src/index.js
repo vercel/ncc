@@ -194,7 +194,7 @@ function ncc (
     },
     snapshot: {
       managedPaths: [],
-      modules: { hash: true }
+      module: { hash: true }
     },
     amd: false,
     optimization: {
