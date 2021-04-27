@@ -232,6 +232,9 @@ function ncc (
       module: { hash: true }
     },
     amd: false,
+    experiments: {
+      topLevelAwait: true
+    },
     optimization: {
       nodeEnv: false,
       minimize: false,
