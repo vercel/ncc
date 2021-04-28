@@ -8,10 +8,10 @@ const bytes = require("bytes");
 
 const minify = true;
 const v8cache = true;
-const cache = join(__dirname, '..', '.cache');
+const cache = join(__dirname, "..", ".cache");
 
 async function main() {
-  if (process.argv[2] === '--no-cache') {
+  if (process.argv[2] === "--no-cache") {
     rmdirSync(cache, { recursive: true });
   }
   for (const file of await glob(__dirname + "/../dist/**/*.@(js|cache|ts)")) {
