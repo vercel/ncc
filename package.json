@@ -12,12 +12,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build",
+    "build": "node scripts/build.js",
     "build-test-binary": "cd test/binary && node-gyp rebuild && cp build/Release/hello.node ../integration/hello.node",
     "codecov": "codecov",
     "test": "node --expose-gc --max_old_space_size=3072 node_modules/.bin/jest",
     "test-coverage": "node --expose-gc --max_old_space_size=3072 node_modules/.bin/jest --coverage --globals \"{\\\"coverage\\\":true}\" && codecov",
-    "prepublish": "in-publish && npm test || not-in-publish"
+    "prepublishOnly": "node scripts/build.js --no-cache"
   },
   "devDependencies": {
     "@azure/cosmos": "^2.0.5",
@@ -59,7 +59,6 @@
     "graphql": "^14.0.2",
     "highlights": "^3.1.1",
     "hot-shots": "^5.9.2",
-    "in-publish": "^2.0.0",
     "ioredis": "^4.2.0",
     "isomorphic-unfetch": "^3.0.0",
     "jest": "^26.3.0",
