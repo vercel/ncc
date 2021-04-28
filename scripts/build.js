@@ -1,5 +1,5 @@
 const ncc = require("../src/index.js");
-const { statSync, writeFileSync, readFileSync, unlinkSync, rmdirSync } = require("fs");
+const { statSync, writeFileSync, readFileSync, unlinkSync } = require("fs");
 const { promisify } = require("util");
 const { relative, join } = require("path");
 const copy = promisify(require("copy"));
@@ -8,12 +8,9 @@ const bytes = require("bytes");
 
 const minify = true;
 const v8cache = true;
-const cache = join(__dirname, "..", ".cache");
+const cache = process.argv[2] === "--no-cache" ? false : join(__dirname, "..", ".cache");
 
 async function main() {
-  if (process.argv[2] === "--no-cache") {
-    rmdirSync(cache, { recursive: true });
-  }
   for (const file of await glob(__dirname + "/../dist/**/*.@(js|cache|ts)")) {
     unlinkSync(file);
   }
