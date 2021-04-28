@@ -1,12 +1,14 @@
 const ncc = require("../src/index.js");
 const { statSync, writeFileSync, readFileSync, unlinkSync } = require("fs");
 const { promisify } = require("util");
-const { relative } = require("path");
+const { relative, join } = require("path");
 const copy = promisify(require("copy"));
 const glob = promisify(require("glob"));
 const bytes = require("bytes");
 
 const minify = true;
+const v8cache = true;
+const cache = process.argv[2] === "--no-cache" ? false : join(__dirname, "..", ".cache");
 
 async function main() {
   for (const file of await glob(__dirname + "/../dist/**/*.@(js|cache|ts)")) {
@@ -20,7 +22,8 @@ async function main() {
       externals: ["./index.js"],
       license: 'LICENSES.txt',
       minify,
-      v8cache: true
+      cache,
+      v8cache
     }
   );
   checkUnknownAssets('cli', Object.keys(cliAssets));
@@ -30,7 +33,8 @@ async function main() {
     {
       filename: "index.js",
       minify,
-      v8cache: true
+      cache,
+      v8cache
     }
   );
   checkUnknownAssets('index', Object.keys(indexAssets).filter(asset =>
@@ -39,13 +43,13 @@ async function main() {
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
-    { filename: "relocate-loader.js", minify, v8cache: true }
+    { filename: "relocate-loader.js", minify, cache, v8cache }
   );
   checkUnknownAssets('relocate-loader', Object.keys(relocateLoaderAssets));
 
   const { code: shebangLoader, assets: shebangLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/shebang-loader",
-    { filename: "shebang-loader.js", minify, v8cache: true }
+    { filename: "shebang-loader.js", minify, cache, v8cache }
   );
   checkUnknownAssets('shebang-loader', Object.keys(shebangLoaderAssets));
 
@@ -54,7 +58,8 @@ async function main() {
     {
       filename: "ts-loader.js",
       minify,
-      v8cache: true,
+      cache,
+      v8cache,
       noAssetBuilds: true
     },
   );
@@ -62,7 +67,7 @@ async function main() {
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
-    { filename: "sourcemap-register.js", minify, v8cache: true }
+    { filename: "sourcemap-register.js", minify, cache, v8cache }
   );
   checkUnknownAssets('source-map-support/register', Object.keys(sourcemapAssets));
 
