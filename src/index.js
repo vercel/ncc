@@ -78,7 +78,7 @@ function ncc (
   }
 
   if (target && !target.startsWith('es')) {
-    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es5`)
+    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es2015`)
   }
 
   const resolvedEntry = resolve.sync(entry);
