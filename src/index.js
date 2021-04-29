@@ -462,27 +462,32 @@ function ncc (
     }
 
     if (minify) {
-      const result = await terser.minify(code, {
-        compress: false,
-        mangle: {
-          keep_classnames: true,
-          keep_fnames: true
-        },
-        sourceMap: sourceMap ? {
-          content: map,
-          filename,
-          url: `${filename}.map`
-        } : false
-      });
-      // For some reason, auth0 returns "undefined"!
-      // custom terser phase used over Webpack integration for this reason
-      if (result.code !== undefined) {
+      let result;
+      try {
+        result = await terser.minify(code, {
+          compress: false,
+          mangle: {
+            keep_classnames: true,
+            keep_fnames: true
+          },
+          sourceMap: sourceMap ? {
+            content: map,
+            filename,
+            url: `${filename}.map`
+          } : false
+        });
+        // For some reason, auth0 returns "undefined"!
+        // custom terser phase used over Webpack integration for this reason
+        if (!result || result.code === undefined)
+          throw null;
+        
         ({ code, map } = {
           code: result.code,
           map: sourceMap ? JSON.parse(result.map) : undefined
         });
-      } else {
-        console.log('An error occurred while minifying. The result will not be minified.')
+      }
+      catch {
+        console.log('An error occurred while minifying. The result will not be minified.'); 
       }
     }
 
