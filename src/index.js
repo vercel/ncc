@@ -358,7 +358,7 @@ function ncc (
         compiler.close(err => {
           if (err) return reject(err);
           if (stats.hasErrors()) {
-            const errLog = stats.compilation.errors.map(err => err.message).join('\n');
+            const errLog = [...stats.compilation.errors].map(err => err.message).join('\n');
             return reject(new Error(errLog));
           }
           resolve(stats);
