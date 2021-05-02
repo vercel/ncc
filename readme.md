@@ -67,7 +67,8 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   --v8-cache               Emit a build using the v8 compile cache
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
-  --target [es] ECMAScript target to use for output (default: es2015) [Learn more](https://webpack.js.org/configuration/target)
+  --target [es]            ECMAScript target to use for output (default: es2015)
+                           Learn more: https://webpack.js.org/configuration/target
 ```
 
 ### Execution Testing
