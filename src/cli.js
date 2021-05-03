@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep, extname } = require("path");
+const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
@@ -35,7 +35,8 @@ Options:
   --v8-cache               Emit a build using the v8 compile cache
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
-  --target                  What build target to use for webpack (default: es6)
+  --target [es]            ECMAScript target to use for output (default: es2015)
+                           Learn more: https://webpack.js.org/configuration/target
 `;
 
 // support an API mode for CLI testing
