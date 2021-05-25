@@ -78,7 +78,7 @@ function ncc (
   }
 
   if (target && !target.startsWith('es')) {
-    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es5`)
+    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es2015`)
   }
 
   const resolvedEntry = resolve.sync(entry);
@@ -227,7 +227,14 @@ function ncc (
       name: `ncc_${hashOf(entry)}`,
       version: nccVersion
     },
+    snapshot: {
+      managedPaths: [],
+      module: { hash: true }
+    },
     amd: false,
+    experiments: {
+      topLevelAwait: true
+    },
     optimization: {
       nodeEnv: false,
       minimize: false,
@@ -351,7 +358,7 @@ function ncc (
         compiler.close(err => {
           if (err) return reject(err);
           if (stats.hasErrors()) {
-            const errLog = stats.compilation.errors.map(err => err.message).join('\n');
+            const errLog = [...stats.compilation.errors].map(err => err.message).join('\n');
             return reject(new Error(errLog));
           }
           resolve(stats);
@@ -455,27 +462,32 @@ function ncc (
     }
 
     if (minify) {
-      const result = await terser.minify(code, {
-        compress: false,
-        mangle: {
-          keep_classnames: true,
-          keep_fnames: true
-        },
-        sourceMap: sourceMap ? {
-          content: map,
-          filename,
-          url: `${filename}.map`
-        } : false
-      });
-      // For some reason, auth0 returns "undefined"!
-      // custom terser phase used over Webpack integration for this reason
-      if (result.code !== undefined) {
+      let result;
+      try {
+        result = await terser.minify(code, {
+          compress: false,
+          mangle: {
+            keep_classnames: true,
+            keep_fnames: true
+          },
+          sourceMap: sourceMap ? {
+            content: map,
+            filename,
+            url: `${filename}.map`
+          } : false
+        });
+        // For some reason, auth0 returns "undefined"!
+        // custom terser phase used over Webpack integration for this reason
+        if (!result || result.code === undefined)
+          throw null;
+        
         ({ code, map } = {
           code: result.code,
           map: sourceMap ? JSON.parse(result.map) : undefined
         });
-      } else {
-        console.log('An error occurred while minifying. The result will not be minified.')
+      }
+      catch {
+        console.log('An error occurred while minifying. The result will not be minified.'); 
       }
     }
 
