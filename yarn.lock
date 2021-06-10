@@ -1954,10 +1954,10 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@vercel/webpack-asset-relocator-loader@1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@vercel/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-1.4.0.tgz#48b52c59280d8d4c5490d0ad18826294ba5a4ece"
-  integrity sha512-AIEvl+wSzp8U4EoNnvpEelx2+dtRJT5zOm4X9wFVyLbOg3VqdKPQSqJ7ptVqr8z1X4CvqB9XK46uU3u6JAJuNg==
+"@vercel/webpack-asset-relocator-loader@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@vercel/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-1.5.0.tgz#3b74caf02db3617c6f67e8f90f5696b51447f354"
+  integrity sha512-O5pHMhMz4H8YhaRjsJYnZ818kHF7V4Uz0DIn4AnITpqAiW7shgEbjDlTFZBX8hHOx53jTfhF8dWKCe+ffK3aeg==
 
 "@webassemblyjs/ast@1.11.0":
   version "1.11.0"
