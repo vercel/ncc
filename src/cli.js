@@ -5,7 +5,7 @@ const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
-const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
+const { writeFileSync, unlink, existsSync, symlinkSync, mkdir } = require("fs");
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
@@ -24,6 +24,8 @@ Commands:
 
 Options:
   -o, --out [file]         Output directory for build (defaults to dist)
+  
+  --esm                    Create an ES Module build output
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
@@ -129,6 +131,7 @@ async function runCmd (argv, stdout, stderr) {
     args = require("arg")({
       "--debug": Boolean,
       "-d": "--debug",
+      "--esm": Boolean,
       "--external": [String],
       "-e": "--external",
       "--out": String,
@@ -218,6 +221,8 @@ async function runCmd (argv, stdout, stderr) {
       );
       if (existsSync(outDir))
         rimraf.sync(outDir);
+      mkdirp.sync(outDir);
+      writeFileSync(eval('resolve')(outDir, 'package.json'), args['--esm'] ? '{ "type": "module" }' : '{}');
       run = true;
 
     // fallthrough
@@ -228,12 +233,13 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const ext = buildFile.endsWith('.cjs') ? '.cjs' : '.js';
+      const ext = !args['--esm'] && buildFile.endsWith('.cjs') ? '.cjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
         {
           debugLog: args["--debug"],
           minify: args["--minify"],
+          esm: args["--esm"],
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,

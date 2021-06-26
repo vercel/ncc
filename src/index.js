@@ -36,8 +36,9 @@ function ncc (
   {
     cache,
     customEmit = undefined,
+    esm = false,
     externals = [],
-    filename = 'index' + (entry.endsWith('.cjs') ? '.cjs' : '.js'),
+    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : '.js'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -233,7 +234,8 @@ function ncc (
     },
     amd: false,
     experiments: {
-      topLevelAwait: true
+      topLevelAwait: true,
+      outputModule: true
     },
     optimization: {
       nodeEnv: false,
@@ -258,8 +260,9 @@ function ncc (
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
       filename: ext === '.cjs' ? filename + '.js' : filename,
-      libraryTarget: "commonjs2",
-      strictModuleExceptionHandling: true
+      libraryTarget: esm ? 'module' : 'commonjs2',
+      strictModuleExceptionHandling: true,
+      module: esm
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
@@ -465,12 +468,13 @@ function ncc (
       let result;
       try {
         result = await terser.minify(code, {
+          module: esm,
           compress: false,
           mangle: {
             keep_classnames: true,
             keep_fnames: true
           },
-          sourceMap: sourceMap ? {
+          sourceMap: map ? {
             content: map,
             filename,
             url: `${filename}.map`
@@ -483,10 +487,10 @@ function ncc (
         
         ({ code, map } = {
           code: result.code,
-          map: sourceMap ? JSON.parse(result.map) : undefined
+          map: map ? JSON.parse(result.map) : undefined
         });
       }
-      catch {
+      catch (e) {
         console.log('An error occurred while minifying. The result will not be minified.'); 
       }
     }
@@ -511,9 +515,10 @@ function ncc (
         `if (cachedData) process.on('exit', () => { try { writeFileSync(basename + '.cache', script.createCachedData()); } catch(e) {} });\n`;
     }
 
-    if (sourceMap && sourceMapRegister) {
-      code = `require('./sourcemap-register${ext}');` + code;
-      assets[`sourcemap-register${ext}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+    if (map && sourceMapRegister) {
+      const registerExt = esm ? '.cjs' : ext;
+      code = (esm ? `import './sourcemap-register${registerExt}';` : `require('./sourcemap-register${registerExt}');`) + code;
+      assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
     }
 
     if (shebangMatch) {
