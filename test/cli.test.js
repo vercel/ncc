@@ -31,3 +31,7 @@ for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
     }
   });
 }
+
+afterAll(async () => {
+  await setTimeout(() => {}, 1000);
+});

@@ -80,3 +80,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     )
   });
 }
+
+afterAll(async () => {
+  await setTimeout(() => {}, 1000);
+});

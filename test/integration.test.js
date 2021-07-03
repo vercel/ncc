@@ -100,5 +100,10 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
 
 // remove me when node.js makes this the default behavior
 process.on("unhandledRejection", e => {
+  console.warn('(unhandled rejection)');
   throw e;
+});
+
+afterAll(async () => {
+  await setTimeout(() => {}, 1000);
 });
