@@ -139,5 +139,5 @@ it('Should support custom watch API', async () => {
 });
 
 afterAll(async () => {
-  await setTimeout(() => {}, 1000);
+  await setTimeout(() => {}, 5000);
 });
