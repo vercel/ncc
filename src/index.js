@@ -56,6 +56,9 @@ function ncc (
     production = true,
   } = {}
 ) {
+  if (esm)
+    v8cache = false;
+
   const cjsDeps = () => ({
     mainFields: ["main"],
     extensions: SUPPORTED_EXTENSIONS,
