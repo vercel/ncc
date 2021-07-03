@@ -252,7 +252,7 @@ function ncc (
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
-    target: target ? ["node", target] : "node",
+    target: target ? ["node14", target] : "node14",
     stats: {
       logging: 'error'
     },
