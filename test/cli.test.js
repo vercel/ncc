@@ -4,6 +4,10 @@ const coverage = global.coverage;
 
 jest.setTimeout(20000);
 
+it('should have a test', function () {
+  expect('hello world');
+});
+
 // for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
 //   it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
 //     const ps = fork(__dirname + (coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {

@@ -27,6 +27,10 @@ class StoreStream extends Writable {
   }
 }
 
+it('should have a test', function () {
+  expect('hello world');
+});
+
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!/\.(mjs|tsx?|js)$/.test(integrationTest)) continue;
