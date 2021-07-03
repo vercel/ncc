@@ -108,6 +108,3 @@ process.on("unhandledRejection", e => {
   throw e;
 });
 
-afterAll(async () => {
-  await setTimeout(() => {}, 500);
-});

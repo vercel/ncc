@@ -36,6 +36,3 @@ it('should have a test', function () {
 //   });
 // }
 
-afterAll(async () => {
-  await setTimeout(() => {}, 500);
-});
