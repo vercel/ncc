@@ -109,5 +109,5 @@ process.on("unhandledRejection", e => {
 });
 
 afterAll(async () => {
-  await setTimeout(() => {}, 5000);
+  await setTimeout(() => {}, 500);
 });
