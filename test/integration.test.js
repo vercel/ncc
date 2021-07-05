@@ -74,10 +74,12 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   const tmpOut = path.join(os.tmpdir(), `ncc_${Math.random()}`)
 
   try {
+    console.log('STARTING RUN')
     await nccRun(["build", "-o", tmpOut, "--target", "es5", require.resolve('web-vitals/dist/web-vitals.es5.min.js')], stdout, stderr);
+    console.log('CLEANUP')
   }
   catch (e) {
-    console.log('BUILD ERR');
+    console.log('ERROR')
     if (e.silent) {
       let lastErr = stderr.data[stderr.data.length - 1];
       if (lastErr)
@@ -99,7 +101,9 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   // make sure es6 wrapper wasn't used
   expect(output).not.toContain('=>')
 
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  console.log('RUN COMPLETED FINE!!')
+  await new Promise(resolve => setTimeout(resolve, 30000))
+  console.log('RUN TIMEOUT COMPLETED!!')
 });
 
 // remove me when node.js makes this the default behavior
