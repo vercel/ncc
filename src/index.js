@@ -538,7 +538,7 @@ function ncc (
       assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
     }
 
-    if (esm) {
+    if (esm && !filename.endsWith('.mjs')) {
       // always output a "type": "module" package JSON for esm builds
       const baseDir = dirname(filename);
       const pjsonPath = (baseDir === '.' ? '' : baseDir) + 'package.json';
