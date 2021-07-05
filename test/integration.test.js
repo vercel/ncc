@@ -27,10 +27,6 @@ class StoreStream extends Writable {
   }
 }
 
-it('should have a test', function () {
-  expect('hello world');
-});
-
 for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // ignore e.g.: `.json` files
   if (!/\.(mjs|tsx?|js)$/.test(integrationTest)) continue;
@@ -101,6 +97,10 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   expect(output).toContain('function')
   // make sure es6 wrapper wasn't used
   expect(output).not.toContain('=>')
+});
+
+afterAll(async () => {
+  await new Promise(resolve => setTimeout(resolve, 5000));
 });
 
 // remove me when node.js makes this the default behavior
