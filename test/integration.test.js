@@ -77,6 +77,7 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
     await nccRun(["build", "-o", tmpOut, "--target", "es5", require.resolve('web-vitals/dist/web-vitals.es5.min.js')], stdout, stderr);
   }
   catch (e) {
+    console.log('BUILD ERR');
     if (e.silent) {
       let lastErr = stderr.data[stderr.data.length - 1];
       if (lastErr)
@@ -97,6 +98,8 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   expect(output).toContain('function')
   // make sure es6 wrapper wasn't used
   expect(output).not.toContain('=>')
+
+  await new Promise(resolve => setTimeout(resolve, 5000));
 });
 
 // remove me when node.js makes this the default behavior
