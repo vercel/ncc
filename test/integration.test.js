@@ -38,7 +38,6 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
   // disabled pending https://github.com/zeit/ncc/issues/141
   if (integrationTest.endsWith('loopback.js')) continue;
 
-  continue;
   it(`should execute "ncc run ${integrationTest}"`, async () => {
     let expectedStdout;
     try {
