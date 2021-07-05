@@ -99,12 +99,16 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   expect(output).not.toContain('=>')
 });
 
+let finished = false;
+
 afterAll(async () => {
+  finished = true;
   await new Promise(resolve => setTimeout(resolve, 5000));
 });
 
 // remove me when node.js makes this the default behavior
 process.on("unhandledRejection", e => {
-  throw e;
+  if (!finished)
+    throw e;
 });
 
