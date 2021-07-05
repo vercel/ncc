@@ -32,12 +32,12 @@ jobs:
       run: node --version
     - name: Install Dependencies
       run: yarn install
-    # - name: Build Test Binary
-    #   run: yarn build-test-binary
-    # - name: Build
-    #   run: yarn build
-    # - name: Run Tests
-    #   run: yarn test
+    - name: Build Test Binary
+      run: yarn build-test-binary
+    - name: Build
+      run: yarn build
+    - name: Run Tests
+      run: yarn test
     - name: Coverage
       if: matrix.os == 'ubuntu-latest' && matrix.node == 14 # only run once
       run: yarn test-coverage

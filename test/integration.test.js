@@ -101,7 +101,8 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
 });
 
 afterAll(() => {
-  process.exit(0);
+  if (coverage)
+    process.exit(0);
 });
 
 // remove me when node.js makes this the default behavior
