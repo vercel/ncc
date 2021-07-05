@@ -73,7 +73,7 @@
   {
     args: ["build", "-o", "tmp", "test/fixtures/test.mjs"],
     expect (code, stdout, stderr) {
-      return stdout.toString().indexOf('tmp/index.js') !== -1;
+      return stdout.toString().indexOf('tmp/index.mjs') !== -1;
     }
   },
   {
@@ -105,10 +105,10 @@
     },
   },
   {
-    args: ["build", "-o", "tmp", "test/fixtures/module.cjs", "--esm"],
+    args: ["build", "-o", "tmp", "test/fixtures/module.cjs"],
     expect (code, stdout) {
       const fs = require('fs');
-      return code === 0 && fs.readFileSync('tmp/index.js', 'utf8').toString().indexOf('export {') !== -1;
+      return code === 0 && fs.readFileSync('tmp/index.js', 'utf8').toString().indexOf('export {') === -1;
     }
   }
 ]
