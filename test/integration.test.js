@@ -3,9 +3,6 @@ const fs = require("fs");
 const path = require("path");
 const coverage = global.coverage;
 
-// Dont ask
-jest.useFakeTimers();
-
 // the twilio test can take a while (large codebase)
 jest.setTimeout(200000);
 
