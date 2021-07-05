@@ -30,15 +30,29 @@ const defaultPermissions = 0o666;
 
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
+function hasTypeModule (path) {
+  let root = pathResolve('/');
+  while ((path = pathResolve(path, '..')) !== root) {
+    try {
+      return JSON.parse(fs.readFileSync(pathResolve(path, 'package.json')).toString()).type === 'module';
+    }
+    catch (e) {
+      if (e.code === 'ENOENT')
+        continue;
+      throw e;
+    }
+  }
+}
+
 module.exports = ncc;
 function ncc (
   entry,
   {
     cache,
     customEmit = undefined,
-    esm = false,
+    esm = entry.endsWith('.mjs') || !entry.endsWith('.cjs') && hasTypeModule(pathResolve(entry)),
     externals = [],
-    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : '.js'),
+    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : hasTypeModule(pathResolve(entry)) ? '.js' : '.mjs'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -78,7 +92,7 @@ function ncc (
 
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file ${filename}`);
+    console.log(`ncc: Compiling file ${filename} as ${esm ? 'ESM' : 'CJS'}`);
   }
 
   if (target && !target.startsWith('es')) {
@@ -522,6 +536,16 @@ function ncc (
       const registerExt = esm ? '.cjs' : ext;
       code = (esm ? `import './sourcemap-register${registerExt}';` : `require('./sourcemap-register${registerExt}');`) + code;
       assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+    }
+
+    if (esm) {
+      // always output a "type": "module" package JSON for esm builds
+      const baseDir = dirname(filename);
+      const pjsonPath = (baseDir === '.' ? '' : baseDir) + 'package.json';
+      if (assets[pjsonPath])
+        assets[pjsonPath].source = JSON.stringify(Object.assign(JSON.parse(pjsonPath.source.toString()), { type: 'module' }));
+      else
+        assets[pjsonPath] = { source: JSON.stringify({ type: 'module' }, null, 2) + '\n', permissions: defaultPermissions };
     }
 
     if (shebangMatch) {

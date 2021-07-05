@@ -25,7 +25,6 @@ Commands:
 Options:
   -o, --out [file]         Output directory for build (defaults to dist)
   
-  --esm                    Create an ES Module build output
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
@@ -131,7 +130,6 @@ async function runCmd (argv, stdout, stderr) {
     args = require("arg")({
       "--debug": Boolean,
       "-d": "--debug",
-      "--esm": Boolean,
       "--external": [String],
       "-e": "--external",
       "--out": String,
@@ -222,7 +220,6 @@ async function runCmd (argv, stdout, stderr) {
       if (existsSync(outDir))
         rimraf.sync(outDir);
       mkdirp.sync(outDir);
-      writeFileSync(eval('resolve')(outDir, 'package.json'), args['--esm'] ? '{ "type": "module" }' : '{}');
       run = true;
 
     // fallthrough
@@ -233,13 +230,12 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const ext = !args['--esm'] && buildFile.endsWith('.cjs') ? '.cjs' : '.js';
+      const ext = buildFile.endsWith('.cjs') ? '.cjs' : buildFile.endsWith('.mjs') ? '.mjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
         {
           debugLog: args["--debug"],
           minify: args["--minify"],
-          esm: args["--esm"],
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
