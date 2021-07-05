@@ -31,7 +31,7 @@ jobs:
     - name: Print Node Version
       run: node --version
     - name: Install Dependencies
-    #   run: yarn install
+      run: yarn install
     # - name: Build Test Binary
     #   run: yarn build-test-binary
     # - name: Build
