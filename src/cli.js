@@ -375,7 +375,6 @@ async function runCmd (argv, stdout, stderr) {
 
   // remove me when node.js makes this the default behavior
   process.on("unhandledRejection", e => {
-    console.log('(unhandled rejection)');
     throw e;
   });
 }
