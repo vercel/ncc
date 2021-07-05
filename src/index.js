@@ -34,7 +34,7 @@ function hasTypeModule (path) {
   let root = pathResolve('/');
   while ((path = pathResolve(path, '..')) !== root) {
     try {
-      return JSON.parse(fs.readFileSync(pathResolve(path, 'package.json')).toString()).type === 'module';
+      return JSON.parse(fs.readFileSync(eval('pathResolve')(path, 'package.json')).toString()).type === 'module';
     }
     catch (e) {
       if (e.code === 'ENOENT')
@@ -50,9 +50,9 @@ function ncc (
   {
     cache,
     customEmit = undefined,
-    esm = entry.endsWith('.mjs') || !entry.endsWith('.cjs') && hasTypeModule(pathResolve(entry)),
+    esm = entry.endsWith('.mjs') || !entry.endsWith('.cjs') && hasTypeModule(entry),
     externals = [],
-    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : hasTypeModule(pathResolve(entry)) ? '.js' : '.mjs'),
+    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : !esm || hasTypeModule(entry) ? '.js' : '.mjs'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -92,7 +92,7 @@ function ncc (
 
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file ${filename} as ${esm ? 'ESM' : 'CJS'}`);
+    console.log(`ncc: Compiling file ${filename} into ${esm ? 'ESM' : 'CJS'}`);
   }
 
   if (target && !target.startsWith('es')) {
@@ -252,7 +252,7 @@ function ncc (
     amd: false,
     experiments: {
       topLevelAwait: true,
-      outputModule: true
+      outputModule: esm
     },
     optimization: {
       nodeEnv: false,
