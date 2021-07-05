@@ -98,8 +98,10 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   // make sure es6 wrapper wasn't used
   expect(output).not.toContain('=>')
 
-  await new Promise(resolve => setTimeout(resolve, 30000))
-  console.log('RUN COMPLETED FINE!!')
+  await new Promise(resolve => setTimeout(resolve, 5000));
+});
+
+afterAll(() => {
   process.exit(0);
 });
 
