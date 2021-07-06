@@ -27,6 +27,7 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node }}
+        check-latest: true
     - name: Print Node Version
       run: node --version
     - name: Install Dependencies

@@ -93,7 +93,7 @@ class CustomWatchFileSystem {
   }
 }
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 it('Should support custom watch API', async () => {
   let buildCnt = 0;
@@ -137,3 +137,4 @@ it('Should support custom watch API', async () => {
     });
   });
 });
+
