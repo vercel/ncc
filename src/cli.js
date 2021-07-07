@@ -228,10 +228,10 @@ async function runCmd (argv, stdout, stderr) {
         errTooManyArguments("build");
 
       function hasTypeModule (path) {
-        let root = pathResolve('/');
-        while ((path = pathResolve(path, '..')) !== root) {
+        let root = resolve('/');
+        while ((path = resolve(path, '..')) !== root) {
           try {
-            return JSON.parse(fs.readFileSync(eval('pathResolve')(path, 'package.json')).toString()).type === 'module';
+            return JSON.parse(fs.readFileSync(eval('resolve')(path, 'package.json')).toString()).type === 'module';
           }
           catch (e) {
             if (e.code === 'ENOENT')
