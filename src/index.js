@@ -307,9 +307,9 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals ({ context, request }, callback) {
+    externals ({ context, request, dependencyType }, callback) {
       const external = externalMap.get(request);
-      if (external) return callback(null, `${esm ? 'module' : 'commonjs'} ${external}`);
+      if (external) return callback(null, `${dependencyType === 'esm' && esm ? 'module' : 'node-commonjs'} ${external}`);
       return callback();
     },
     module: {
