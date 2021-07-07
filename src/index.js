@@ -309,7 +309,7 @@ function ncc (
     node: false,
     externals ({ context, request }, callback) {
       const external = externalMap.get(request);
-      if (external) return callback(null, `commonjs ${external}`);
+      if (external) return callback(null, `${esm ? 'module' : 'commonjs'} ${external}`);
       return callback();
     },
     module: {
