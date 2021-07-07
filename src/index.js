@@ -52,7 +52,7 @@ function ncc (
     customEmit = undefined,
     esm = entry.endsWith('.mjs') || !entry.endsWith('.cjs') && hasTypeModule(entry),
     externals = [],
-    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : !esm || hasTypeModule(entry) ? '.js' : '.mjs'),
+    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : esm && (entry.endsWith('.mjs') || !hasTypeModule(entry)) ? '.mjs' : '.js'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -70,6 +70,7 @@ function ncc (
     production = true,
   } = {}
 ) {
+  // v8 cache not supported for ES modules
   if (esm)
     v8cache = false;
 

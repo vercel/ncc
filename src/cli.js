@@ -227,10 +227,24 @@ async function runCmd (argv, stdout, stderr) {
       if (args._.length > 2)
         errTooManyArguments("build");
 
+      function hasTypeModule (path) {
+        let root = pathResolve('/');
+        while ((path = pathResolve(path, '..')) !== root) {
+          try {
+            return JSON.parse(fs.readFileSync(eval('pathResolve')(path, 'package.json')).toString()).type === 'module';
+          }
+          catch (e) {
+            if (e.code === 'ENOENT')
+              continue;
+            throw e;
+          }
+        }
+      }
+
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const ext = buildFile.endsWith('.cjs') ? '.cjs' : buildFile.endsWith('.mjs') ? '.mjs' : '.js';
+      const ext = buildFile.endsWith('.cjs') ? '.cjs' : buildFile.endsWith('.mjs') || !hasTypeModule(buildFile) ? '.mjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
         {
