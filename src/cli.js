@@ -5,7 +5,7 @@ const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
-const { writeFileSync, unlink, existsSync, symlinkSync, mkdir } = require("fs");
+const { writeFileSync, unlink, existsSync, symlinkSync, readFileSync } = require("fs");
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
@@ -231,7 +231,7 @@ async function runCmd (argv, stdout, stderr) {
         let root = resolve('/');
         while ((path = resolve(path, '..')) !== root) {
           try {
-            return JSON.parse(fs.readFileSync(eval('resolve')(path, 'package.json')).toString()).type === 'module';
+            return JSON.parse(readFileSync(eval('resolve')(path, 'package.json')).toString()).type === 'module';
           }
           catch (e) {
             if (e.code === 'ENOENT')
