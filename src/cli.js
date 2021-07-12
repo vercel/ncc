@@ -24,7 +24,6 @@ Commands:
 
 Options:
   -o, --out [file]         Output directory for build (defaults to dist)
-  
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
