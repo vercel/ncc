@@ -244,7 +244,7 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const esm = buildFile.endsWith('.mjs') || buildFile.endsWith('.js') && hasTypeModule(buildFile);
+      const esm = buildFile.endsWith('.mjs') || !buildFile.endsWith('.cjs') && hasTypeModule(buildFile);
       const ext = buildFile.endsWith('.cjs') ? '.cjs' : esm && (buildFile.endsWith('.mjs') || !hasTypeModule(buildFile)) ? '.mjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
