@@ -12,6 +12,7 @@ const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
+const { hasTypeModule } = require('./utils/has-type-module');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -29,20 +30,6 @@ const hashOf = name => {
 const defaultPermissions = 0o666;
 
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
-
-function hasTypeModule (path) {
-  let root = pathResolve('/');
-  while ((path = pathResolve(path, '..')) !== root) {
-    try {
-      return JSON.parse(fs.readFileSync(eval('pathResolve')(path, 'package.json')).toString()).type === 'module';
-    }
-    catch (e) {
-      if (e.code === 'ENOENT')
-        continue;
-      throw e;
-    }
-  }
-}
 
 module.exports = ncc;
 function ncc (

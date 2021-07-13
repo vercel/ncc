@@ -5,7 +5,8 @@ const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
-const { writeFileSync, unlink, existsSync, symlinkSync, readFileSync } = require("fs");
+const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
+const { hasTypeModule } = require('./utils/has-type-module');
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
@@ -225,20 +226,6 @@ async function runCmd (argv, stdout, stderr) {
     case "build":
       if (args._.length > 2)
         errTooManyArguments("build");
-
-      function hasTypeModule (path) {
-        let root = resolve('/');
-        while ((path = resolve(path, '..')) !== root) {
-          try {
-            return JSON.parse(readFileSync(eval('resolve')(path, 'package.json')).toString()).type === 'module';
-          }
-          catch (e) {
-            if (e.code === 'ENOENT')
-              continue;
-            throw e;
-          }
-        }
-      }
 
       let startTime = Date.now();
       let ps;
