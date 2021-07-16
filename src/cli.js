@@ -6,6 +6,7 @@ const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
 const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
+const { hasTypeModule } = require('./utils/has-type-module');
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
@@ -218,6 +219,7 @@ async function runCmd (argv, stdout, stderr) {
       );
       if (existsSync(outDir))
         rimraf.sync(outDir);
+      mkdirp.sync(outDir);
       run = true;
 
     // fallthrough
@@ -228,7 +230,8 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const ext = buildFile.endsWith('.cjs') ? '.cjs' : '.js';
+      const esm = buildFile.endsWith('.mjs') || !buildFile.endsWith('.cjs') && hasTypeModule(buildFile);
+      const ext = buildFile.endsWith('.cjs') ? '.cjs' : esm && (buildFile.endsWith('.mjs') || !hasTypeModule(buildFile)) ? '.mjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
         {

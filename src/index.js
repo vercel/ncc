@@ -12,6 +12,7 @@ const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
+const { hasTypeModule } = require('./utils/has-type-module');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -36,8 +37,9 @@ function ncc (
   {
     cache,
     customEmit = undefined,
+    esm = entry.endsWith('.mjs') || !entry.endsWith('.cjs') && hasTypeModule(entry),
     externals = [],
-    filename = 'index' + (entry.endsWith('.cjs') ? '.cjs' : '.js'),
+    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : esm && (entry.endsWith('.mjs') || !hasTypeModule(entry)) ? '.mjs' : '.js'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
@@ -55,6 +57,10 @@ function ncc (
     production = true,
   } = {}
 ) {
+  // v8 cache not supported for ES modules
+  if (esm)
+    v8cache = false;
+
   const cjsDeps = () => ({
     mainFields: ["main"],
     extensions: SUPPORTED_EXTENSIONS,
@@ -74,7 +80,7 @@ function ncc (
 
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file ${filename}`);
+    console.log(`ncc: Compiling file ${filename} into ${esm ? 'ESM' : 'CJS'}`);
   }
 
   if (target && !target.startsWith('es')) {
@@ -233,7 +239,8 @@ function ncc (
     },
     amd: false,
     experiments: {
-      topLevelAwait: true
+      topLevelAwait: true,
+      outputModule: esm
     },
     optimization: {
       nodeEnv: false,
@@ -247,7 +254,7 @@ function ncc (
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
-    target: target ? ["node", target] : "node",
+    target: target ? ["node14", target] : "node14",
     stats: {
       logging: 'error'
     },
@@ -258,8 +265,9 @@ function ncc (
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
       filename: ext === '.cjs' ? filename + '.js' : filename,
-      libraryTarget: "commonjs2",
-      strictModuleExceptionHandling: true
+      libraryTarget: esm ? 'module' : 'commonjs2',
+      strictModuleExceptionHandling: true,
+      module: esm
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
@@ -286,9 +294,9 @@ function ncc (
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals ({ context, request }, callback) {
+    externals ({ context, request, dependencyType }, callback) {
       const external = externalMap.get(request);
-      if (external) return callback(null, `commonjs ${external}`);
+      if (external) return callback(null, `${dependencyType === 'esm' && esm ? 'module' : 'node-commonjs'} ${external}`);
       return callback();
     },
     module: {
@@ -465,12 +473,13 @@ function ncc (
       let result;
       try {
         result = await terser.minify(code, {
+          module: esm,
           compress: false,
           mangle: {
             keep_classnames: true,
             keep_fnames: true
           },
-          sourceMap: sourceMap ? {
+          sourceMap: map ? {
             content: map,
             filename,
             url: `${filename}.map`
@@ -483,10 +492,10 @@ function ncc (
         
         ({ code, map } = {
           code: result.code,
-          map: sourceMap ? JSON.parse(result.map) : undefined
+          map: map ? JSON.parse(result.map) : undefined
         });
       }
-      catch {
+      catch (e) {
         console.log('An error occurred while minifying. The result will not be minified.'); 
       }
     }
@@ -511,9 +520,20 @@ function ncc (
         `if (cachedData) process.on('exit', () => { try { writeFileSync(basename + '.cache', script.createCachedData()); } catch(e) {} });\n`;
     }
 
-    if (sourceMap && sourceMapRegister) {
-      code = `require('./sourcemap-register${ext}');` + code;
-      assets[`sourcemap-register${ext}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+    if (map && sourceMapRegister) {
+      const registerExt = esm ? '.cjs' : ext;
+      code = (esm ? `import './sourcemap-register${registerExt}';` : `require('./sourcemap-register${registerExt}');`) + code;
+      assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+    }
+
+    if (esm && !filename.endsWith('.mjs')) {
+      // always output a "type": "module" package JSON for esm builds
+      const baseDir = dirname(filename);
+      const pjsonPath = (baseDir === '.' ? '' : baseDir) + 'package.json';
+      if (assets[pjsonPath])
+        assets[pjsonPath].source = JSON.stringify(Object.assign(JSON.parse(pjsonPath.source.toString()), { type: 'module' }));
+      else
+        assets[pjsonPath] = { source: JSON.stringify({ type: 'module' }, null, 2) + '\n', permissions: defaultPermissions };
     }
 
     if (shebangMatch) {

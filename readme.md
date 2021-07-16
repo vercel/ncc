@@ -38,6 +38,8 @@ Eg:
 $ ncc build input.js -o dist
 ```
 
+If building an `.mjs` or `.js` module inside a `"type": "module"` [package boundary](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#packages_package_json_and_file_extensions), an ES module output will be created automatically.
+
 Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
 > Note: If the input file is using a `.cjs` extension, then so will the corresponding output file.

@@ -28,7 +28,7 @@
     "@sentry/node": "^4.3.0",
     "@slack/web-api": "^5.13.0",
     "@tensorflow/tfjs-node": "^0.3.0",
-    "@vercel/webpack-asset-relocator-loader": "1.5.0",
+    "@vercel/webpack-asset-relocator-loader": "1.6.0",
     "analytics-node": "^3.3.0",
     "apollo-server-express": "^2.2.2",
     "arg": "^4.1.0",
@@ -110,7 +110,7 @@
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
-    "webpack": "5.43.0",
+    "webpack": "5.44.0",
     "when": "^3.7.8"
   },
   "resolutions": {
