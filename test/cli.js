@@ -12,6 +12,10 @@
     expect: { code: 0 }
   },
   {
+    args: ["build", "test/fixtures/type-module/main.js", "-o", "tmp"],
+    expect: { code: 0 }
+  },
+  {
     args: ["build", "test/integration/test.ts", "-o", "tmp"],
     expect (code, stdout, stderr) {
       return stdout.toString().indexOf('tmp/index.js') !== -1;

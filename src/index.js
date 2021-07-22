@@ -531,7 +531,7 @@ function ncc (
       const baseDir = dirname(filename);
       const pjsonPath = (baseDir === '.' ? '' : baseDir) + 'package.json';
       if (assets[pjsonPath])
-        assets[pjsonPath].source = JSON.stringify(Object.assign(JSON.parse(pjsonPath.source.toString()), { type: 'module' }));
+        assets[pjsonPath].source = JSON.stringify(Object.assign(JSON.parse(assets[pjsonPath].source.toString()), { type: 'module' }));
       else
         assets[pjsonPath] = { source: JSON.stringify({ type: 'module' }, null, 2) + '\n', permissions: defaultPermissions };
     }
