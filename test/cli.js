@@ -12,7 +12,7 @@
     expect: { code: 0 }
   },
   {
-    args: ["build", "test/integration/type-module/main.js", "-o", "tmp"],
+    args: ["build", "test/fixtures/type-module/main.js", "-o", "tmp"],
     expect: { code: 0 }
   },
   {
