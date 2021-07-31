@@ -26,6 +26,7 @@ jobs:
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v2
       with:
+        cache: yarn
         node-version: ${{ matrix.node }}
         check-latest: true
     - name: Print Node Version
