@@ -7437,10 +7437,10 @@ iconv-lite@0.4.24, iconv-lite@^0.4.17, iconv-lite@^0.4.4:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-iconv-lite@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.2.tgz#ce13d1875b0c3a674bd6a04b7f76b01b1b6ded01"
-  integrity sha512-2y91h5OpQlolefMPmUlivelittSWy0rP+oYVpn6A7GwVHNE8AWzoYOBNmlwks3LobaJxgHCYZAnyNo2GgpNRNQ==
+iconv-lite@^0.6.2, iconv-lite@^0.6.3:
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
+  integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
   dependencies:
     safer-buffer ">= 2.1.2 < 3.0.0"
 
@@ -9975,14 +9975,14 @@ map-visit@^1.0.0:
     object-visit "^1.0.0"
 
 mariadb@^2.0.1-beta:
-  version "2.5.3"
-  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.3.tgz#13a2267f7f1b572f9db997aaaa8c00f75d5a87e8"
-  integrity sha512-9ZbQ1zLqasLCQy6KDcPHtX7EUIMBlQ8p64gNR61+yfpCIWjPDji3aR56LvwbOz1QnQbVgYBOJ4J/pHoFN5MR+w==
+  version "2.5.4"
+  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.4.tgz#c66daa35e2768b8c714c758453531c06ae4927f4"
+  integrity sha512-4vQgMRyBIN9EwSQG0vzjR9D8bscPH0dGPJt67qVlOkHSiSm0xUatg1Pft4o1LzORgeOW4PheiY/HBE9bYYmNCA==
   dependencies:
     "@types/geojson" "^7946.0.7"
     "@types/node" "^14.14.28"
-    denque "^1.4.1"
-    iconv-lite "^0.6.2"
+    denque "^1.5.0"
+    iconv-lite "^0.6.3"
     long "^4.0.0"
     moment-timezone "^0.5.33"
     please-upgrade-node "^3.2.0"
