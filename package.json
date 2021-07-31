@@ -58,7 +58,7 @@
     "graceful-fs": "^4.1.15",
     "graphql": "^14.0.2",
     "highlights": "^3.1.1",
-    "hot-shots": "^5.9.2",
+    "hot-shots": "^8.5.0",
     "ioredis": "^4.2.0",
     "isomorphic-unfetch": "^3.0.0",
     "jest": "^27.0.6",
