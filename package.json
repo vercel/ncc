@@ -29,7 +29,7 @@
     "@slack/web-api": "^5.13.0",
     "@tensorflow/tfjs-node": "^0.3.0",
     "@vercel/webpack-asset-relocator-loader": "1.6.0",
-    "analytics-node": "^3.3.0",
+    "analytics-node": "^5.0.0",
     "apollo-server-express": "^2.2.2",
     "arg": "^4.1.0",
     "auth0": "^2.14.0",
