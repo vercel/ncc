@@ -1,11 +1,11 @@
 version: 2
 updates:
 - package-ecosystem: github-actions
-  open-pull-requests-limit: 30
   directory: /
   schedule:
     interval: weekly
 - package-ecosystem: npm
+  open-pull-requests-limit: 30
   directory: /
   schedule:
     interval: weekly
