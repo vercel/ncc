@@ -91,7 +91,7 @@
     "request": "^2.88.0",
     "rxjs": "^7.3.0",
     "saslprep": "^1.0.2",
-    "sequelize": "^5.8.6",
+    "sequelize": "^6.6.5",
     "sharp": "^0.25.2",
     "shebang-loader": "^0.0.1",
     "socket.io": "^4.1.3",
