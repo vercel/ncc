@@ -27,7 +27,7 @@
     "@google-cloud/firestore": "^4.14.0",
     "@sentry/node": "^6.10.0",
     "@slack/web-api": "^5.13.0",
-    "@tensorflow/tfjs-node": "^0.3.0",
+    "@tensorflow/tfjs-node": "^3.8.0",
     "@vercel/webpack-asset-relocator-loader": "1.6.0",
     "analytics-node": "^5.0.0",
     "apollo-server-express": "^2.2.2",
