@@ -25,7 +25,7 @@
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
     "@google-cloud/bigquery": "^2.0.1",
     "@google-cloud/firestore": "^4.14.0",
-    "@sentry/node": "^4.3.0",
+    "@sentry/node": "^6.10.0",
     "@slack/web-api": "^5.13.0",
     "@tensorflow/tfjs-node": "^0.3.0",
     "@vercel/webpack-asset-relocator-loader": "1.6.0",
