@@ -3145,18 +3145,18 @@ atob@^2.1.2:
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
 auth0@^2.14.0:
-  version "2.34.0"
-  resolved "https://registry.yarnpkg.com/auth0/-/auth0-2.34.0.tgz#08780ea96a026c1f97ed33d19fb7437d48a9900e"
-  integrity sha512-IiA3BxMTY48ffv2Tn/E3sAByC08xLz6om4AbXB8RSToe02alwK+h0feoy6+krazdcTN+UrI7fbk96y1HI3NkDg==
+  version "2.36.1"
+  resolved "https://registry.yarnpkg.com/auth0/-/auth0-2.36.1.tgz#16ff3d8eb4c6b4077ec48e3b661038b4b43a37b3"
+  integrity sha512-R7/UYd9epGgcbm5ntv72rWRvGw2tCwkpPgqR+IppJ3V4UUYj+MhaPm3iwzARFiPxk5/7RLTW3M5w7xt682FxoA==
   dependencies:
     axios "^0.21.1"
     es6-promisify "^6.1.1"
-    form-data "^3.0.0"
+    form-data "^3.0.1"
     jsonwebtoken "^8.5.1"
-    jwks-rsa "^1.10.0"
-    lru-memoizer "^2.1.0"
+    jwks-rsa "^1.12.1"
+    lru-memoizer "^2.1.4"
     rest-facade "^1.13.0"
-    retry "^0.12.0"
+    retry "^0.13.1"
 
 aws-sdk@^2.177.0, aws-sdk@^2.356.0:
   version "2.874.0"
@@ -6430,7 +6430,7 @@ form-data@^2.3.1, form-data@^2.5.0:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-form-data@^3.0.0:
+form-data@^3.0.0, form-data@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/form-data/-/form-data-3.0.1.tgz#ebd53791b78356a99af9a300d4282c4d5eb9755f"
   integrity sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==
@@ -9024,7 +9024,7 @@ jwa@^2.0.0:
     ecdsa-sig-formatter "1.0.11"
     safe-buffer "^5.0.1"
 
-jwks-rsa@^1.10.0:
+jwks-rsa@^1.12.1:
   version "1.12.3"
   resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.12.3.tgz#40232f85d16734cb82837f38bb3e350a34435400"
   integrity sha512-cFipFDeYYaO9FhhYJcZWX/IyZgc0+g316rcHnDpT2dNRNIE/lMOmWKKqp09TkJoYlNFzrEVODsR4GgXJMgWhnA==
@@ -9867,7 +9867,7 @@ lru-cache@~4.0.0:
     pseudomap "^1.0.1"
     yallist "^2.0.0"
 
-lru-memoizer@^2.1.0, lru-memoizer@^2.1.2, lru-memoizer@^2.1.4:
+lru-memoizer@^2.1.2, lru-memoizer@^2.1.4:
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/lru-memoizer/-/lru-memoizer-2.1.4.tgz#b864d92b557f00b1eeb322156a0409cb06dafac6"
   integrity sha512-IXAq50s4qwrOBrXJklY+KhgZF+5y98PDaNo0gi/v2KQBFLyWr+JyFvijZXkGKjQj/h9c0OwoE+JZbwUXce76hQ==
@@ -12821,7 +12821,7 @@ replace-ext@0.0.1:
   resolved "https://registry.yarnpkg.com/replace-ext/-/replace-ext-0.0.1.tgz#29bbd92078a739f0bcce2b4ee41e837953522924"
   integrity sha1-KbvZIHinOfC8zitO5B6DeVNSKSQ=
 
-request@^2.83.0, request@^2.86.0, request@^2.87.0, request@^2.88.0:
+request@^2.83.0, request@^2.86.0, request@^2.88.0:
   version "2.88.2"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.2.tgz#d73c918731cb5a87da047e207234146f664d12b3"
   integrity sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==
@@ -13001,6 +13001,11 @@ retry@^0.10.0:
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/retry/-/retry-0.10.1.tgz#e76388d217992c252750241d3d3956fed98d8ff4"
   integrity sha1-52OI0heZLCUnUCQdPTlW/tmNj/Q=
+
+retry@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/retry/-/retry-0.13.1.tgz#185b1587acf67919d63b357349e03537b2484658"
+  integrity sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==
 
 rimraf@^2.5.2, rimraf@^2.5.4, rimraf@^2.6.1, rimraf@^2.6.2, rimraf@^2.6.3, rimraf@^2.7.1:
   version "2.7.1"
