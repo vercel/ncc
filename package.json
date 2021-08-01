@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@azure/cosmos": "^3.12.3",
-    "@bugsnag/js": "^5.0.1",
+    "@bugsnag/js": "^7.11.0",
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
     "@google-cloud/bigquery": "^2.0.1",
     "@google-cloud/firestore": "^4.14.0",
