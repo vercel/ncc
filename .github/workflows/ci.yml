@@ -12,7 +12,7 @@ jobs:
   test:
     name: Node ${{ matrix.node }} and ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, macos-latest]
         node: [12, 14]
