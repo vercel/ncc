@@ -31,7 +31,7 @@
     "@vercel/webpack-asset-relocator-loader": "1.6.0",
     "analytics-node": "^5.0.0",
     "apollo-server-express": "^2.2.2",
-    "arg": "^4.1.0",
+    "arg": "^5.0.0",
     "auth0": "^2.14.0",
     "aws-sdk": "^2.356.0",
     "axios": "^0.21.1",
