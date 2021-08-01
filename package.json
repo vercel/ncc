@@ -92,7 +92,7 @@
     "rxjs": "^7.3.0",
     "saslprep": "^1.0.2",
     "sequelize": "^6.6.5",
-    "sharp": "^0.25.2",
+    "sharp": "^0.28.3",
     "shebang-loader": "^0.0.1",
     "socket.io": "^4.1.3",
     "source-map-support": "^0.5.9",
