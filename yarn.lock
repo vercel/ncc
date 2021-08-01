@@ -2294,15 +2294,10 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
   integrity sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw==
 
-"@types/tough-cookie@*":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.0.tgz#fef1904e4668b6e5ecee60c52cc6a078ffa6697d"
-  integrity sha512-I99sngh224D0M7XgW1s120zxCt3VYQ3IQsuw3P3jbq5GG4yc79+ZjyKznyOGIQrflfylLgcfekeZW/vk0yng6A==
-
-"@types/tough-cookie@2.x":
-  version "2.3.7"
-  resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-2.3.7.tgz#979434b5900f9d710f5d4e15c466cadb8e9fdc47"
-  integrity sha512-rMQbgMGxnLsdn8e9aPVyuN+zMQLrZ2QW8xlv7eWS1mydfGXN+tsTKffcIzd8rGCcLdmi3xvQw2MDaZI1bBNTaw==
+"@types/tough-cookie@*", "@types/tough-cookie@^4.0.0":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.1.tgz#8f80dd965ad81f3e1bc26d6f5c727e132721ff40"
+  integrity sha512-Y0K95ThC3esLEYD6ZuqNek29lNX2EM1qxV8y2FTLUB0ff5wWrk7az+mLrnNFUnaXcgKye22+sFBRXOgpPILZNg==
 
 "@types/webgl-ext@0.0.30":
   version "0.0.30"
@@ -2639,7 +2634,7 @@ ajv@^6.12.3, ajv@^6.12.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-already@1.x:
+already@^1.13.2:
   version "1.13.2"
   resolved "https://registry.yarnpkg.com/already/-/already-1.13.2.tgz#1441d2ae975f4a9b5ac2f53b4fa062af1d46b77d"
   integrity sha512-GU0ZqMhSetZeDlivqttmAmd2UpCbPSucziaDJcCN2NdOTedzaJTqZZwHHuGJvp0Us1wzQG0vSqFqax1SqgH8Aw==
@@ -3991,10 +3986,10 @@ callback-stream@^1.0.2:
     inherits "^2.0.1"
     readable-stream "> 1.0.0 < 3.0.0"
 
-callguard@1.x:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/callguard/-/callguard-1.2.2.tgz#efe95e3ce0e9ec734e0177d244236098ebc1e880"
-  integrity sha512-mnZSq7LVdYpMBPO+ciQ2seO7kYkenAKAJsvHGmbPjTk7/rsR4HfboAIoxQYq4g5s3M5L9T7jASWrk6Lz+1aH8Q==
+callguard@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/callguard/-/callguard-2.0.0.tgz#32f98348ff82cb1dfcf7d1b198108cf4f5b64c1f"
+  integrity sha512-I3nd+fuj20FK1qu00ImrbH+II+8ULS6ioYr9igqR1xyqySoqc3DiHEyUM0mkoAdKeLGg2CtGnO8R3VRQX5krpQ==
 
 callsites@^3.0.0:
   version "3.1.0"
@@ -6153,18 +6148,18 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "2.1.1"
 
-fetch-h2@^1.0.2:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/fetch-h2/-/fetch-h2-1.2.3.tgz#6fdfa41385432895e8486262e98e5da417af4b7f"
-  integrity sha512-zQ46gbz1g49JCKX2fsZqMVllmNp2YwFWVH3OW29l0kdZ/wEfL5lCwqLeUS+60r2FeAoMVfebV0Y4HzJPqRxTRg==
+fetch-h2@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fetch-h2/-/fetch-h2-3.0.0.tgz#d4f4e2ae3ac985b2ba3aa428e39a38a608b46153"
+  integrity sha512-3QU0Gg0qY5SV1zJcc0gGA1QijsAPyZrZWQq+vYIg+296TVWZiryFfLrCzIGKwOWEl58Xo0pGyogiId7/vZL3tw==
   dependencies:
-    "@types/tough-cookie" "2.x"
-    already "1.x"
-    callguard "1.x"
-    get-stream "4.x"
-    through2 "3.x"
-    to-arraybuffer "1.x"
-    tough-cookie "3.x"
+    "@types/tough-cookie" "^4.0.0"
+    already "^1.13.2"
+    callguard "^2.0.0"
+    get-stream "^6.0.1"
+    through2 "^4.0.2"
+    to-arraybuffer "^1.0.1"
+    tough-cookie "^4.0.0"
 
 figgy-pudding@^3.4.1, figgy-pudding@^3.5.1:
   version "3.5.2"
@@ -6737,7 +6732,7 @@ get-stream@3.0.0, get-stream@^3.0.0:
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-3.0.0.tgz#8e943d1358dc37555054ecbe2edb05aa174ede14"
   integrity sha1-jpQ9E1jcN1VQVOy+LtsFqhdO3hQ=
 
-get-stream@4.x, get-stream@^4.0.0, get-stream@^4.1.0:
+get-stream@^4.0.0, get-stream@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-4.1.0.tgz#c1b255575f3dc21d59bfc79cd3d2b46b1c3a54b5"
   integrity sha512-GMat4EJ5161kIy2HevLlr4luNjBgvmj413KaQA7jt4V8B4RDsfpHk7WQ9GVqfYyyx8OS/L66Kox+rJRNklLK7w==
@@ -6751,7 +6746,7 @@ get-stream@^5.0.0, get-stream@^5.1.0:
   dependencies:
     pump "^3.0.0"
 
-get-stream@^6.0.0:
+get-stream@^6.0.0, get-stream@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-6.0.1.tgz#a262d8eef67aced57c2852ad6167526a43cbf7b7"
   integrity sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==
@@ -12678,7 +12673,7 @@ readable-stream@1.1.x, readable-stream@~1.1.10:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-"readable-stream@2 || 3", readable-stream@^3.0.0, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.6.0:
+readable-stream@3, readable-stream@^3.0.0, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.6.0.tgz#337bbda3adc0706bd3e024426a286d4b4b2c9198"
   integrity sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
@@ -14530,14 +14525,6 @@ through2-filter@^3.0.0:
     through2 "~2.0.0"
     xtend "~4.0.0"
 
-through2@3.x:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/through2/-/through2-3.0.2.tgz#99f88931cfc761ec7678b41d5d7336b5b6a07bf4"
-  integrity sha512-enaDQ4MUyP2W6ZyT6EsMzqBPZaM/avg8iuo+l2d3QCs0J+6RaqkHV/2/lOwDTueBHeJ/2LG9lrLW3d5rWPucuQ==
-  dependencies:
-    inherits "^2.0.4"
-    readable-stream "2 || 3"
-
 through2@^2.0.0, through2@^2.0.1, through2@^2.0.2, through2@~2.0.0, through2@~2.0.3:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/through2/-/through2-2.0.5.tgz#01c1e39eb31d07cb7d03a96a70823260b23132cd"
@@ -14545,6 +14532,13 @@ through2@^2.0.0, through2@^2.0.1, through2@^2.0.2, through2@~2.0.0, through2@~2.
   dependencies:
     readable-stream "~2.3.6"
     xtend "~4.0.1"
+
+through2@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/through2/-/through2-4.0.2.tgz#a7ce3ac2a7a8b0b966c80e7c49f0484c3b239764"
+  integrity sha512-iOqSav00cVxEEICeD7TjLB1sueEL+81Wpzp2bY17uZjZN0pWZPuo4suZ/61VujxmqSGFfgOcNuTZ85QJwNZQpw==
+  dependencies:
+    readable-stream "3"
 
 through@2.3.4:
   version "2.3.4"
@@ -14626,7 +14620,7 @@ to-absolute-glob@^2.0.0:
     is-absolute "^1.0.0"
     is-negated-glob "^1.0.0"
 
-to-arraybuffer@1.x:
+to-arraybuffer@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/to-arraybuffer/-/to-arraybuffer-1.0.1.tgz#7d229b1fcc637e466ca081180836a7aabff83f43"
   integrity sha1-fSKbH8xjfkZsoIEYCDanqr/4P0M=
@@ -14701,15 +14695,6 @@ toposort-class@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/toposort-class/-/toposort-class-1.0.1.tgz#7ffd1f78c8be28c3ba45cd4e1a3f5ee193bd9988"
   integrity sha1-f/0feMi+KMO6Rc1OGj9e4ZO9mYg=
-
-tough-cookie@3.x:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-3.0.1.tgz#9df4f57e739c26930a018184887f4adb7dca73b2"
-  integrity sha512-yQyJ0u4pZsv9D4clxO69OEjLWYw+jbgspjTue4lTQZLfV0c5l1VmK2y1JK8E9ahdpltPOaAThPcp5nKPUgSnsg==
-  dependencies:
-    ip-regex "^2.1.0"
-    psl "^1.1.28"
-    punycode "^2.1.1"
 
 tough-cookie@^4.0.0:
   version "4.0.0"
