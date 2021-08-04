@@ -6619,13 +6619,12 @@ get-caller-file@^2.0.1, get-caller-file@^2.0.5:
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-2.0.5.tgz#4f94412a82db32f36e3b0b9741f8a97feb031f7e"
   integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
 
-get-folder-size@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/get-folder-size/-/get-folder-size-2.0.1.tgz#3fe0524dd3bad05257ef1311331417bcd020a497"
-  integrity sha512-+CEb+GDCM7tkOS2wdMKTn9vU7DgnKUTuDlehkNJKNSovdCOVxs14OfKCk4cvSaR3za4gj+OBdl9opPN9xrJ0zA==
+get-folder-size@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/get-folder-size/-/get-folder-size-3.1.0.tgz#96d39f7e1a0b2e30d13958e05373ebfa32bdfaa4"
+  integrity sha512-/I7q+x1HCd22IXP4+kp2Wkz8+au7VfNwNyMfM4Z0gwaTMs+dJ1ShXUWDGSWXi+rDU59MI/j7NBP7+kd7zejnPw==
   dependencies:
     gar "^1.0.4"
-    tiny-each-async "2.0.3"
 
 get-intrinsic@^1.0.2, get-intrinsic@^1.1.1:
   version "1.1.1"
@@ -14407,11 +14406,6 @@ timm@^1.6.1:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/timm/-/timm-1.7.1.tgz#96bab60c7d45b5a10a8a4d0f0117c6b7e5aff76f"
   integrity sha512-IjZc9KIotudix8bMaBW6QvMuq64BrJWFs1+4V0lXwWGQZwH+LnX87doAYhem4caOEusRP9/g6jVDQmZ8XOk1nw==
-
-tiny-each-async@2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/tiny-each-async/-/tiny-each-async-2.0.3.tgz#8ebbbfd6d6295f1370003fbb37162afe5a0a51d1"
-  integrity sha1-jru/1tYpXxNwAD+7NxYq/loKUdE=
 
 tiny-inflate@^1.0.0, tiny-inflate@^1.0.2:
   version "1.0.3"
