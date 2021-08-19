@@ -40,7 +40,7 @@
     "bytes": "^3.0.0",
     "canvas": "^2.2.0",
     "chromeless": "^1.5.2",
-    "codecov": "^3.8.1",
+    "codecov": "^3.8.3",
     "consolidate": "^0.16.0",
     "copy": "^0.3.2",
     "core-js": "^2.5.7",
