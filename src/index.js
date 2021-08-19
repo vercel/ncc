@@ -546,8 +546,22 @@ function ncc (
     // __webpack_require__ can conflict with webpack injections in module scopes
     // to avoid this without recomputing the source map we replace it with an
     // identical length identifier
-    if (code.indexOf('"__webpack_require__"') === -1)
+    if (code.indexOf('"__webpack_require__"') === -1) {
+      // dedupe any existing __nccwpck_require__ first
+      if (code.indexOf('__nccwpck_require2_') !== -1) {
+        // nth level nesting (we support 9 levels apparently)
+        for (let i = 9; i > 1; i--) {
+          if (code.indexOf(`__nccwpck_require${i}_`) === -1)
+            continue;
+          if (i === 9)
+            throw new Error('9 levels of ncc build nesting reached, please post an issue to support this level of ncc build composition.');
+          code = code.replace(new RegExp(`__nccwpck_require${i}_`, 'g'), `__nccwpck_require${i + 1}_`);
+        }
+      }
+      if (code.indexOf('__nccwpck_require__') !== -1)
+        code = code.replace(/__nccwpck_require__/g, '__nccwpck_require2_');
       code = code.replace(/__webpack_require__/g, '__nccwpck_require__');
+    }
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
     if (!noAssetBuilds) {
