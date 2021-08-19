@@ -555,7 +555,7 @@ function ncc (
             continue;
           if (i === 9)
             throw new Error('9 levels of ncc build nesting reached, please post an issue to support this level of ncc build composition.');
-          code = code.replace(/__nccwpck_require${i}_/g, `__nccwpck_require${i + 1}_`);
+          code = code.replace(new RegExp(`__nccwpck_require${i}_`, 'g'), `__nccwpck_require${i + 1}_`);
         }
       }
       if (code.indexOf('__nccwpck_require__') !== -1)
