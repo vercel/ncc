@@ -100,11 +100,6 @@ it(`should execute "ncc build web-vitals" with target config`, async () => {
   await new Promise(resolve => setTimeout(resolve, 5000));
 });
 
-afterAll(() => {
-  if (coverage)
-    process.exit(0);
-});
-
 // remove me when node.js makes this the default behavior
 process.on("unhandledRejection", e => {
   throw e;
