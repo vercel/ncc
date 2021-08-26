@@ -128,6 +128,8 @@ async function runCmd (argv, stdout, stderr) {
   let args;
   try {
     args = require("arg")({
+      "--asset-builds": Boolean,
+      '-a': '--asset-builds',
       "--debug": Boolean,
       "-d": "--debug",
       "--external": [String],
@@ -240,7 +242,7 @@ async function runCmd (argv, stdout, stderr) {
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
-          noAssetBuilds: args["--no-asset-builds"] ? true : false,
+          assetBuilds: args["--asset-builds"] ? true : false,
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
           v8cache: args["--v8-cache"],

@@ -44,7 +44,7 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
     const stdout = new StoreStream();
     const stderr = new StoreStream();
     try {
-      await nccRun(["run", "--no-cache", "--no-asset-builds", `${__dirname}/integration/${integrationTest}`], stdout, stderr);
+      await nccRun(["run", "--no-cache", `${__dirname}/integration/${integrationTest}`], stdout, stderr);
     }
     catch (e) {
       if (e.silent) {

@@ -44,7 +44,7 @@ function ncc (
     sourceMap = false,
     sourceMapRegister = true,
     sourceMapBasePrefix = '../',
-    noAssetBuilds = false,
+    assetBuilds = false,
     watch = false,
     v8cache = false,
     filterAssetBase = process.cwd(),
@@ -564,7 +564,7 @@ function ncc (
     }
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
-    if (!noAssetBuilds) {
+    if (assetBuilds) {
       const compilation = compilationStack[compilationStack.length - 1];
       let existingAssetNames = Object.keys(assets);
       existingAssetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
@@ -595,7 +595,7 @@ function ncc (
           sourceMapBasePrefix,
           // dont recursively asset build
           // could be supported with seen tracking
-          noAssetBuilds: true,
+          assetBuilds: false,
           v8cache,
           filterAssetBase,
           existingAssetNames,
