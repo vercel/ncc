@@ -34,6 +34,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
     await ncc(`${testDir}/${inputFile}`, Object.assign({
+      assetBuilds: true,
       transpileOnly: true,
       customEmit (path) {
         if (path.endsWith('test.json'))

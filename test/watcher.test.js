@@ -115,6 +115,7 @@ it('Should support custom watch API', async () => {
 
     console.time('First Build');
     const { handler, rebuild, close } = ncc(buildFile, {
+      assetBuilds: true,
       watch: watcher
     });
     
