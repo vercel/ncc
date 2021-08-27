@@ -61,6 +61,8 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
+  -a, --asset-builds       Build nested JS assets recursively, useful for
+                           when code is loaded as an asset eg for workers.
   --no-source-map-register Skip source-map-register source map support
   -e, --external [mod]     Skip bundling 'mod'. Can be used many times
   -q, --quiet              Disable build summaries / non-error outputs
@@ -115,6 +117,7 @@ require('@vercel/ncc')('/path/to/input', {
   filterAssetBase: process.cwd(), // default
   minify: false, // default
   sourceMap: false, // default
+  assetBuilds: false, // default
   sourceMapBasePrefix: '../', // default treats sources as output-relative
   // when outputting a sourcemap, automatically include
   // source-map-support in the output file (increases output by 32kB).
