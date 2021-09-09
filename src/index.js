@@ -109,7 +109,7 @@ function ncc (
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
-  let fullTsconfig;
+  let fullTsconfig = {};
   try {
     const tsconfig = tsconfigPaths.loadConfig();
     fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath) || {
@@ -334,15 +334,12 @@ function ncc (
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
-                allowSyntheticDefaultImports: true,
                 module: 'esnext',
-                outDir: '//',
-                ...(fullTsconfig &&
-                  fullTsconfig.compilerOptions &&
-                  fullTsconfig.compilerOptions.incremental
-                    ? { incremental: false }
-                    : {}),
-                noEmit: false
+                target: 'esnext',
+                ...fullTsconfig.compilerOptions,
+                allowSyntheticDefaultImports: true,
+                noEmit: false,
+                outDir: '//'
               }
             }
           }]
