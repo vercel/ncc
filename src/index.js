@@ -335,14 +335,10 @@ function ncc (
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
                 allowSyntheticDefaultImports: true,
-                module: 'esnext',
-                outDir: '//',
-                ...(fullTsconfig &&
-                  fullTsconfig.compilerOptions &&
-                  fullTsconfig.compilerOptions.incremental
-                    ? { incremental: false }
-                    : {}),
-                noEmit: false
+                incremental: fullTsconfig?.compilerOptions?.incremental ?? false,
+                module: fullTsconfig?.compilerOptions?.module ?? 'esnext',
+                noEmit: false,
+                outDir: '//'
               }
             }
           }]
