@@ -111,8 +111,12 @@ function ncc (
   // error if there's no tsconfig in the working directory
   let fullTsconfig = {};
   try {
-    const tsconfig = tsconfigPaths.loadConfig();
-    fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath) || {
+    const configFileAbsolutePath = walkParentDirs({
+      base: process.cwd(),
+      start: dirname(entry),
+      filename: 'tsconfig.json',
+    });
+    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
       compilerOptions: {}
     };
 
@@ -642,4 +646,26 @@ function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
       };
     }
   }
+}
+
+// Adapted from https://github.com/vercel/vercel/blob/18bec983aefbe2a77bd14eda6fca59ff7e956d8b/packages/build-utils/src/fs/run-user-scripts.ts#L289-L310
+function walkParentDirs({
+  base,
+  start,
+  filename,
+}) {
+  let parent = '';
+
+  for (let current = start; base.length <= current.length; current = parent) {
+    const fullPath = join(current, filename);
+
+    // eslint-disable-next-line no-await-in-loop
+    if (fs.existsSync(fullPath)) {
+      return fullPath;
+    }
+
+    parent = dirname(current);
+  }
+
+  return null;
 }
