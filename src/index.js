@@ -126,6 +126,7 @@ function ncc (
     }
     resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
 
+    const tsconfig = tsconfigPaths.loadConfig();
     if (tsconfig.resultType === "success") {
       tsconfigMatchPath = tsconfigPaths.createMatchPath(tsconfig.absoluteBaseUrl, tsconfig.paths);
     }
