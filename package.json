@@ -104,7 +104,6 @@
     "the-answer": "^1.0.0",
     "tiny-json-http": "^7.0.2",
     "ts-loader": "^9.2.5",
-    "tsconfig-paths-webpack-plugin": "^3.5.1",
     "twilio": "^3.23.2",
     "typescript": "^4.4.3",
     "vm2": "^3.6.6",

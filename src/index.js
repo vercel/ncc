@@ -6,10 +6,10 @@ const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const JSON5 = require("json5");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
-const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
+const { JsConfigPathsPlugin } = require('./jsconfig-paths-plugin');
+const { LicenseWebpackPlugin } = require('license-webpack-plugin');
 const { version: nccVersion } = require('../package.json');
 const { hasTypeModule } = require('./utils/has-type-module');
 
@@ -104,27 +104,27 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
-  const resolvePlugins = [];
-  // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
-  // we need to catch here because the plugin will
-  // error if there's no tsconfig in the working directory
-  let compilerOptions = {}
+
+  let tsconfig = {};
   try {
     const configPath = join(process.cwd(), 'tsconfig.json');
     const contents = fs.readFileSync(configPath, 'utf8')
-    const tsconfig = JSON5.parse(contents);
-    if (tsconfig && tsconfig.compilerOptions) {
-      compilerOptions = tsconfig.compilerOptions;
-    }
-    const opts = {
-      silent: true,
-      configFile: configPath,
-      extensions: compilerOptions.allowJs
-        ? SUPPORTED_EXTENSIONS
-        : SUPPORTED_EXTENSIONS.filter(ext => ext !== '.js')
-    }
-    resolvePlugins.push(new TsconfigPathsPlugin(opts));
+    tsconfig = JSON5.parse(contents);
   } catch (e) {}
+
+  const resolvePlugins = [];
+  const resolveModules = [];
+  const compilerOptions = tsconfig.compilerOptions || {};
+ 
+  if (compilerOptions.baseUrl) {
+    const resolvedBaseUrl = pathResolve(process.cwd(), compilerOptions.baseUrl);
+    resolveModules.push(resolvedBaseUrl);
+    if (compilerOptions.paths) {
+      resolvePlugins.push(
+        new JsConfigPathsPlugin(compilerOptions.paths, resolvedBaseUrl)
+      )
+    }
+  }
 
   resolvePlugins.push({
     apply(resolver) {
@@ -289,6 +289,7 @@ function ncc (
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
+      modules: resolveModules,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
