@@ -8,7 +8,6 @@ const terser = require("terser");
 const JSON5 = require("json5");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
-const { JsConfigPathsPlugin } = require('./jsconfig-paths-plugin');
 const { LicenseWebpackPlugin } = require('license-webpack-plugin');
 const { version: nccVersion } = require('../package.json');
 const { hasTypeModule } = require('./utils/has-type-module');
@@ -329,17 +328,30 @@ function ncc (
             loader: eval('__dirname + "/loaders/uncacheable.js"')
           },
           {
-            loader: eval('__dirname + "/loaders/ts-loader.js"'),
+            loader: eval('__dirname + "/loaders/swc-loader.js"'),
             options: {
-              transpileOnly,
-              compiler: eval('__dirname + "/typescript.js"'),
-              compilerOptions: {
-                allowSyntheticDefaultImports: true,
-                module: 'esnext',
-                target: 'esnext',
-                ...compilerOptions,
-                noEmit: false,
-                outDir: '//'
+              minify: false, // TODO: maybe we could omit terser if `true`?
+              exclude: tsconfig.exclude,
+              sourceMaps: compilerOptions.sourceMap || false,
+              module: {
+                type: compilerOptions.module && compilerOptions.module.toLowerCase() === 'commonjs' ? 'commonjs' : 'es6',
+                strict: false,
+                strictMode: true,
+                lazy: false,
+                noInterop: false, // TODO: esModuleInterop??
+              },
+              jsc: {
+                externalHelpers: false,
+                keepClassNames: true,
+                target: compilerOptions.target && compilerOptions.target.toLowerCase() || 'es2021',
+                paths: compilerOptions.paths,
+                baseUrl: compilerOptions.baseUrl,
+                parser: {
+                  syntax: 'typescript',
+                  tsx: true, // TODO: use tsconfig.compilerOptions.jsx ???
+                  decorators: compilerOptions.experimentalDecorators || false,
+                  dynamicImport: true, // TODO: use module ???
+                }
               }
             }
           }]
