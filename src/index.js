@@ -114,16 +114,6 @@ function ncc (
   const resolvePlugins = [];
   const resolveModules = [];
   const compilerOptions = tsconfig.compilerOptions || {};
- 
-  if (compilerOptions.baseUrl) {
-    const resolvedBaseUrl = pathResolve(process.cwd(), compilerOptions.baseUrl);
-    resolveModules.push(resolvedBaseUrl);
-    if (compilerOptions.paths) {
-      resolvePlugins.push(
-        new JsConfigPathsPlugin(compilerOptions.paths, resolvedBaseUrl)
-      )
-    }
-  }
 
   resolvePlugins.push({
     apply(resolver) {
