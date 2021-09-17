@@ -114,6 +114,10 @@ function ncc (
   const resolvePlugins = [];
   const resolveModules = [];
   const compilerOptions = tsconfig.compilerOptions || {};
+ 
+  if (compilerOptions.baseUrl) {
+    resolveModules.push(pathResolve(process.cwd(), compilerOptions.baseUrl));
+  }
 
   resolvePlugins.push({
     apply(resolver) {
