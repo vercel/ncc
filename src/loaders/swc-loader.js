@@ -1,1 +1,1 @@
-module.exports = require('swc-loader');
+module.exports = require("swc-loader");
