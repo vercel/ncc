@@ -282,7 +282,7 @@ function ncc (
       // webpack defaults to `module` and `main`, but that's
       // not really what node.js supports, so we reset it
       mainFields: ["main"],
-      modules: resolveModules,
+      modules: resolveModules.length > 0 ? resolveModules : undefined,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
