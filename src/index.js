@@ -106,18 +106,20 @@ function ncc (
 
   let tsconfig = {};
   try {
-    const configPath = join(process.cwd(), 'tsconfig.json');
+    const configPath = walkParentDirs({
+      base: process.cwd(),
+      start: dirname(entry),
+      filename: 'tsconfig.json',
+    });
     const contents = fs.readFileSync(configPath, 'utf8')
     tsconfig = JSON5.parse(contents);
+    const baseUrl = tsconfig.compilerOptions.baseUrl;
+    resolveModules.push(pathResolve(dirname(configPath), baseUrl));
   } catch (e) {}
-
   const resolvePlugins = [];
   const resolveModules = [];
   const compilerOptions = tsconfig.compilerOptions || {};
- 
-  if (compilerOptions.baseUrl) {
-    resolveModules.push(pathResolve(process.cwd(), compilerOptions.baseUrl));
-  }
+
 
   resolvePlugins.push({
     apply(resolver) {
@@ -332,7 +334,7 @@ function ncc (
                 strict: false,
                 strictMode: true,
                 lazy: false,
-                noInterop: false, // TODO: esModuleInterop??
+                noInterop: !compilerOptions.esModuleInterop
               },
               jsc: {
                 externalHelpers: false,
