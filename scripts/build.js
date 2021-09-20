@@ -63,13 +63,13 @@ async function main() {
       noAssetBuilds: true
     },
   );
-  checkUnknownAssets('swc-loader', Object.keys(swcLoaderAssets).filter(asset => !asset.startsWith('lib/') && !asset.startsWith('typescript/lib')));
+  checkUnknownAssets('swc-loader', Object.keys(swcLoaderAssets).filter(asset => asset !== 'wasm_bg.wasm'));
 
   const { code: stringifyLoader, assets: stringifyLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/stringify-loader",
     { filename: "stringify-loader.js", minify, cache, v8cache }
   );
-  checkUnknownAssets('stringify-loader', Object.keys(stringifyLoader));
+  checkUnknownAssets('stringify-loader', Object.keys(stringifyLoaderAssets));
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
@@ -93,6 +93,7 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache", relocateLoaderAssets["relocate-loader.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache", shebangLoaderAssets["shebang-loader.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/swc-loader.js.cache", swcLoaderAssets["swc-loader.js.cache"].source);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/wasm_bg.wasm", swcLoaderAssets["wasm_bg.wasm"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/stringify-loader.js.cache", stringifyLoaderAssets["stringify-loader.js.cache"].source);
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache.js", cliAssets["cli.js.cache.js"].source);
