@@ -480,6 +480,9 @@ function ncc (
             keep_classnames: true,
             keep_fnames: true
           },
+          format: {
+            comments: false
+          },
           sourceMap: map ? {
             content: map,
             filename,
