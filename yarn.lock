@@ -1773,10 +1773,10 @@
     p-queue "^6.6.1"
     p-retry "^4.0.0"
 
-"@swc/wasm@^1.2.88":
-  version "1.2.88"
-  resolved "https://registry.yarnpkg.com/@swc/wasm/-/wasm-1.2.88.tgz#5ec7e7392e9fe99f46b78e9832f172b22b2194d4"
-  integrity sha512-4xYvIPHeGitRyYXpgA9HE7TiGz+z+wjOnaNVFwOoBbDUWxYrB7iZqiolgchvtbeuOtLD3P6IhAM0vOhRN+HCcw==
+"@swc/wasm@^1.2.89":
+  version "1.2.89"
+  resolved "https://registry.yarnpkg.com/@swc/wasm/-/wasm-1.2.89.tgz#e6388467366c95cd2130c9b06d7c70e714624ad7"
+  integrity sha512-Qo/rmRXiIadFWE8ZxF7SFe267Tq0UFZygPhUg6A0ku83ziRfNoZwWweOw+S7aRBd+KpoTFjPQrZ9TRy4Jl2R9A==
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
