@@ -1,8 +1,11 @@
 *
 dist/**/*.js
+!*.jsonc
+!*.js
 !scripts
 !src
 !src/*.js
+!src/loaders/
 !test
 !test/integration
 !test/integration/*.json
@@ -12,6 +15,7 @@ dist/**/*.js
 !test/integration/include/*.js
 !test/integration/node-path
 !test/integration/node-path/*.js
+!test/jsonc/
 !test/unit
 !test/unit/**
 !dist/

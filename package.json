@@ -63,6 +63,7 @@
     "isomorphic-unfetch": "^3.0.0",
     "jest": "^27.0.6",
     "jimp": "^0.16.1",
+    "jsonc":"^2.0.0",
     "jugglingdb": "2.0.1",
     "koa": "^2.6.2",
     "leveldown": "^6.0.0",

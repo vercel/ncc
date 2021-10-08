@@ -77,6 +77,12 @@ async function main() {
   );
   checkUnknownAssets('source-map-support/register', Object.keys(sourcemapAssets));
 
+  const { code: jsoncLoader, assets: jsoncLoaderAssets } = await ncc(
+    __dirname + "/../src/loaders/jsonc-loader",
+    { filename: "jsonc-loader.js", minify, cache, v8cache }
+  );
+  checkUnknownAssets('jsonc-loader', Object.keys(jsoncLoaderAssets));
+
   // detect unexpected asset emissions from core build
   function checkUnknownAssets (buildName, assets) {
     assets = assets.filter(name => !name.endsWith('.cache') && !name.endsWith('.cache.js') && !name.endsWith('LICENSES.txt') && name !== 'processChild.js' && name !== 'mappings.wasm');
@@ -94,6 +100,7 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache", shebangLoaderAssets["shebang-loader.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache", tsLoaderAssets["ts-loader.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/stringify-loader.js.cache", stringifyLoaderAssets["stringify-loader.js.cache"].source);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/jsonc-loader.js.cache", jsoncLoaderAssets["jsonc-loader.js.cache"].source);
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache.js", cliAssets["cli.js.cache.js"].source);
   writeFileSync(__dirname + "/../dist/ncc/index.js.cache.js", indexAssets["index.js.cache.js"].source);
@@ -102,6 +109,7 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache.js", shebangLoaderAssets["shebang-loader.js.cache.js"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js.cache.js", tsLoaderAssets["ts-loader.js.cache.js"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/stringify-loader.js.cache.js", stringifyLoaderAssets["stringify-loader.js.cache.js"].source);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/jsonc-loader.js.cache.js", jsoncLoaderAssets["jsonc-loader.js.cache.js"].source);
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli, { mode: 0o777 });
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
@@ -111,6 +119,7 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js", shebangLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/ts-loader.js", tsLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/stringify-loader.js", stringifyLoader);
+  writeFileSync(__dirname + "/../dist/ncc/loaders/jsonc-loader.js", jsoncLoader);
   writeFileSync(__dirname + "/../dist/ncc/loaders/uncacheable.js", readFileSync(__dirname + "/../src/loaders/uncacheable.js"));
   writeFileSync(__dirname + "/../dist/ncc/loaders/empty-loader.js", readFileSync(__dirname + "/../src/loaders/empty-loader.js"));
   writeFileSync(__dirname + "/../dist/ncc/loaders/notfound-loader.js", readFileSync(__dirname + "/../src/loaders/notfound-loader.js"));

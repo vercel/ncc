@@ -17,7 +17,7 @@ const { hasTypeModule } = require('./utils/has-type-module');
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
 
-const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
+const SUPPORTED_EXTENSIONS = [".js", ".json",".jsonc", ".node", ".mjs", ".ts", ".tsx"];
 
 const hashOf = name => {
   return crypto
@@ -312,6 +312,12 @@ function ncc (
           }]
         },
         {
+          test: /\.jsonc$/,
+          use: [{
+            loader: eval('__dirname + "/loaders/jsonc-loader.js"')
+          }]
+        },
+        {
           test: /\.(js|mjs|tsx?|node)$/,
           use: [{
             loader: eval('__dirname + "/loaders/empty-loader.js"')
@@ -350,7 +356,7 @@ function ncc (
         },
         {
           parser: { amd: false },
-          exclude: /\.(node|json)$/,
+          exclude: /\.(node|json|jsonc)$/,
           use: [{
             loader: eval('__dirname + "/loaders/shebang-loader.js"')
           }]
