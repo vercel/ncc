@@ -73,6 +73,7 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   --stats-out [file]       Emit webpack stats as json to the specified output file
   --target [es]            ECMAScript target to use for output (default: es2015)
                            Learn more: https://webpack.js.org/configuration/target
+  -d, --debug              Show debug logs
 ```
 
 ### Execution Testing
