@@ -160,6 +160,7 @@ function ncc (
   const externalMap = (() => {
     const regexps = [];
     const aliasMap = new Map();
+    const regexCache = new Map();
 
     function set(key, value) {
       if (key instanceof RegExp)
@@ -169,9 +170,27 @@ function ncc (
 
     function get(key) {
       if (aliasMap.has(key)) return aliasMap.get(key);
-
-      const matchedRegex = regexps.find(regex => regex.test(key));
-      return matchedRegex !== null ? aliasMap.get(matchedRegex) : null;
+      if (regexCache.has(key)) return regexCache.get(key);
+      
+      for (const regex of regexps) {
+        const matches = key.match(regex)
+        
+        if (matches) {
+          let result = aliasMap.get(regex)
+          
+          if (matches.length > 1) {
+            // allow using match from regex in result
+            // e.g. caniuse-lite(/.*) -> caniuse-lite$1
+            result = result.replace(/(\$\d)/g, (match) => {
+              const index = parseInt(match.substr(1), 10)
+              return matches[index] || match
+            })
+          }
+          regexCache.set(key, result)
+          return result
+        }
+      }
+      return null;
     }
 
     return { get, set };

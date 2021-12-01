@@ -1,6 +1,14 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 378:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("external-replace/replaced/some-file");
+
+/***/ }),
+
 /***/ 830:
 /***/ ((module) => {
 
@@ -60,10 +68,11 @@ var __webpack_exports__ = {};
 (() => {
 const external = __nccwpck_require__(830);
 const regexpExternal = __nccwpck_require__(958);
+const regexpExternalMatch = __nccwpck_require__(378)
 
 console.log(external);
 console.log(regexpExternal);
-
+console.log(regexpExternalMatch);
 
 })();
 
