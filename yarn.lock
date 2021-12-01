@@ -9842,9 +9842,9 @@ map-visit@^1.0.0:
     object-visit "^1.0.0"
 
 mariadb@^2.0.1-beta:
-  version "2.5.4"
-  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.4.tgz#c66daa35e2768b8c714c758453531c06ae4927f4"
-  integrity sha512-4vQgMRyBIN9EwSQG0vzjR9D8bscPH0dGPJt67qVlOkHSiSm0xUatg1Pft4o1LzORgeOW4PheiY/HBE9bYYmNCA==
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.5.tgz#a9aff9f1e57231a415a21254489439beb501c803"
+  integrity sha512-6dklvcKWuuaV1JjAwnE2ezR+jTt7JrZHftgeHHBmjB0wgfaUpdxol1DPWclwMcCrsO9yoM0FuCOiCcCgXc//9Q==
   dependencies:
     "@types/geojson" "^7946.0.7"
     "@types/node" "^14.14.28"
