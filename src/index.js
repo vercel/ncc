@@ -490,25 +490,25 @@ function ncc (
         // custom terser phase used over Webpack integration for this reason
         if (!result || result.code === undefined)
           throw null;
-        
+
         ({ code, map } = {
           code: result.code,
           map: map ? JSON.parse(result.map) : undefined
         });
       }
       catch (e) {
-        console.log('An error occurred while minifying. The result will not be minified.'); 
+        console.log('An error occurred while minifying. The result will not be minified.');
       }
+    }
+
+    if (map) {
+      assets[`${filename}.map`] = { source: JSON.stringify(map), permissions: defaultPermissions };
     }
 
     if (v8cache) {
       const { Script } = require('vm');
       assets[`${filename}.cache`] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
       assets[`${filename}.cache${ext}`] = { source: code, permissions: defaultPermissions };
-      if (map) {
-        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
-        map = undefined;
-      }
       const columnOffset = -'(function (exports, require, module, __filename, __dirname) { '.length;
       code =
         `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
