@@ -55,6 +55,9 @@ function ncc (
     license = '',
     target,
     production = true,
+    // webpack defaults to `module` and `main`, but that's
+    // not really what node.js supports, so we reset it
+    mainFields = ['main']
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -62,14 +65,14 @@ function ncc (
     v8cache = false;
 
   const cjsDeps = () => ({
-    mainFields: ["main"],
+    mainFields,
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
     conditionNames: ["require", "node", production ? "production" : "development"]
   });
   const esmDeps = () => ({
-    mainFields: ["main"],
+    mainFields,
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
@@ -310,9 +313,7 @@ function ncc (
         // for backward-compat: getResolve without dependencyType
         undefined: cjsDeps()
       },
-      // webpack defaults to `module` and `main`, but that's
-      // not really what node.js supports, so we reset it
-      mainFields: ["main"],
+      mainFields,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
