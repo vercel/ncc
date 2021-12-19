@@ -1,7 +1,7 @@
 # ncc
 
 [![CI Status](https://github.com/vercel/ncc/workflows/CI/badge.svg)](https://github.com/vercel/ncc/actions?workflow=CI)
-[![codecov](https://codecov.io/gh/vercel/ncc/branch/master/graph/badge.svg)](https://codecov.io/gh/vercel/ncc)
+[![codecov](https://codecov.io/gh/vercel/ncc/branch/main/graph/badge.svg)](https://codecov.io/gh/vercel/ncc)
 
 Simple CLI for compiling a Node.js module into a single file,
 together with all its dependencies, gcc-style.
@@ -38,6 +38,8 @@ Eg:
 $ ncc build input.js -o dist
 ```
 
+If building an `.mjs` or `.js` module inside a `"type": "module"` [package boundary](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#packages_package_json_and_file_extensions), an ES module output will be created automatically.
+
 Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
 > Note: If the input file is using a `.cjs` extension, then so will the corresponding output file.
@@ -55,18 +57,23 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
 
 #### Options:
 ```
-  -o, --out [file]         Output directory for build (defaults to dist)
+  -o, --out [dir]          Output directory for build (defaults to dist)
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
+  -a, --asset-builds       Build nested JS assets recursively, useful for
+                           when code is loaded as an asset eg for workers.
   --no-source-map-register Skip source-map-register source map support
   -e, --external [mod]     Skip bundling 'mod'. Can be used many times
   -q, --quiet              Disable build summaries / non-error outputs
   -w, --watch              Start a watched build
+  -t, --transpile-only     Use transpileOnly option with the ts-loader
   --v8-cache               Emit a build using the v8 compile cache
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
-  --target [es2015|es2020] Select ecmascript target to use for output
+  --target [es]            ECMAScript target to use for output (default: es2015)
+                           Learn more: https://webpack.js.org/configuration/target
+  -d, --debug              Show debug logs
 ```
 
 ### Execution Testing
@@ -111,6 +118,7 @@ require('@vercel/ncc')('/path/to/input', {
   filterAssetBase: process.cwd(), // default
   minify: false, // default
   sourceMap: false, // default
+  assetBuilds: false, // default
   sourceMapBasePrefix: '../', // default treats sources as output-relative
   // when outputting a sourcemap, automatically include
   // source-map-support in the output file (increases output by 32kB).

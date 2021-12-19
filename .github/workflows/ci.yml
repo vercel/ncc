@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-    - master
+    - main
     tags:
     - '!*'
   pull_request:
@@ -15,14 +15,20 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: [10, 12]
+        node: [12, 14]
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Cancel Previous Runs
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
+        cache: yarn
         node-version: ${{ matrix.node }}
+        check-latest: true
     - name: Print Node Version
       run: node --version
     - name: Install Dependencies
@@ -34,5 +40,5 @@ jobs:
     - name: Run Tests
       run: yarn test
     - name: Coverage
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 14 # only run once
       run: yarn test-coverage

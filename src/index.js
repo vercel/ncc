@@ -12,6 +12,7 @@ const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
+const { hasTypeModule } = require('./utils/has-type-module');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -36,13 +37,14 @@ function ncc (
   {
     cache,
     customEmit = undefined,
+    esm = entry.endsWith('.mjs') || !entry.endsWith('.cjs') && hasTypeModule(entry),
     externals = [],
-    filename = 'index' + (entry.endsWith('.cjs') ? '.cjs' : '.js'),
+    filename = 'index' + (!esm && entry.endsWith('.cjs') ? '.cjs' : esm && (entry.endsWith('.mjs') || !hasTypeModule(entry)) ? '.mjs' : '.js'),
     minify = false,
     sourceMap = false,
     sourceMapRegister = true,
     sourceMapBasePrefix = '../',
-    noAssetBuilds = false,
+    assetBuilds = false,
     watch = false,
     v8cache = false,
     filterAssetBase = process.cwd(),
@@ -52,24 +54,48 @@ function ncc (
     transpileOnly = false,
     license = '',
     target,
+    production = true,
+    // webpack defaults to `module` and `main`, but that's
+    // not really what node.js supports, so we reset it
+    mainFields = ['main']
   } = {}
 ) {
-  process.env.__NCC_OPTS = JSON.stringify({
-    quiet
+  // v8 cache not supported for ES modules
+  if (esm)
+    v8cache = false;
+
+  const cjsDeps = () => ({
+    mainFields,
+    extensions: SUPPORTED_EXTENSIONS,
+    exportsFields: ["exports"],
+    importsFields: ["imports"],
+    conditionNames: ["require", "node", production ? "production" : "development"]
   });
+  const esmDeps = () => ({
+    mainFields,
+    extensions: SUPPORTED_EXTENSIONS,
+    exportsFields: ["exports"],
+    importsFields: ["imports"],
+    conditionNames: ["import", "node", production ? "production": "development"]
+  });
+
   const ext = extname(filename);
 
   if (!quiet) {
     console.log(`ncc: Version ${nccVersion}`);
-    console.log(`ncc: Compiling file ${filename}`);
+    console.log(`ncc: Compiling file ${filename} into ${esm ? 'ESM' : 'CJS'}`);
   }
 
   if (target && !target.startsWith('es')) {
-    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es5`)
+    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es2015`)
   }
 
   const resolvedEntry = resolve.sync(entry);
-  process.env.TYPESCRIPT_LOOKUP_PATH = resolvedEntry;
+  process.env.__NCC_OPTS = JSON.stringify({
+    quiet,
+    typescriptLookupPath: resolvedEntry,
+  });
+
   const shebangMatch = fs.readFileSync(resolvedEntry).toString().match(shebangRegEx);
   const mfs = new MemoryFS();
 
@@ -86,10 +112,14 @@ function ncc (
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
-  let fullTsconfig;
+  let fullTsconfig = {};
   try {
-    const tsconfig = tsconfigPaths.loadConfig();
-    fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath) || {
+    const configFileAbsolutePath = walkParentDirs({
+      base: process.cwd(),
+      start: dirname(entry),
+      filename: 'tsconfig.json',
+    });
+    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
       compilerOptions: {}
     };
 
@@ -130,12 +160,49 @@ function ncc (
     }
   });
 
-  const externalMap = new Map();
+  const externalMap = (() => {
+    const regexps = [];
+    const aliasMap = new Map();
+    const regexCache = new Map();
+
+    function set(key, value) {
+      if (key instanceof RegExp)
+        regexps.push(key);
+      aliasMap.set(key, value);
+    }
+
+    function get(key) {
+      if (aliasMap.has(key)) return aliasMap.get(key);
+      if (regexCache.has(key)) return regexCache.get(key);
+      
+      for (const regex of regexps) {
+        const matches = key.match(regex)
+        
+        if (matches) {
+          let result = aliasMap.get(regex)
+          
+          if (matches.length > 1) {
+            // allow using match from regex in result
+            // e.g. caniuse-lite(/.*) -> caniuse-lite$1
+            result = result.replace(/(\$\d)/g, (match) => {
+              const index = parseInt(match.substr(1), 10)
+              return matches[index] || match
+            })
+          }
+          regexCache.set(key, result)
+          return result
+        }
+      }
+      return null;
+    }
+
+    return { get, set };
+  })();
 
   if (Array.isArray(externals))
     externals.forEach(external => externalMap.set(external, external));
   else if (typeof externals === 'object')
-    Object.keys(externals).forEach(external => externalMap.set(external, externals[external]));
+    Object.keys(externals).forEach(external => externalMap.set(external[0] === '/' && external[external.length - 1] === '/' ? new RegExp(external.slice(1, -1)) : external, externals[external]));
 
   let watcher, watchHandler, rebuildHandler;
 
@@ -192,7 +259,15 @@ function ncc (
       name: `ncc_${hashOf(entry)}`,
       version: nccVersion
     },
+    snapshot: {
+      managedPaths: [],
+      module: { hash: true }
+    },
     amd: false,
+    experiments: {
+      topLevelAwait: true,
+      outputModule: esm
+    },
     optimization: {
       nodeEnv: false,
       minimize: false,
@@ -205,7 +280,7 @@ function ncc (
     },
     devtool: sourceMap ? "cheap-module-source-map" : false,
     mode: "production",
-    target: target ? ["node", target] : "node",
+    target: target ? ["node14", target] : "node14",
     stats: {
       logging: 'error'
     },
@@ -216,20 +291,36 @@ function ncc (
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
       filename: ext === '.cjs' ? filename + '.js' : filename,
-      libraryTarget: "commonjs2",
-      strictModuleExceptionHandling: true
+      libraryTarget: esm ? 'module' : 'commonjs2',
+      strictModuleExceptionHandling: true,
+      module: esm
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
-      // webpack defaults to `module` and `main`, but that's
-      // not really what node.js supports, so we reset it
-      mainFields: ["main"],
+      exportsFields: ["exports"],
+      importsFields: ["imports"],
+      byDependency: {
+        wasm: esmDeps(),
+        esm: esmDeps(),
+        url: { preferRelative: true },
+        worker: { ...esmDeps(), preferRelative: true },
+        commonjs: cjsDeps(),
+        amd: cjsDeps(),
+        // for backward-compat: loadModule
+        loader: cjsDeps(),
+        // for backward-compat: Custom Dependency
+        unknown: cjsDeps(),
+        // for backward-compat: getResolve without dependencyType
+        undefined: cjsDeps()
+      },
+      mainFields,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals: async ({ context, request }, callback) => {
-      if (externalMap.has(request)) return callback(null, `commonjs ${externalMap.get(request)}`);
+    externals ({ context, request, dependencyType }, callback) {
+      const external = externalMap.get(request);
+      if (external) return callback(null, `${dependencyType === 'esm' && esm ? 'module' : 'node-commonjs'} ${external}`);
       return callback();
     },
     module: {
@@ -267,8 +358,12 @@ function ncc (
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
-                outDir: '//',
-                noEmit: false
+                module: 'esnext',
+                target: 'esnext',
+                ...fullTsconfig.compilerOptions,
+                allowSyntheticDefaultImports: true,
+                noEmit: false,
+                outDir: '//'
               }
             }
           }]
@@ -292,7 +387,7 @@ function ncc (
         compiler.close(err => {
           if (err) return reject(err);
           if (stats.hasErrors()) {
-            const errLog = stats.compilation.errors.map(err => err.message).join('\n');
+            const errLog = [...stats.compilation.errors].map(err => err.message).join('\n');
             return reject(new Error(errLog));
           }
           resolve(stats);
@@ -396,35 +491,44 @@ function ncc (
     }
 
     if (minify) {
-      const result = terser.minify(code, {
-        compress: false,
-        mangle: {
-          keep_classnames: true,
-          keep_fnames: true
-        },
-        sourceMap: sourceMap ? {
-          content: map,
-          filename,
-          url: `${filename}.map`
-        } : false
-      });
-      // For some reason, auth0 returns "undefined"!
-      // custom terser phase used over Webpack integration for this reason
-      if (result.code !== undefined)
+      let result;
+      try {
+        result = await terser.minify(code, {
+          module: esm,
+          compress: false,
+          mangle: {
+            keep_classnames: true,
+            keep_fnames: true
+          },
+          sourceMap: map ? {
+            content: map,
+            filename,
+            url: `${filename}.map`
+          } : false
+        });
+        // For some reason, auth0 returns "undefined"!
+        // custom terser phase used over Webpack integration for this reason
+        if (!result || result.code === undefined)
+          throw null;
+
         ({ code, map } = {
           code: result.code,
-          map: sourceMap ? JSON.parse(result.map) : undefined
+          map: map ? JSON.parse(result.map) : undefined
         });
+      }
+      catch (e) {
+        console.log('An error occurred while minifying. The result will not be minified.');
+      }
+    }
+
+    if (map) {
+      assets[`${filename}.map`] = { source: JSON.stringify(map), permissions: defaultPermissions };
     }
 
     if (v8cache) {
       const { Script } = require('vm');
       assets[`${filename}.cache`] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
       assets[`${filename}.cache${ext}`] = { source: code, permissions: defaultPermissions };
-      if (map) {
-        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
-        map = undefined;
-      }
       const columnOffset = -'(function (exports, require, module, __filename, __dirname) { '.length;
       code =
         `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
@@ -437,9 +541,20 @@ function ncc (
         `if (cachedData) process.on('exit', () => { try { writeFileSync(basename + '.cache', script.createCachedData()); } catch(e) {} });\n`;
     }
 
-    if (sourceMap && sourceMapRegister) {
-      code = `require('./sourcemap-register${ext}');` + code;
-      assets[`sourcemap-register${ext}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+    if (map && sourceMapRegister) {
+      const registerExt = esm ? '.cjs' : ext;
+      code = (esm ? `import './sourcemap-register${registerExt}';` : `require('./sourcemap-register${registerExt}');`) + code;
+      assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+    }
+
+    if (esm && !filename.endsWith('.mjs')) {
+      // always output a "type": "module" package JSON for esm builds
+      const baseDir = dirname(filename);
+      const pjsonPath = (baseDir === '.' ? '' : baseDir) + 'package.json';
+      if (assets[pjsonPath])
+        assets[pjsonPath].source = JSON.stringify(Object.assign(JSON.parse(assets[pjsonPath].source.toString()), { type: 'module' }));
+      else
+        assets[pjsonPath] = { source: JSON.stringify({ type: 'module' }, null, 2) + '\n', permissions: defaultPermissions };
     }
 
     if (shebangMatch) {
@@ -452,11 +567,25 @@ function ncc (
     // __webpack_require__ can conflict with webpack injections in module scopes
     // to avoid this without recomputing the source map we replace it with an
     // identical length identifier
-    if (code.indexOf('"__webpack_require__"') === -1)
+    if (code.indexOf('"__webpack_require__"') === -1) {
+      // dedupe any existing __nccwpck_require__ first
+      if (code.indexOf('__nccwpck_require2_') !== -1) {
+        // nth level nesting (we support 9 levels apparently)
+        for (let i = 9; i > 1; i--) {
+          if (code.indexOf(`__nccwpck_require${i}_`) === -1)
+            continue;
+          if (i === 9)
+            throw new Error('9 levels of ncc build nesting reached, please post an issue to support this level of ncc build composition.');
+          code = code.replace(new RegExp(`__nccwpck_require${i}_`, 'g'), `__nccwpck_require${i + 1}_`);
+        }
+      }
+      if (code.indexOf('__nccwpck_require__') !== -1)
+        code = code.replace(/__nccwpck_require__/g, '__nccwpck_require2_');
       code = code.replace(/__webpack_require__/g, '__nccwpck_require__');
+    }
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
-    if (!noAssetBuilds) {
+    if (assetBuilds) {
       const compilation = compilationStack[compilationStack.length - 1];
       let existingAssetNames = Object.keys(assets);
       existingAssetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
@@ -487,7 +616,7 @@ function ncc (
           sourceMapBasePrefix,
           // dont recursively asset build
           // could be supported with seen tracking
-          noAssetBuilds: true,
+          assetBuilds: false,
           v8cache,
           filterAssetBase,
           existingAssetNames,
@@ -537,4 +666,26 @@ function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
       };
     }
   }
+}
+
+// Adapted from https://github.com/vercel/vercel/blob/18bec983aefbe2a77bd14eda6fca59ff7e956d8b/packages/build-utils/src/fs/run-user-scripts.ts#L289-L310
+function walkParentDirs({
+  base,
+  start,
+  filename,
+}) {
+  let parent = '';
+
+  for (let current = start; base.length <= current.length; current = parent) {
+    const fullPath = join(current, filename);
+
+    // eslint-disable-next-line no-await-in-loop
+    if (fs.existsSync(fullPath)) {
+      return fullPath;
+    }
+
+    parent = dirname(current);
+  }
+
+  return null;
 }

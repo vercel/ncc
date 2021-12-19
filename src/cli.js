@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep, extname } = require("path");
+const { resolve, relative, dirname, sep } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
 const crypto = require("crypto");
 const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
+const { hasTypeModule } = require('./utils/has-type-module');
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
@@ -35,7 +36,9 @@ Options:
   --v8-cache               Emit a build using the v8 compile cache
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
-  --target                  What build target to use for webpack (default: es6)
+  --target [es]            ECMAScript target to use for output (default: es2015)
+                           Learn more: https://webpack.js.org/configuration/target
+  -d, --debug              Show debug logs
 `;
 
 // support an API mode for CLI testing
@@ -126,6 +129,8 @@ async function runCmd (argv, stdout, stderr) {
   let args;
   try {
     args = require("arg")({
+      "--asset-builds": Boolean,
+      '-a': '--asset-builds',
       "--debug": Boolean,
       "-d": "--debug",
       "--external": [String],
@@ -217,6 +222,7 @@ async function runCmd (argv, stdout, stderr) {
       );
       if (existsSync(outDir))
         rimraf.sync(outDir);
+      mkdirp.sync(outDir);
       run = true;
 
     // fallthrough
@@ -227,7 +233,8 @@ async function runCmd (argv, stdout, stderr) {
       let startTime = Date.now();
       let ps;
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
-      const ext = buildFile.endsWith('.cjs') ? '.cjs' : '.js';
+      const esm = buildFile.endsWith('.mjs') || !buildFile.endsWith('.cjs') && hasTypeModule(buildFile);
+      const ext = buildFile.endsWith('.cjs') ? '.cjs' : esm && (buildFile.endsWith('.mjs') || !hasTypeModule(buildFile)) ? '.mjs' : '.js';
       const ncc = require("./index.js")(
         buildFile,
         {
@@ -236,7 +243,7 @@ async function runCmd (argv, stdout, stderr) {
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
-          noAssetBuilds: args["--no-asset-builds"] ? true : false,
+          assetBuilds: args["--asset-builds"] ? true : false,
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
           v8cache: args["--v8-cache"],

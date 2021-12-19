@@ -1,6 +1,18 @@
 [
   {
+    args: ["run", "test/fixtures/ts-interop/interop.ts"],
+    expect: { code: 0 }
+  },
+  {
+    args: ["run", "test/fixtures/interop-test.mjs"],
+    expect: { code: 0 }
+  },
+  {
     args: ["run", "test/integration/test.ts"],
+    expect: { code: 0 }
+  },
+  {
+    args: ["build", "test/fixtures/type-module/main.js", "-a", "-o", "tmp"],
     expect: { code: 0 }
   },
   {
@@ -10,7 +22,7 @@
     }
   },
   {
-    args: ["run", "--v8-cache", "test/integration/test.ts"],
+    args: ["run", "--v8-cache", "-a", "test/integration/test.ts"],
     expect: { code: 0 }
   },
   {
@@ -32,7 +44,7 @@
     }
   },
   {
-    args: ["run", "--watch", "test/integration/test.ts"],
+    args: ["run", "--watch", "-a", "test/integration/test.ts"],
     expect: { code: 2 }
   },
   {
@@ -65,7 +77,7 @@
   {
     args: ["build", "-o", "tmp", "test/fixtures/test.mjs"],
     expect (code, stdout, stderr) {
-      return stdout.toString().indexOf('tmp/index.js') !== -1;
+      return stdout.toString().indexOf('tmp/index.mjs') !== -1;
     }
   },
   {
@@ -85,6 +97,22 @@
     expect (code, stdout) {
       stdout = stdout.toString().replace(/[\r\n\s]/g, '').trim();
       return stdout.length === 0;
+    }
+  },
+  {
+    args: ["build", "test/integration/test.ts"],
+    env: {
+      TYPESCRIPT_LOOKUP_PATH: '/tmp/nowhere'
+    },
+    expect (code, stdout) { 
+      return code === 0 && stdout.indexOf('ncc built-in') !== -1;
+    },
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/module.cjs"],
+    expect (code, stdout) {
+      const fs = require('fs');
+      return code === 0 && fs.readFileSync('tmp/index.js', 'utf8').toString().indexOf('export {') === -1;
     }
   }
 ]
