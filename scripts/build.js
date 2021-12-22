@@ -69,7 +69,7 @@ async function main() {
     __dirname + "/../src/loaders/stringify-loader",
     { filename: "stringify-loader.js", minify, cache, v8cache }
   );
-  checkUnknownAssets('stringify-loader', Object.keys(stringifyLoader));
+  checkUnknownAssets('stringify-loader', Object.keys(stringifyLoaderAssets));
 
   const { code: sourcemapSupport, assets: sourcemapAssets } = await ncc(
     require.resolve("source-map-support/register"),
