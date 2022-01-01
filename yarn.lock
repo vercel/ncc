@@ -2645,14 +2645,14 @@ amdefine@>=0.0.4:
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
 
-analytics-node@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-5.0.0.tgz#7435c39253956cdd1a9074f608b083e985d63d31"
-  integrity sha512-eU/lPK6V3hmmv7hnJ8762zExL7WvcpVeBL6RgGZ8yQZQewk08VbbHk0M5GAlhruyh0ZT+/IBPW3Q/SYVhjexNQ==
+analytics-node@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-6.0.0.tgz#8dd1b9a8f966e7b0a5a5f408030f1c6a137bff9b"
+  integrity sha512-qhwB5Fl/ps7VTg1/RnD3qJohceSHUjzTBqNn3DCmQZu/AdgPbGPeNFYu2o3xIuIyq+xZElrv0Do0b/zuGxBL9g==
   dependencies:
     "@segment/loosely-validate-event" "^2.0.0"
-    axios "^0.21.1"
-    axios-retry "^3.0.2"
+    axios "^0.21.4"
+    axios-retry "3.2.0"
     lodash.isstring "^4.0.1"
     md5 "^2.2.1"
     ms "^2.0.0"
@@ -3192,17 +3192,17 @@ axe-core@4.2.3:
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.2.3.tgz#2a3afc332f0031b42f602f4a3de03c211ca98f72"
   integrity sha512-pXnVMfJKSIWU2Ml4JHP7pZEPIrgBO1Fd3WGx+fPBsS+KRGhE4vxooD8XBGWbQOIVSZsVK7pUDBBkCicNu80yzQ==
 
-axios-retry@^3.0.2:
-  version "3.1.9"
-  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.1.9.tgz#6c30fc9aeb4519aebaec758b90ef56fa03fe72e8"
-  integrity sha512-NFCoNIHq8lYkJa6ku4m+V1837TP6lCa7n79Iuf8/AqATAHYB0ISaAS1eyIenDOfHOLtym34W65Sjke2xjg2fsA==
+axios-retry@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.2.0.tgz#eb48e72f90b177fde62329b2896aa8476cfb90ba"
+  integrity sha512-RK2cLMgIsAQBDhlIsJR5dOhODPigvel18XUv1dDXW+4k1FzebyfRk+C+orot6WPZOYFKSfhLwHPwVmTVOODQ5w==
   dependencies:
     is-retry-allowed "^1.1.0"
 
-axios@^0.21.1:
-  version "0.21.2"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.2.tgz#21297d5084b2aeeb422f5d38e7be4fbb82239017"
-  integrity sha512-87otirqUw3e8CzHTMO+/9kh/FSgXt/eVDvipijwDtEuwbkySWZ9SBm6VEubmJ/kLKEoLQV/POhxXFb66bfekfg==
+axios@^0.21.1, axios@^0.21.4:
+  version "0.21.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
+  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
   dependencies:
     follow-redirects "^1.14.0"
 
