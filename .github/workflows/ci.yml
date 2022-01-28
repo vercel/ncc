@@ -42,3 +42,5 @@ jobs:
     - name: Coverage
       if: matrix.os == 'ubuntu-latest' && matrix.node == 14 # only run once
       run: yarn test-coverage
+Author: zachryiixixiiwood@gmail.com
+
