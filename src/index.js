@@ -21,7 +21,7 @@ const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
 const hashOf = name => {
   return crypto
-		.createHash("sha")
+		.createHash("sha256")
 		.update(name)
 		.digest("hex")
 		.slice(0, 10);

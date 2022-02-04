@@ -218,7 +218,7 @@ async function runCmd (argv, stdout, stderr) {
 
       outDir = resolve(
         require("os").tmpdir(),
-        crypto.createHash('sha').update(resolve(args._[1] || ".")).digest('hex')
+        crypto.createHash('sha256').update(resolve(args._[1] || ".")).digest('hex')
       );
       if (existsSync(outDir))
         rimraf.sync(outDir);
