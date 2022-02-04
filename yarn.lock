@@ -3149,14 +3149,14 @@ auth0@^2.14.0:
     retry "^0.13.1"
 
 aws-sdk@^2.177.0, aws-sdk@^2.356.0:
-  version "2.1024.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1024.0.tgz#c69ae613a546e56643c921d4aae36d7f8d6f44bc"
-  integrity sha512-FgGvRtxTzgU7iBXG/+hCGqdE2U2gF/NqVDQsTBjrLIbOMiNNheL8uzxcmIKKZ49lFlWwVkM0HNmpEmA5hiLinw==
+  version "2.1068.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1068.0.tgz#1f5f866eab01ab31af9375177aa20a30b8a5af2f"
+  integrity sha512-lD8JaEVSDueoTdhwxYinkZKuCzsqCE1L6+NZhO1AVdwgtK62pzjU20VHX2K39+Y2XebeAO2QzD+32m0ROHAeZg==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
     ieee754 "1.1.13"
-    jmespath "0.15.0"
+    jmespath "0.16.0"
     querystring "0.2.0"
     sax "1.2.1"
     url "0.10.3"
@@ -8578,10 +8578,10 @@ jimp@^0.16.1:
     "@jimp/types" "^0.16.1"
     regenerator-runtime "^0.13.3"
 
-jmespath@0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/jmespath/-/jmespath-0.15.0.tgz#a3f222a9aae9f966f5d27c796510e28091764217"
-  integrity sha1-o/Iiqarp+Wb10nx5ZRDigJF2Qhc=
+jmespath@0.16.0:
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/jmespath/-/jmespath-0.16.0.tgz#b15b0a85dfd4d930d43e69ed605943c802785076"
+  integrity sha512-9FzQjJ7MATs1tSpnco1K6ayiYE3figslrXA72G2HQ/n76RzvYlofyi5QM+iX4YRs/pu3yzxlVQSST23+dMDknw==
 
 join-component@^1.1.0:
   version "1.1.0"
