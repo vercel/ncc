@@ -21,7 +21,7 @@ const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
 const hashOf = name => {
   return crypto
-		.createHash("md4")
+		.createHash("sha256")
 		.update(name)
 		.digest("hex")
 		.slice(0, 10);
@@ -174,13 +174,13 @@ function ncc (
     function get(key) {
       if (aliasMap.has(key)) return aliasMap.get(key);
       if (regexCache.has(key)) return regexCache.get(key);
-      
+
       for (const regex of regexps) {
         const matches = key.match(regex)
-        
+
         if (matches) {
           let result = aliasMap.get(regex)
-          
+
           if (matches.length > 1) {
             // allow using match from regex in result
             // e.g. caniuse-lite(/.*) -> caniuse-lite$1
