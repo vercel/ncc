@@ -65,7 +65,7 @@
     "jugglingdb": "2.0.1",
     "koa": "^2.6.2",
     "leveldown": "^6.0.0",
-    "license-webpack-plugin": "4.0.1",
+    "license-webpack-plugin": "^4.0.2",
     "lighthouse": "^8.1.0",
     "loopback": "^3.24.0",
     "mailgun": "^0.5.0",
@@ -108,7 +108,7 @@
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
-    "webpack": "5.62.1",
+    "webpack": "^5.68.0",
     "when": "^3.7.8"
   },
   "resolutions": {
