@@ -65,7 +65,7 @@
     "jugglingdb": "2.0.1",
     "koa": "^2.6.2",
     "leveldown": "^6.0.0",
-    "license-webpack-plugin": "4.0.1",
+    "license-webpack-plugin": "^4.0.2",
     "lighthouse": "^8.1.0",
     "loopback": "^3.24.0",
     "mailgun": "^0.5.0",
