@@ -3197,6 +3197,13 @@ axios@^0.21.1, axios@^0.21.4:
   dependencies:
     follow-redirects "^1.14.0"
 
+axios@^0.25.0:
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.25.0.tgz#349cfbb31331a9b4453190791760a8d35b093e0a"
+  integrity sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==
+  dependencies:
+    follow-redirects "^1.14.7"
+
 azure-storage@^2.10.2:
   version "2.10.4"
   resolved "https://registry.yarnpkg.com/azure-storage/-/azure-storage-2.10.4.tgz#c481d207eabc05f57f019b209f7faa8737435104"
@@ -6258,6 +6265,11 @@ follow-redirects@^1.14.0:
   version "1.14.8"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.8.tgz#016996fb9a11a100566398b1c6839337d7bfa8fc"
   integrity sha512-1x0S9UVJHsQprFcEC/qnNzBLcIxsjAV905f/UkQxbclCsoTWlacCNOpQa/anodLl2uaEKFhfWOvM2Qg77+15zA==
+
+follow-redirects@^1.14.7:
+  version "1.14.9"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.9.tgz#dd4ea157de7bfaf9ea9b3fbd85aa16951f78d8d7"
+  integrity sha512-MQDfihBQYMcyy5dhRDJUHcw7lb2Pv/TuE6xP1vyraLukNDHKbDxDNaOE3NbCAdKQApno+GPRyo1YAp89yCjK4w==
 
 fontkit@^1.7.7, fontkit@^1.8.1:
   version "1.8.1"
@@ -14585,11 +14597,11 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
 twilio@^3.23.2:
-  version "3.66.1"
-  resolved "https://registry.yarnpkg.com/twilio/-/twilio-3.66.1.tgz#8435441ca45b0c7cb3761c4ba3011ca32e75ba69"
-  integrity sha512-BmIgfx2VuS7tj4IscBhyEj7CdmtfIaaJ1IuNeGoJFYBx5xikpuwkR0Ceo5CNtK5jnN3SCKmxHxToec/MYEXl0A==
+  version "3.75.0"
+  resolved "https://registry.yarnpkg.com/twilio/-/twilio-3.75.0.tgz#1782267a2614b8891d8e626b1ff8fae06925def0"
+  integrity sha512-SpBWzxNrqU6lONILdpRyq2otlwpnQhzOE9Gnp/ZruPrncM2GWysTHPxk08RmEsShNsG7UxOQbdsRaIZq2fuPjw==
   dependencies:
-    axios "^0.21.1"
+    axios "^0.25.0"
     dayjs "^1.8.29"
     https-proxy-agent "^5.0.0"
     jsonwebtoken "^8.5.1"
@@ -14598,7 +14610,7 @@ twilio@^3.23.2:
     qs "^6.9.4"
     rootpath "^0.1.2"
     scmp "^2.1.0"
-    url-parse "^1.5.0"
+    url-parse "^1.5.6"
     xmlbuilder "^13.0.2"
 
 type-check@~0.3.2:
@@ -14952,7 +14964,7 @@ url-parse-lax@^3.0.0:
   dependencies:
     prepend-http "^2.0.0"
 
-url-parse@^1.5.0:
+url-parse@^1.5.6:
   version "1.5.10"
   resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.10.tgz#9d3c2f736c1d75dd3bd2be507dcc111f1e2ea9c1"
   integrity sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==
