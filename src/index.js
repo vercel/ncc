@@ -5,8 +5,7 @@ const { join, dirname, extname, relative, resolve: pathResolve } = require("path
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
-const tsconfigPaths = require("tsconfig-paths");
-const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
+const JSON5 = require("json5");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
@@ -112,26 +111,22 @@ function ncc (
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
-  let fullTsconfig = {};
+  let compilerOptions = {}
   try {
-    const configFileAbsolutePath = walkParentDirs({
-      base: process.cwd(),
-      start: dirname(entry),
-      filename: 'tsconfig.json',
-    });
-    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
-      compilerOptions: {}
-    };
-
-    const tsconfigPathsOptions = { silent: true }
-    if (fullTsconfig.compilerOptions.allowJs) {
-      tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
+    const configPath = join(process.cwd(), 'tsconfig.json');
+    const contents = fs.readFileSync(configPath, 'utf8')
+    const tsconfig = JSON5.parse(contents);
+    if (tsconfig && tsconfig.compilerOptions) {
+      compilerOptions = tsconfig.compilerOptions;
     }
-    resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
-
-    if (tsconfig.resultType === "success") {
-      tsconfigMatchPath = tsconfigPaths.createMatchPath(tsconfig.absoluteBaseUrl, tsconfig.paths);
+    const opts = {
+      silent: true,
+      configFile: configPath,
+      extensions: compilerOptions.allowJs
+        ? SUPPORTED_EXTENSIONS
+        : SUPPORTED_EXTENSIONS.filter(ext => ext !== '.js')
     }
+    resolvePlugins.push(new TsconfigPathsPlugin(opts));
   } catch (e) {}
 
   resolvePlugins.push({
@@ -358,10 +353,10 @@ function ncc (
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
+                allowSyntheticDefaultImports: true,
                 module: 'esnext',
                 target: 'esnext',
-                ...fullTsconfig.compilerOptions,
-                allowSyntheticDefaultImports: true,
+                ...compilerOptions,
                 noEmit: false,
                 outDir: '//'
               }
@@ -451,7 +446,7 @@ function ncc (
 
   async function finalizeHandler (stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, fullTsconfig);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, compilerOptions);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -645,17 +640,17 @@ function ncc (
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetMeta, compilerOptions, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     let curPath = `${curBase}/${path}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfig, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, compilerOptions, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.substr(1)) || {};
       if(curPath.endsWith(".d.ts")) {
-        const outDir = tsconfig.compilerOptions.outDir ? pathResolve(tsconfig.compilerOptions.outDir) : pathResolve('dist');
+        const outDir = compilerOptions.outDir ? pathResolve(compilerOptions.outDir) : pathResolve('dist');
         curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "")
