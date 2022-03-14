@@ -1,7 +1,15 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 306:
+/***/ 378:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("external-replace/replaced/some-file");
+
+/***/ }),
+
+/***/ 830:
 /***/ ((module) => {
 
 "use strict";
@@ -9,7 +17,7 @@ module.exports = require("externalmapped");
 
 /***/ }),
 
-/***/ 196:
+/***/ 958:
 /***/ ((module) => {
 
 "use strict";
@@ -58,12 +66,13 @@ module.exports = require("regexexternal");
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-const external = __nccwpck_require__(306);
-const regexpExternal = __nccwpck_require__(196);
+const external = __nccwpck_require__(830);
+const regexpExternal = __nccwpck_require__(958);
+const regexpExternalMatch = __nccwpck_require__(378)
 
 console.log(external);
 console.log(regexpExternal);
-
+console.log(regexpExternalMatch);
 
 })();
 

@@ -9,7 +9,7 @@ export default () => {
       if (body.status != "success") {
         return reject(new Error("Bad api response: " + JSON.stringify(body)));
       }
-      resolve();
+      resolve('asdf');
     });
   });
 };

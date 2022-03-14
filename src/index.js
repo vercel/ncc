@@ -21,7 +21,7 @@ const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
 const hashOf = name => {
   return crypto
-		.createHash("md4")
+		.createHash("sha256")
 		.update(name)
 		.digest("hex")
 		.slice(0, 10);
@@ -44,7 +44,7 @@ function ncc (
     sourceMap = false,
     sourceMapRegister = true,
     sourceMapBasePrefix = '../',
-    noAssetBuilds = false,
+    assetBuilds = false,
     watch = false,
     v8cache = false,
     filterAssetBase = process.cwd(),
@@ -55,6 +55,9 @@ function ncc (
     license = '',
     target,
     production = true,
+    // webpack defaults to `module` and `main`, but that's
+    // not really what node.js supports, so we reset it
+    mainFields = ['main']
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -62,14 +65,14 @@ function ncc (
     v8cache = false;
 
   const cjsDeps = () => ({
-    mainFields: ["main"],
+    mainFields,
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
     conditionNames: ["require", "node", production ? "production" : "development"]
   });
   const esmDeps = () => ({
-    mainFields: ["main"],
+    mainFields,
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
@@ -109,10 +112,14 @@ function ncc (
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
-  let fullTsconfig;
+  let fullTsconfig = {};
   try {
-    const tsconfig = tsconfigPaths.loadConfig();
-    fullTsconfig = loadTsconfig(tsconfig.configFileAbsolutePath) || {
+    const configFileAbsolutePath = walkParentDirs({
+      base: process.cwd(),
+      start: dirname(entry),
+      filename: 'tsconfig.json',
+    });
+    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
       compilerOptions: {}
     };
 
@@ -156,6 +163,7 @@ function ncc (
   const externalMap = (() => {
     const regexps = [];
     const aliasMap = new Map();
+    const regexCache = new Map();
 
     function set(key, value) {
       if (key instanceof RegExp)
@@ -165,9 +173,27 @@ function ncc (
 
     function get(key) {
       if (aliasMap.has(key)) return aliasMap.get(key);
+      if (regexCache.has(key)) return regexCache.get(key);
 
-      const matchedRegex = regexps.find(regex => regex.test(key));
-      return matchedRegex !== null ? aliasMap.get(matchedRegex) : null;
+      for (const regex of regexps) {
+        const matches = key.match(regex)
+
+        if (matches) {
+          let result = aliasMap.get(regex)
+
+          if (matches.length > 1) {
+            // allow using match from regex in result
+            // e.g. caniuse-lite(/.*) -> caniuse-lite$1
+            result = result.replace(/(\$\d)/g, (match) => {
+              const index = parseInt(match.substr(1), 10)
+              return matches[index] || match
+            })
+          }
+          regexCache.set(key, result)
+          return result
+        }
+      }
+      return null;
     }
 
     return { get, set };
@@ -287,9 +313,7 @@ function ncc (
         // for backward-compat: getResolve without dependencyType
         undefined: cjsDeps()
       },
-      // webpack defaults to `module` and `main`, but that's
-      // not really what node.js supports, so we reset it
-      mainFields: ["main"],
+      mainFields,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
@@ -334,15 +358,12 @@ function ncc (
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
-                allowSyntheticDefaultImports: true,
                 module: 'esnext',
-                outDir: '//',
-                ...(fullTsconfig &&
-                  fullTsconfig.compilerOptions &&
-                  fullTsconfig.compilerOptions.incremental
-                    ? { incremental: false }
-                    : {}),
-                noEmit: false
+                target: 'esnext',
+                ...fullTsconfig.compilerOptions,
+                allowSyntheticDefaultImports: true,
+                noEmit: false,
+                outDir: '//'
               }
             }
           }]
@@ -489,25 +510,25 @@ function ncc (
         // custom terser phase used over Webpack integration for this reason
         if (!result || result.code === undefined)
           throw null;
-        
+
         ({ code, map } = {
           code: result.code,
           map: map ? JSON.parse(result.map) : undefined
         });
       }
       catch (e) {
-        console.log('An error occurred while minifying. The result will not be minified.'); 
+        console.log('An error occurred while minifying. The result will not be minified.');
       }
+    }
+
+    if (map) {
+      assets[`${filename}.map`] = { source: JSON.stringify(map), permissions: defaultPermissions };
     }
 
     if (v8cache) {
       const { Script } = require('vm');
       assets[`${filename}.cache`] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
       assets[`${filename}.cache${ext}`] = { source: code, permissions: defaultPermissions };
-      if (map) {
-        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
-        map = undefined;
-      }
       const columnOffset = -'(function (exports, require, module, __filename, __dirname) { '.length;
       code =
         `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
@@ -564,7 +585,7 @@ function ncc (
     }
 
     // for each .js / .mjs / .cjs file in the asset list, build that file with ncc itself
-    if (!noAssetBuilds) {
+    if (assetBuilds) {
       const compilation = compilationStack[compilationStack.length - 1];
       let existingAssetNames = Object.keys(assets);
       existingAssetNames.push(`${filename}${ext === '.cjs' ? '.js' : ''}`);
@@ -595,7 +616,7 @@ function ncc (
           sourceMapBasePrefix,
           // dont recursively asset build
           // could be supported with seen tracking
-          noAssetBuilds: true,
+          assetBuilds: false,
           v8cache,
           filterAssetBase,
           existingAssetNames,
@@ -645,4 +666,26 @@ function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
       };
     }
   }
+}
+
+// Adapted from https://github.com/vercel/vercel/blob/18bec983aefbe2a77bd14eda6fca59ff7e956d8b/packages/build-utils/src/fs/run-user-scripts.ts#L289-L310
+function walkParentDirs({
+  base,
+  start,
+  filename,
+}) {
+  let parent = '';
+
+  for (let current = start; base.length <= current.length; current = parent) {
+    const fullPath = join(current, filename);
+
+    // eslint-disable-next-line no-await-in-loop
+    if (fs.existsSync(fullPath)) {
+      return fullPath;
+    }
+
+    parent = dirname(current);
+  }
+
+  return null;
 }

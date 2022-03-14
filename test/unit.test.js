@@ -34,6 +34,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     // find the name of the input file (e.g input.ts)
     const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
     await ncc(`${testDir}/${inputFile}`, Object.assign({
+      assetBuilds: true,
       transpileOnly: true,
       customEmit (path) {
         if (path.endsWith('test.json'))
@@ -43,12 +44,20 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         'piscina': 'piscina',
         'externaltest': 'externalmapped',
         '/\\w+-regex/': 'regexexternal',
+        '/external-replace(/.*)/': 'external-replace/replaced$1'
       }
     }, opts)).then(
       async ({ code, assets, map }) => {
         if (unitTest.startsWith('bundle-subasset')) {
           expect(assets['pi-bridge.js']).toBeDefined();
           expect(assets['pi-bridge.js'].source.toString()).toContain('Math.PI');
+        }
+        if (unitTest.includes('sourcemap-register')) {
+          expect(assets['sourcemap-register.js']).toBeDefined()
+          expect(assets['sourcemap-register.js'].source.toString()).toEqual(fs.readFileSync(__dirname + '/../src/sourcemap-register.js.cache.js').toString())
+        }
+        if (unitTest.includes('minify') && !unitTest.includes('minify-err')) {
+          expect(assets['index.js.map']).toBeDefined()
         }
         const actual = code
           .trim()
@@ -80,4 +89,3 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     )
   });
 }
-

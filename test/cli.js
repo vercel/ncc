@@ -12,7 +12,7 @@
     expect: { code: 0 }
   },
   {
-    args: ["build", "test/fixtures/type-module/main.js", "-o", "tmp"],
+    args: ["build", "test/fixtures/type-module/main.js", "-a", "-o", "tmp"],
     expect: { code: 0 }
   },
   {
@@ -22,7 +22,7 @@
     }
   },
   {
-    args: ["run", "--v8-cache", "test/integration/test.ts"],
+    args: ["run", "--v8-cache", "-a", "test/integration/test.ts"],
     expect: { code: 0 }
   },
   {
@@ -44,7 +44,7 @@
     }
   },
   {
-    args: ["run", "--watch", "test/integration/test.ts"],
+    args: ["run", "--watch", "-a", "test/integration/test.ts"],
     expect: { code: 2 }
   },
   {
