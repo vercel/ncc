@@ -1,0 +1,6 @@
+{
+  "minify": true,
+  "sourceMap": true,
+  "sourceMapRegister": true,
+  "v8cache": true
+}

@@ -1,11 +1,10 @@
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 17:
-/***/ ((module) => {
+/***/ 402:
+/***/ (() => {
 
-module.exports = require("path");
+console.log('browser file!!')
 
 /***/ })
 
@@ -88,21 +87,14 @@ module.exports = require("path");
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
+"use strict";
 __nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(17);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var crypto_browser__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(402);
+/* harmony import */ var crypto_browser__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(crypto_browser__WEBPACK_IMPORTED_MODULE_0__);
 
-
-const file = __nccwpck_require__.ab + "pi-bridge.js";
-
-const obscureRequire = eval(`function obscureRequire (file) {
-    require(file);
-}`);
-
-console.log(obscureRequire(__nccwpck_require__.ab + "pi-bridge.js"));
-
+console.log('main file')
 })();
 
 module.exports = __webpack_exports__;

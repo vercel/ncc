@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: [12, 14]
+        node: [14, 16]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Cancel Previous Runs
@@ -24,7 +24,7 @@ jobs:
         access_token: ${{ github.token }}
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         cache: yarn
         node-version: ${{ matrix.node }}

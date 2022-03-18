@@ -21,7 +21,7 @@ const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
 const hashOf = name => {
   return crypto
-		.createHash("md4")
+		.createHash("sha256")
 		.update(name)
 		.digest("hex")
 		.slice(0, 10);
@@ -55,6 +55,9 @@ function ncc (
     license = '',
     target,
     production = true,
+    // webpack defaults to `module` and `main`, but that's
+    // not really what node.js supports, so we reset it
+    mainFields = ['main']
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -62,14 +65,14 @@ function ncc (
     v8cache = false;
 
   const cjsDeps = () => ({
-    mainFields: ["main"],
+    mainFields,
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
     conditionNames: ["require", "node", production ? "production" : "development"]
   });
   const esmDeps = () => ({
-    mainFields: ["main"],
+    mainFields,
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
@@ -161,6 +164,7 @@ function ncc (
   const externalMap = (() => {
     const regexps = [];
     const aliasMap = new Map();
+    const regexCache = new Map();
 
     function set(key, value) {
       if (key instanceof RegExp)
@@ -170,9 +174,27 @@ function ncc (
 
     function get(key) {
       if (aliasMap.has(key)) return aliasMap.get(key);
+      if (regexCache.has(key)) return regexCache.get(key);
 
-      const matchedRegex = regexps.find(regex => regex.test(key));
-      return matchedRegex !== null ? aliasMap.get(matchedRegex) : null;
+      for (const regex of regexps) {
+        const matches = key.match(regex)
+
+        if (matches) {
+          let result = aliasMap.get(regex)
+
+          if (matches.length > 1) {
+            // allow using match from regex in result
+            // e.g. caniuse-lite(/.*) -> caniuse-lite$1
+            result = result.replace(/(\$\d)/g, (match) => {
+              const index = parseInt(match.substr(1), 10)
+              return matches[index] || match
+            })
+          }
+          regexCache.set(key, result)
+          return result
+        }
+      }
+      return null;
     }
 
     return { get, set };
@@ -292,9 +314,7 @@ function ncc (
         // for backward-compat: getResolve without dependencyType
         undefined: cjsDeps()
       },
-      // webpack defaults to `module` and `main`, but that's
-      // not really what node.js supports, so we reset it
-      mainFields: ["main"],
+      mainFields,
       plugins: resolvePlugins
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
@@ -491,25 +511,25 @@ function ncc (
         // custom terser phase used over Webpack integration for this reason
         if (!result || result.code === undefined)
           throw null;
-        
+
         ({ code, map } = {
           code: result.code,
           map: map ? JSON.parse(result.map) : undefined
         });
       }
       catch (e) {
-        console.log('An error occurred while minifying. The result will not be minified.'); 
+        console.log('An error occurred while minifying. The result will not be minified.');
       }
+    }
+
+    if (map) {
+      assets[`${filename}.map`] = { source: JSON.stringify(map), permissions: defaultPermissions };
     }
 
     if (v8cache) {
       const { Script } = require('vm');
       assets[`${filename}.cache`] = { source: new Script(code).createCachedData(), permissions: defaultPermissions };
       assets[`${filename}.cache${ext}`] = { source: code, permissions: defaultPermissions };
-      if (map) {
-        assets[filename + '.map'] = { source: JSON.stringify(map), permissions: defaultPermissions };
-        map = undefined;
-      }
       const columnOffset = -'(function (exports, require, module, __filename, __dirname) { '.length;
       code =
         `const { readFileSync, writeFileSync } = require('fs'), { Script } = require('vm'), { wrap } = require('module');\n` +
