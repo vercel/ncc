@@ -186,7 +186,7 @@ function ncc (
             // allow using match from regex in result
             // e.g. caniuse-lite(/.*) -> caniuse-lite$1
             result = result.replace(/(\$\d)/g, (match) => {
-              const index = parseInt(match.substr(1), 10)
+              const index = parseInt(match.slice(1), 10)
               return matches[index] || match
             })
           }
@@ -654,14 +654,14 @@ function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
     if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfig, curPath);
     // file
     else if (!curPath.endsWith("/")) {
-      const meta = getAssetMeta(curPath.substr(1)) || {};
+      const meta = getAssetMeta(curPath.slice(1)) || {};
       if(curPath.endsWith(".d.ts")) {
         const outDir = tsconfig.compilerOptions.outDir ? pathResolve(tsconfig.compilerOptions.outDir) : pathResolve('dist');
         curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "")
       }
-      output[curPath.substr(1)] = {
+      output[curPath.slice(1)] = {
         source: mfsData[path],
         permissions: meta.permissions
       };
