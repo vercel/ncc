@@ -376,7 +376,10 @@ function ncc (
             loader: eval('__dirname + "/loaders/shebang-loader.js"')
           }]
         }
-      ]
+      ],
+      parser: {
+        javascript: { importMeta: false },
+      },
     },
     plugins
   });
