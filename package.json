@@ -108,7 +108,7 @@
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
-    "webpack": "5.62.1",
+    "webpack": "5.70.0",
     "when": "^3.7.8"
   },
   "resolutions": {
