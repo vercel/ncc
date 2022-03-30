@@ -5,7 +5,7 @@ const ncc = coverage ? require("../src/index") : require("../");
 jest.setTimeout(20000);
 
 function normalizeForWindows(str) {
-  return str.trim().replace(/\\r/g, '').replace(/;+/g, ';');
+  return str.trim().replace(/\\r/g, '').replace(/\r/g, '').replace(/;+/g, ';');
 }
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
