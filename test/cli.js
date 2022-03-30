@@ -1,4 +1,4 @@
-[
+module.exports = [
   {
     args: ["run", "test/fixtures/ts-interop/interop.ts"],
     expect: { code: 0 }
