@@ -4,23 +4,20 @@ const ncc = coverage ? require("../src/index") : require("../");
 
 jest.setTimeout(20000);
 
+function normalizeForWindows(str) {
+  return str.trim().replace(/\\r/g, '').replace(/\r/g, '').replace(/;+/g, ';');
+}
+
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
-  it(`should generate correct output for ${unitTest}`, async () => {
+  if (process.platform === 'win32' && unitTest.includes('shebang')) {
+    continue;
+  }
+  it(`should generate correct output for ${unitTest}`, async () => { 
     const testDir = `${__dirname}/unit/${unitTest}`;
-    const expected = fs
-      .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js`)
-      .toString()
-      .trim()
-      // Windows support
-      .replace(/\r/g, "");
+    const expected = normalizeForWindows(fs.readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js`, 'utf8'));
     let expectedSourceMap;
     try {
-      expectedSourceMap = fs
-        .readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js.map`)
-        .toString()
-        .trim()
-        // Windows support
-        .replace(/\r/g, "");
+      expectedSourceMap = normalizeForWindows(fs.readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js.map`, 'utf8'));
     } catch (_) {}
 
     let opts;
@@ -59,11 +56,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         if (unitTest.includes('minify') && !unitTest.includes('minify-err')) {
           expect(assets['index.js.map']).toBeDefined()
         }
-        const actual = code
-          .trim()
-          // Windows support
-          .replace(/\r/g, "")
-          .replace(/;+/g, ";");
+        const actual = normalizeForWindows(code);
         try {
           expect(actual).toBe(expected);
         } catch (e) {
@@ -73,10 +66,7 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
         }
 
         if (map) {
-          const actualSourceMap = map
-            .trim()
-            // Windows support
-            .replace(/\r/g, "");
+          const actualSourceMap = normalizeForWindows(map);
           try {
             expect(actualSourceMap).toBe(expectedSourceMap);
           } catch (e) {

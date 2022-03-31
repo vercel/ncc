@@ -545,7 +545,7 @@ function ncc (
     if (map && sourceMapRegister) {
       const registerExt = esm ? '.cjs' : ext;
       code = (esm ? `import './sourcemap-register${registerExt}';` : `require('./sourcemap-register${registerExt}');`) + code;
-      assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(`${__dirname}/sourcemap-register.js.cache.js`), permissions: defaultPermissions };
+      assets[`sourcemap-register${registerExt}`] = { source: fs.readFileSync(join(__dirname, `sourcemap-register.js.cache.js`)), permissions: defaultPermissions };
     }
 
     if (esm && !filename.endsWith('.mjs')) {
