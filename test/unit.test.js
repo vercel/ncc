@@ -9,7 +9,10 @@ function normalizeForWindows(str) {
 }
 
 for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
-  it(`should generate correct output for ${unitTest}`, async () => {
+  if (process.platform === 'win32' && unitTest.includes('shebang')) {
+    continue;
+  }
+  it(`should generate correct output for ${unitTest}`, async () => { 
     const testDir = `${__dirname}/unit/${unitTest}`;
     const expected = normalizeForWindows(fs.readFileSync(`${testDir}/output${coverage ? '-coverage' : ''}.js`, 'utf8'));
     let expectedSourceMap;

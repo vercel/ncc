@@ -18,6 +18,7 @@ module.exports = [
   {
     args: ["build", "test/integration/test.ts", "-o", "tmp"],
     expect (code, stdout, stderr) {
+      console.log({testTS: stdout.toString()})
       return stdout.toString().indexOf('tmp/index.js') !== -1;
     }
   },
@@ -71,6 +72,7 @@ module.exports = [
   {
     args: ["build", "-o", "tmp", "test/fixtures/test.cjs"],
     expect (code, stdout, stderr) {
+      console.log({testCJS: stdout.toString()})
       return stdout.toString().indexOf('tmp/index.cjs') !== -1;
     }
   },
