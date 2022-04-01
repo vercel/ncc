@@ -1,12 +1,13 @@
-const fs = require("fs");
 const { fork } = require("child_process");
-const coverage = global.coverage;
+const { join } = require("path");
+const cliTests = require("./cli.js");
+const file = global.coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js";
 
 jest.setTimeout(20000);
 
-for (const cliTest of eval(fs.readFileSync(__dirname + "/cli.js").toString())) {
+for (const cliTest of cliTests) {
   it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
-    const ps = fork(__dirname + (coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js"), cliTest.args || [], {
+    const ps = fork(join(__dirname, file), cliTest.args || [], {
       stdio: "pipe",
       env: { ...process.env, ...cliTest.env },
     });

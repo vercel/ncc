@@ -1,4 +1,6 @@
-[
+const { join } = require('path')
+
+module.exports = [
   {
     args: ["run", "test/fixtures/ts-interop/interop.ts"],
     expect: { code: 0 }
@@ -18,7 +20,7 @@
   {
     args: ["build", "test/integration/test.ts", "-o", "tmp"],
     expect (code, stdout, stderr) {
-      return stdout.toString().indexOf('tmp/index.js') !== -1;
+      return stdout.toString().indexOf(join('tmp', 'index.js')) !== -1;
     }
   },
   {
@@ -71,13 +73,13 @@
   {
     args: ["build", "-o", "tmp", "test/fixtures/test.cjs"],
     expect (code, stdout, stderr) {
-      return stdout.toString().indexOf('tmp/index.cjs') !== -1;
+      return stdout.toString().indexOf(join('tmp', 'index.cjs')) !== -1;
     }
   },
   {
     args: ["build", "-o", "tmp", "test/fixtures/test.mjs"],
     expect (code, stdout, stderr) {
-      return stdout.toString().indexOf('tmp/index.mjs') !== -1;
+      return stdout.toString().indexOf(join('tmp', 'index.mjs')) !== -1;
     }
   },
   {
@@ -85,7 +87,7 @@
     expect (code, stdout, stderr) {
       const fs = require('fs');
       try {
-        JSON.parse(fs.readFileSync('tmp/stats.json', 'utf8'));
+        JSON.parse(fs.readFileSync(join('tmp', 'stats.json'), 'utf8'));
       } catch {
         return false;
       }
@@ -112,7 +114,7 @@
     args: ["build", "-o", "tmp", "test/fixtures/module.cjs"],
     expect (code, stdout) {
       const fs = require('fs');
-      return code === 0 && fs.readFileSync('tmp/index.js', 'utf8').toString().indexOf('export {') === -1;
+      return code === 0 && fs.readFileSync(join('tmp', 'index.js'), 'utf8').toString().indexOf('export {') === -1;
     }
   }
 ]

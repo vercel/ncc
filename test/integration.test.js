@@ -6,6 +6,13 @@ const coverage = global.coverage;
 // the twilio test can take a while (large codebase)
 jest.setTimeout(200000);
 
+const skipOnWindows = [
+  'binary-require.js',
+  'browserify-middleware.js',
+  'oracledb.js',
+  'tensorflow.js',
+]
+
 let nccRun;
 if (coverage) {
   nccRun = require(__dirname + "/../src/cli.js");
@@ -33,6 +40,9 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
 
   // disabled pending https://github.com/zeit/ncc/issues/141
   if (integrationTest.endsWith('loopback.js')) continue;
+
+  // ignore a few tests known to fail on windows
+  if (process.platform === 'win32' && skipOnWindows.includes(integrationTest)) continue;
 
   it(`should execute "ncc run ${integrationTest}"`, async () => {
     let expectedStdout;
