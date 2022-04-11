@@ -6,13 +6,13 @@ const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
-const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
 const { hasTypeModule } = require('./utils/has-type-module');
+const { loadTsconfigOptions } = require('./utils/load-tsconfig-options');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -108,23 +108,18 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
+  const compilerOptions = loadTsconfigOptions({
+    base: process.cwd(),
+    start: dirname(entry),
+    filename: 'tsconfig.json'
+  });
   const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
-  let fullTsconfig = {};
   try {
-    const configFileAbsolutePath = walkParentDirs({
-      base: process.cwd(),
-      start: dirname(entry),
-      filename: 'tsconfig.json',
-    });
-    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
-      compilerOptions: {}
-    };
-
     const tsconfigPathsOptions = { silent: true }
-    if (fullTsconfig.compilerOptions.allowJs) {
+    if (compilerOptions.allowJs) {
       tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
     }
     resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
@@ -361,7 +356,7 @@ function ncc (
               compilerOptions: {
                 module: 'esnext',
                 target: 'esnext',
-                ...fullTsconfig.compilerOptions,
+                ...compilerOptions,
                 allowSyntheticDefaultImports: true,
                 noEmit: false,
                 outDir: '//'
@@ -452,7 +447,7 @@ function ncc (
 
   async function finalizeHandler (stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, fullTsconfig);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, compilerOptions);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -646,17 +641,17 @@ function ncc (
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetMeta, tsconfigCompilerOptions, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     let curPath = `${curBase}/${path}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfig, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfigCompilerOptions, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.slice(1)) || {};
       if(curPath.endsWith(".d.ts")) {
-        const outDir = tsconfig.compilerOptions.outDir ? pathResolve(tsconfig.compilerOptions.outDir) : pathResolve('dist');
+        const outDir = tsconfigCompilerOptions.outDir ? pathResolve(tsconfigCompilerOptions.outDir) : pathResolve('dist');
         curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "")
@@ -667,26 +662,4 @@ function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
       };
     }
   }
-}
-
-// Adapted from https://github.com/vercel/vercel/blob/18bec983aefbe2a77bd14eda6fca59ff7e956d8b/packages/build-utils/src/fs/run-user-scripts.ts#L289-L310
-function walkParentDirs({
-  base,
-  start,
-  filename,
-}) {
-  let parent = '';
-
-  for (let current = start; base.length <= current.length; current = parent) {
-    const fullPath = join(current, filename);
-
-    // eslint-disable-next-line no-await-in-loop
-    if (fs.existsSync(fullPath)) {
-      return fullPath;
-    }
-
-    parent = dirname(current);
-  }
-
-  return null;
 }
