@@ -1,5 +1,5 @@
 const ts = require('typescript');
-const { join, dirname } = require('path');
+const { join, dirname, resolve } = require('path');
 const fs = require('fs');
 
 /**
@@ -35,15 +35,17 @@ function walkParentDirs({
 }
 
 /**
+ * @param {string | undefined} configPath
  * @param {LoadTsconfigInit}
  * @returns {ts.CompilerOptions}
  */
-exports.loadTsconfigOptions = function ({
+exports.loadTsconfigOptions = function (configPath, {
   base,
   start,
   filename,
 }) {
-  const tsconfig = walkParentDirs({ base, start, filename });
+  // throw error if `configPath` does not exist
+  const tsconfig = configPath != null ? resolve(configPath) : walkParentDirs({ base, start, filename });
   if (tsconfig == null) {
     return {};
   }

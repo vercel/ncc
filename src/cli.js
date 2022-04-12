@@ -37,6 +37,7 @@ Options:
   --license [file]         Adds a file containing licensing information to the output
   --stats-out [file]       Emit webpack stats as json to the specified output file
   --target [es]            ECMAScript target to use for output (default: es2015)
+  --tsconfig-path [file]   Specify tsconfig.json to use for build (default: resolve tsconfig.json from entrypoint)
                            Learn more: https://webpack.js.org/configuration/target
   -d, --debug              Show debug logs
 `;
@@ -154,7 +155,8 @@ async function runCmd (argv, stdout, stderr) {
       "-t": "--transpile-only",
       "--license": String,
       "--stats-out": String,
-      "--target": String
+      "--target": String,
+      "--tsconfig-path": String
     }, {
       permissive: false,
       argv
@@ -250,7 +252,8 @@ async function runCmd (argv, stdout, stderr) {
           transpileOnly: args["--transpile-only"],
           license: args["--license"],
           quiet,
-          target: args["--target"]
+          target: args["--target"],
+          tsconfigPath: args["--tsconfig-path"]
         }
       );
 

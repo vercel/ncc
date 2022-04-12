@@ -57,7 +57,8 @@ function ncc (
     production = true,
     // webpack defaults to `module` and `main`, but that's
     // not really what node.js supports, so we reset it
-    mainFields = ['main']
+    mainFields = ['main'],
+    tsconfigPath = undefined
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -108,7 +109,7 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
-  const compilerOptions = loadTsconfigOptions({
+  const compilerOptions = loadTsconfigOptions(tsconfigPath, {
     base: process.cwd(),
     start: dirname(entry),
     filename: 'tsconfig.json'
