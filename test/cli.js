@@ -71,6 +71,16 @@ module.exports = [
     expect: { code: 0 }
   },
   {
+    args: ["run", "test/fixtures/ts-extends/any-args.ts"],
+    expect (code, stdout, stderr) {
+      return code === 1 && stderr.toString().indexOf('any-args.ts(4,20)') !== -1 && stderr.toString().indexOf('TS7006') !== -1;
+    }
+  },
+  {
+    args: ["run", "test/fixtures/ts-extends/any-args.ts", "--tsconfig-path", "test/fixtures/ts-extends/tsconfig.build.json"],
+    expect: { code: 0 }
+  },
+  {
     args: ["build", "-o", "tmp", "test/fixtures/test.cjs"],
     expect (code, stdout, stderr) {
       return stdout.toString().indexOf(join('tmp', 'index.cjs')) !== -1;
