@@ -346,8 +346,9 @@ async function runCmd (argv, stdout, stderr) {
         }
       }
       if (args["--watch"]) {
-        ncc.handler(handler);
-        ncc.rebuild(() => {
+        const nccWithWatchOption = await ncc
+        nccWithWatchOption.handler(handler);
+        nccWithWatchOption.rebuild(() => {
           if (ps)
             ps.kill();
           startTime = Date.now();

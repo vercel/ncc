@@ -1,7 +1,10 @@
-const ts = require('typescript');
 const { join, dirname, resolve } = require('path');
 const fs = require('fs');
-const { paramCase } = require('param-case');
+const { parse } = require('tsconfck');
+
+const DEFAULT_TSCONFIG_OPTIONS = {
+  compilerOptions: {}
+};
 
 /**
  * @typedef {object} LoadTsconfigInit
@@ -32,106 +35,21 @@ function walkParentDirs({ base, start, filename }) {
 }
 
 /**
- * @param {ts.CompilerOptions} options
- * @param {string | undefined} key
- * @param {(value: string) => string} [callback]
- * @returns {string | undefined}
- */
-function convertEnumCompilerOptions(enumCompilerOptions, key, callback) {
-  if (key == null) {
-    return undefined;
-  }
-  const value = enumCompilerOptions[key];
-  return typeof callback === 'function' ? callback(value) : value;
-}
-
-/**
- * @param {string} value
- * @returns {string}
- */
-function toLowerCase(value) {
-  return value.toLowerCase();
-}
-
-/**
- * @param {ts.NewLineKind} newLine
- * @returns {string | undefined}
- */
-function normalizeNewLineOption(newLine) {
-  switch (newLine) {
-    case ts.NewLineKind.CarriageReturnLineFeed:
-      return 'crlf';
-    case ts.NewLineKind.LineFeed:
-      return 'lf';
-    default:
-      return undefined;
-  }
-}
-
-/**
- * @param {ts.ModuleResolutionKind} moduleResolution
- * @returns {string | undefined}
- */
-function normalizeModuleResolutionOption(moduleResolution) {
-  switch (moduleResolution) {
-    case ts.ModuleResolutionKind.Classic:
-      return 'classic';
-    case ts.ModuleResolutionKind.NodeJs:
-      return 'node';
-    case ts.ModuleResolutionKind.Node12:
-      return 'node12';
-    case ts.ModuleResolutionKind.NodeNext:
-      return 'nodenext';
-    default:
-      return undefined;
-  }
-}
-
-/**
- * @param {ts.CompilerOptions} options
- * @returns {ts.CompilerOptions}
- */
-function normalizeCompilerOptions(options) {
-  if (options.importsNotUsedAsValues != null) {
-    options.importsNotUsedAsValues = convertEnumCompilerOptions(
-      ts.ImportsNotUsedAsValues,
-      options.importsNotUsedAsValues,
-      toLowerCase,
-    );
-  }
-  if (options.jsx != null) {
-    options.jsx = convertEnumCompilerOptions(ts.JsxEmit, options.jsx, paramCase);
-  }
-  if (options.module != null) {
-    options.module = convertEnumCompilerOptions(ts.ModuleKind, options.module, toLowerCase);
-  }
-  if (options.moduleResolution != null) {
-    options.moduleResolution = normalizeModuleResolutionOption(options.moduleResolution);
-  }
-  if (options.newLine != null) {
-    options.newLine = normalizeNewLineOption(options.newLine);
-  }
-  if (options.target != null) {
-    options.target = convertEnumCompilerOptions(ts.ScriptTarget, options.target, toLowerCase);
-  }
-  return options;
-}
-
-/**
  * @param {string | undefined} configPath
  * @param {LoadTsconfigInit}
- * @returns {ts.CompilerOptions}
+ * @returns {Promise<object>}
  */
-exports.loadTsconfigOptions = function (configPath, { base, start, filename }) {
+exports.loadTsconfigOptions = async function (configPath, { base, start, filename }) {
   // throw error if `configPath` does not exist
   const tsconfig = configPath != null ? resolve(configPath) : walkParentDirs({ base, start, filename });
   if (tsconfig == null) {
-    return {};
+    return DEFAULT_TSCONFIG_OPTIONS;
   }
-  const content = ts.readConfigFile(tsconfig, ts.sys.readFile);
-  if (content.error != null || content.config == null) {
-    return {};
+  try {
+    const result = await parse(tsconfig);
+    return result.tsconfig;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-  const { options } = ts.parseJsonConfigFileContent(content.config, ts.sys, dirname(tsconfig));
-  return normalizeCompilerOptions(options);
 };

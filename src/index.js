@@ -32,7 +32,7 @@ const defaultPermissions = 0o666;
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 module.exports = ncc;
-function ncc (
+async function ncc (
   entry,
   {
     cache,
@@ -109,7 +109,7 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
-  const compilerOptions = loadTsconfigOptions(tsconfigPath, {
+  const fullTsconfig = await loadTsconfigOptions(tsconfigPath, {
     base: process.cwd(),
     start: dirname(entry),
     filename: 'tsconfig.json'
@@ -120,7 +120,7 @@ function ncc (
   // error if there's no tsconfig in the working directory
   try {
     const tsconfigPathsOptions = { silent: true }
-    if (compilerOptions.allowJs) {
+    if (fullTsconfig.compilerOptions.allowJs) {
       tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
     }
     resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
@@ -357,7 +357,7 @@ function ncc (
               compilerOptions: {
                 module: 'esnext',
                 target: 'esnext',
-                ...compilerOptions,
+                ...fullTsconfig.compilerOptions,
                 allowSyntheticDefaultImports: true,
                 noEmit: false,
                 outDir: '//'
@@ -448,7 +448,7 @@ function ncc (
 
   async function finalizeHandler (stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, compilerOptions);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, fullTsconfig);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -642,17 +642,17 @@ function ncc (
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetMeta, tsconfigCompilerOptions, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     let curPath = `${curBase}/${path}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfigCompilerOptions, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfig, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.slice(1)) || {};
       if(curPath.endsWith(".d.ts")) {
-        const outDir = tsconfigCompilerOptions.outDir ? pathResolve(tsconfigCompilerOptions.outDir) : pathResolve('dist');
+        const outDir = tsconfig.compilerOptions.outDir ? pathResolve(tsconfig.compilerOptions.outDir) : pathResolve('dist');
         curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "")
