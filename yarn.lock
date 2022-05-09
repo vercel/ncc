@@ -14418,7 +14418,7 @@ swig@^1.4.2:
   integrity sha1-QIXKBFM2kQS11IPihBs5t64aq6U=
   dependencies:
     optimist "~0.6"
-    uglify-js "~2.4"
+    uglify-js "~2.6.0"
 
 symbol-observable@^1.0.4:
   version "1.2.0"
