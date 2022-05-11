@@ -61,16 +61,6 @@ module.exports = [
     }
   },
   {
-    args: ["run", "test/fixtures/ts-error2/ts-error.ts"],
-    expect (code, stdout, stderr) {
-      return code === 1 && stderr.toString().indexOf('ts-error.ts(3,16)') !== -1 && stderr.toString().split('\n').length < 11;
-    }
-  },
-  {
-    args: ["run", "-t", "test/fixtures/with-type-errors/ts-error.ts"],
-    expect: { code: 0 }
-  },
-  {
     args: ["build", "-o", "tmp", "test/fixtures/test.cjs"],
     expect (code, stdout, stderr) {
       return stdout.toString().indexOf(join('tmp', 'index.cjs')) !== -1;
@@ -100,15 +90,6 @@ module.exports = [
       stdout = stdout.toString().replace(/[\r\n\s]/g, '').trim();
       return stdout.length === 0;
     }
-  },
-  {
-    args: ["build", "test/integration/test.ts"],
-    env: {
-      TYPESCRIPT_LOOKUP_PATH: '/tmp/nowhere'
-    },
-    expect (code, stdout) { 
-      return code === 0 && stdout.indexOf('ncc built-in') !== -1;
-    },
   },
   {
     args: ["build", "-o", "tmp", "test/fixtures/module.cjs"],

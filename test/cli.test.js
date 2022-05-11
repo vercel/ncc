@@ -5,22 +5,23 @@ const file = global.coverage ? "/../src/cli.js" : "/../dist/ncc/cli.js";
 
 jest.setTimeout(20000);
 
-for (const cliTest of cliTests) {
-  it(`should execute "ncc ${(cliTest.args || []).join(" ")}"`, async () => {
-    const ps = fork(join(__dirname, file), cliTest.args || [], {
+describe('cli', () => {
+  it.each(cliTests)('should execute ncc $args', async ({ args, env, expect: e, timeout }) => {
+
+    const ps = fork(join(__dirname, file), args || [], {
       stdio: "pipe",
-      env: { ...process.env, ...cliTest.env },
+      env: { ...process.env, ...env },
     });
     let stderr = "", stdout = "";
     ps.stderr.on("data", chunk => stderr += chunk.toString());
     ps.stdout.on("data", chunk => stdout += chunk.toString());
-    const expected = cliTest.expect || { code: 0 };
+    const expected = e ?? { code: 0 };
     let timedOut = false;
-    if (cliTest.timeout)
+    if (timeout)
       setTimeout(() => {
         timedOut = true;
         ps.kill();
-      }, cliTest.timeout);
+      }, timeout);
     const code = await new Promise(resolve => ps.on("close", resolve));
     if (typeof expected === "function")
       expect(expected(code, stdout, stderr, timedOut)).toBe(true);
@@ -31,4 +32,4 @@ for (const cliTest of cliTests) {
         expect(timedOut).toBe(true);
     }
   });
-}
+});
