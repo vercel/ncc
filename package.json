@@ -30,7 +30,7 @@
     "@tensorflow/tfjs-node": "^3.12.0",
     "@vercel/webpack-asset-relocator-loader": "1.7.2",
     "analytics-node": "^6.0.0",
-    "apollo-server-express": "^2.2.2",
+    "apollo-server-express": "^3.8.1",
     "arg": "^5.0.0",
     "auth0": "^2.14.0",
     "aws-sdk": "^2.356.0",
