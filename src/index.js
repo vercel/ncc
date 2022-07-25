@@ -47,7 +47,7 @@ function ncc (
     assetBuilds = false,
     watch = false,
     v8cache = false,
-    filterAssetBase = process.cwd(),
+    filterAssetBase = "/",
     existingAssetNames = [],
     quiet = false,
     debugLog = false,
