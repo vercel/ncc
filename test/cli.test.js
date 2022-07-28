@@ -10,6 +10,7 @@ for (const cliTest of cliTests) {
     const ps = fork(join(__dirname, file), cliTest.args || [], {
       stdio: "pipe",
       env: { ...process.env, ...cliTest.env },
+      cwd: cliTest.cwd
     });
     let stderr = "", stdout = "";
     ps.stderr.on("data", chunk => stderr += chunk.toString());
@@ -22,6 +23,8 @@ for (const cliTest of cliTests) {
         ps.kill();
       }, cliTest.timeout);
     const code = await new Promise(resolve => ps.on("close", resolve));
+    console.log(stdout);
+    console.log(stderr);
     if (typeof expected === "function")
       expect(expected(code, stdout, stderr, timedOut)).toBe(true);
     else {
