@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { resolve, relative, dirname, sep } = require("path");
+const { resolve, relative, dirname, sep, parse } = require("path");
 const glob = require("glob");
 const shebangRegEx = require("./utils/shebang");
 const rimraf = require("rimraf");
@@ -250,7 +250,8 @@ async function runCmd (argv, stdout, stderr) {
           transpileOnly: args["--transpile-only"],
           license: args["--license"],
           quiet,
-          target: args["--target"]
+          target: args["--target"],
+          filterAssetBase: parse(process.cwd()).root
         }
       );
 
