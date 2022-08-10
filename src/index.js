@@ -110,7 +110,6 @@ function ncc(
   let tsconfig = {};
   const resolvePlugins = [];
   const resolveModules = [];
-  const compilerOptions = tsconfig.compilerOptions || {};
   try {
     const configPath = walkParentDirs({
       base: process.cwd(),
@@ -123,20 +122,20 @@ function ncc(
     resolveModules.push(pathResolve(dirname(configPath), baseUrl));
   } catch (e) { }
 
-
+  const compilerOptions = tsconfig.compilerOptions || {};
 
   resolvePlugins.push({
     apply(resolver) {
       const resolve = resolver.resolve;
-      resolver.resolve = function (context, path, request, resolveContext, callback) {
+      resolver.resolve = function(context, path, request, resolveContext, callback) {
         const self = this;
-        resolve.call(self, context, path, request, resolveContext, function (err, innerPath, result) {
+        resolve.call(self, context, path, request, resolveContext, function(err, innerPath, result) {
           if (result) return callback(null, innerPath, result);
           if (err && !err.message.startsWith('Can\'t resolve'))
             return callback(err);
           // Allow .js resolutions to .tsx? from .tsx?
           if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx'))) {
-            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function (err, innerPath, result) {
+            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function(err, innerPath, result) {
               if (result) return callback(null, innerPath, result);
               if (err && !err.message.startsWith('Can\'t resolve'))
                 return callback(err);
@@ -346,7 +345,7 @@ function ncc(
           {
             loader: eval('__dirname + "/loaders/swc-loader.js"'),
             options: {
-              minify: false, // TODO: maybe we could omit terser if `true`?
+              minify: false,
               exclude: tsconfig.exclude,
               sourceMaps: compilerOptions.sourceMap || false,
               module: {
@@ -398,7 +397,7 @@ function ncc(
         });
       });
     })
-      .then(finalizeHandler, function (err) {
+      .then(finalizeHandler, function(err) {
         compilationStack.pop();
         throw err;
       });
@@ -659,7 +658,7 @@ function getFlatFiles(mfsData, output, getAssetMeta, compilerOptions, curBase = 
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.slice(1)) || {};
       if (curPath.endsWith(".d.ts")) {
-        const outDir = compilerOptions?.compilerOptions?.outDir ? pathResolve(compilerOptions.compilerOptions.outDir) : pathResolve('dist');
+        const outDir = compilerOptions?.outDir ? pathResolve(compilerOptions.outDir) : pathResolve('dist');
         curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "")
