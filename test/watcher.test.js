@@ -13,6 +13,7 @@ class CustomWatchFileSystem {
     // paused allows the watchers to stay open for the next build
     this.paused = false;
     this.changeCallback = undefined;
+    this.changeCallbackUndelayed = undefined;
     this.watchStart = watchStart;
     this.watchEnd = watchEnd;
 
@@ -21,6 +22,8 @@ class CustomWatchFileSystem {
     this.dirs = undefined;
     this.missing = undefined;
     this.timestamps = new Map();
+    this.changes = new Set();
+    this.removals = new Set();
 
     // this will be populated for us by ncc
     this.inputFileSystem = undefined;
@@ -38,11 +41,21 @@ class CustomWatchFileSystem {
       for (const file of removed)
         this.timestamps.set(file, null);
 
-      for (const file of changed)
+      for (const file of changed) {
+        this.changes.add(file);
         this.inputFileSystem.purge(file);
-      for (const file of removed)
+      }
+      for (const file of removed) {
+        this.removals.add(file);
         this.inputFileSystem.purge(file);
+      }
 
+      this.changeCallbackUndelayed(
+        null,
+        this.timestamps,
+        this.timestamps,
+        removed
+      );
       this.changeCallback(
         null,
         this.timestamps,
@@ -53,7 +66,7 @@ class CustomWatchFileSystem {
   }
 
   // This is called on every rebuild
-  watch (files, dirs, missing, startTime, options, changeCallback) {
+  watch (files, dirs, missing, startTime, options, changeCallback, changeCallbackUndelayed) {
     this.files = new Set(files);
     this.dirs = new Set(dirs);
     this.missing = new Set(missing);
@@ -70,6 +83,7 @@ class CustomWatchFileSystem {
 
     this.paused = false;
     this.changeCallback = changeCallback;
+    this.changeCallbackUndelayed = changeCallbackUndelayed;
 
     // ...Start watching files, dirs, missing
     setImmediate(() => {
@@ -83,12 +97,12 @@ class CustomWatchFileSystem {
       pause: () => {
         this.paused = true;
       },
-      getFileTimestamps: () => {
-        return this.timestamps;
-      },
-      getContextTimestamps: () => {
-        return this.timestamps;
-      }
+      getInfo: () => ({
+        changes: this.changes,
+        removals: this.removals,
+        fileTimeInfoEntries: this.timestamps,
+        contextTimeInfoEntries: this.timestamps,
+      }),
     };
   }
 }
@@ -98,6 +112,8 @@ jest.setTimeout(30000);
 it('Should support custom watch API', async () => {
   let buildCnt = 0;
   const buildFile = path.resolve('./test/integration/twilio.js');
+  const initialBuildFileContents = fs.readFileSync(buildFile).toString();
+
   await new Promise((resolve, reject) => {
     const watcher = new CustomWatchFileSystem(function watchStart (files, dirs, missing) {
       expect(files._set.size).toBeGreaterThan(100);
@@ -136,5 +152,7 @@ it('Should support custom watch API', async () => {
       console.time('Watched Build');
     });
   });
+
+  fs.writeFileSync(buildFile, initialBuildFileContents);
 });
 
