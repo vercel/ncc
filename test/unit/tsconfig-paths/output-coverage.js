@@ -1,13 +1,10 @@
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 520:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 818:
+/***/ ((module) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = {};
+module.exports = eval("require")("../../../../../../../.././module");
 
 
 /***/ })
@@ -51,13 +48,12 @@ exports.default = {};
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
-var exports = __webpack_exports__;
+"use strict";
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const _module_1 = __nccwpck_require__(520);
-console.log(_module_1.default);
+const _module = __nccwpck_require__(818);
+console.log(_module.default);
 
 })();
 

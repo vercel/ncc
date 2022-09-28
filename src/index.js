@@ -5,12 +5,10 @@ const { join, dirname, extname, relative, resolve: pathResolve } = require("path
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
-const tsconfigPaths = require("tsconfig-paths");
-const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
-const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
+const JSON5 = require("json5");
+const { LicenseWebpackPlugin } = require('license-webpack-plugin');
 const { version: nccVersion } = require('../package.json');
 const { hasTypeModule } = require('./utils/has-type-module');
 
@@ -21,10 +19,10 @@ const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
 
 const hashOf = name => {
   return crypto
-		.createHash("sha256")
-		.update(name)
-		.digest("hex")
-		.slice(0, 10);
+    .createHash("sha256")
+    .update(name)
+    .digest("hex")
+    .slice(0, 10);
 }
 
 const defaultPermissions = 0o666;
@@ -32,7 +30,7 @@ const defaultPermissions = 0o666;
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 module.exports = ncc;
-function ncc (
+function ncc(
   entry,
   {
     cache,
@@ -57,7 +55,7 @@ function ncc (
     production = true,
     // webpack defaults to `module` and `main`, but that's
     // not really what node.js supports, so we reset it
-    mainFields = ['main']
+    mainFields = ['main'],
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -76,7 +74,7 @@ function ncc (
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
-    conditionNames: ["import", "node", production ? "production": "development"]
+    conditionNames: ["import", "node", production ? "production" : "development"]
   });
 
   const ext = extname(filename);
@@ -108,45 +106,36 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
+
+  let tsconfig = {};
   const resolvePlugins = [];
-  // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
-  // we need to catch here because the plugin will
-  // error if there's no tsconfig in the working directory
-  let fullTsconfig = {};
+  const resolveModules = [];
   try {
-    const configFileAbsolutePath = walkParentDirs({
+    const configPath = walkParentDirs({
       base: process.cwd(),
       start: dirname(entry),
       filename: 'tsconfig.json',
     });
-    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
-      compilerOptions: {}
-    };
+    const contents = fs.readFileSync(configPath, 'utf8')
+    tsconfig = JSON5.parse(contents);
+    const baseUrl = tsconfig.compilerOptions.baseUrl;
+    resolveModules.push(pathResolve(dirname(configPath), baseUrl));
+  } catch (e) { }
 
-    const tsconfigPathsOptions = { silent: true }
-    if (fullTsconfig.compilerOptions.allowJs) {
-      tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
-    }
-    resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
-
-    const tsconfig = tsconfigPaths.loadConfig();
-    if (tsconfig.resultType === "success") {
-      tsconfigMatchPath = tsconfigPaths.createMatchPath(tsconfig.absoluteBaseUrl, tsconfig.paths);
-    }
-  } catch (e) {}
+  const compilerOptions = tsconfig.compilerOptions || {};
 
   resolvePlugins.push({
     apply(resolver) {
       const resolve = resolver.resolve;
-      resolver.resolve = function (context, path, request, resolveContext, callback) {
+      resolver.resolve = function(context, path, request, resolveContext, callback) {
         const self = this;
-        resolve.call(self, context, path, request, resolveContext, function (err, innerPath, result) {
+        resolve.call(self, context, path, request, resolveContext, function(err, innerPath, result) {
           if (result) return callback(null, innerPath, result);
           if (err && !err.message.startsWith('Can\'t resolve'))
             return callback(err);
           // Allow .js resolutions to .tsx? from .tsx?
           if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx'))) {
-            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function (err, innerPath, result) {
+            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function(err, innerPath, result) {
               if (result) return callback(null, innerPath, result);
               if (err && !err.message.startsWith('Can\'t resolve'))
                 return callback(err);
@@ -227,7 +216,7 @@ function ncc (
                 if (tapInfo.name !== "CommonJsPlugin") {
                   return tapInfo;
                 }
-                tapInfo.fn = () => {};
+                tapInfo.fn = () => { };
                 return tapInfo;
               }
             });
@@ -245,8 +234,7 @@ function ncc (
     }
   ]
 
-  if (typeof license === 'string' && license.length > 0)
-  {
+  if (typeof license === 'string' && license.length > 0) {
     plugins.push(new LicenseWebpackPlugin({
       outputFilename: license
     }));
@@ -315,11 +303,12 @@ function ncc (
         undefined: cjsDeps()
       },
       mainFields,
-      plugins: resolvePlugins
+      plugins: resolvePlugins,
+      modules: resolveModules.length > 0 ? resolveModules : undefined,
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
-    externals ({ context, request, dependencyType }, callback) {
+    externals({ context, request, dependencyType }, callback) {
       const external = externalMap.get(request);
       if (external) return callback(null, `${dependencyType === 'esm' && esm ? 'module' : 'node-commonjs'} ${external}`);
       return callback();
@@ -354,17 +343,30 @@ function ncc (
             loader: eval('__dirname + "/loaders/uncacheable.js"')
           },
           {
-            loader: eval('__dirname + "/loaders/ts-loader.js"'),
+            loader: eval('__dirname + "/loaders/swc-loader.js"'),
             options: {
-              transpileOnly,
-              compiler: eval('__dirname + "/typescript.js"'),
-              compilerOptions: {
-                module: 'esnext',
-                target: 'esnext',
-                ...fullTsconfig.compilerOptions,
-                allowSyntheticDefaultImports: true,
-                noEmit: false,
-                outDir: '//'
+              minify: false,
+              exclude: tsconfig.exclude,
+              sourceMaps: compilerOptions.sourceMap || false,
+              module: {
+                type: compilerOptions.module && compilerOptions.module.toLowerCase() === 'commonjs' ? 'commonjs' : 'es6',
+                strict: false,
+                strictMode: true,
+                lazy: false,
+                noInterop: !compilerOptions.esModuleInterop
+              },
+              jsc: {
+                externalHelpers: false,
+                keepClassNames: true,
+                target: compilerOptions.target && compilerOptions.target.toLowerCase() || 'es2021',
+                paths: compilerOptions.paths,
+                baseUrl: compilerOptions.baseUrl,
+                parser: {
+                  syntax: 'typescript',
+                  tsx: true, // TODO: use tsconfig.compilerOptions.jsx ???
+                  decorators: compilerOptions.experimentalDecorators || false,
+                  dynamicImport: true, // TODO: use module ???
+                }
               }
             }
           }]
@@ -395,10 +397,10 @@ function ncc (
         });
       });
     })
-    .then(finalizeHandler, function (err) {
-      compilationStack.pop();
-      throw err;
-    });
+      .then(finalizeHandler, function(err) {
+        compilationStack.pop();
+        throw err;
+      });
   }
   else {
     if (typeof watch === 'object') {
@@ -425,7 +427,7 @@ function ncc (
     });
     let closed = false;
     return {
-      close () {
+      close() {
         if (!watcher)
           throw new Error('No watcher to close.');
         if (closed)
@@ -433,7 +435,7 @@ function ncc (
         closed = true;
         watcher.close();
       },
-      handler (handler) {
+      handler(handler) {
         if (watchHandler)
           throw new Error('Watcher handler already provided.');
         watchHandler = handler;
@@ -442,7 +444,7 @@ function ncc (
           cachedResult = null;
         }
       },
-      rebuild (handler) {
+      rebuild(handler) {
         if (rebuildHandler)
           throw new Error('Rebuild handler already provided.');
         rebuildHandler = handler;
@@ -450,9 +452,9 @@ function ncc (
     };
   }
 
-  async function finalizeHandler (stats) {
+  async function finalizeHandler(stats) {
     const assets = Object.create(null);
-    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, fullTsconfig);
+    getFlatFiles(mfs.data, assets, relocateLoader.getAssetMeta, compilerOptions);
     // filter symlinks to existing assets
     const symlinks = Object.create(null);
     for (const [key, value] of Object.entries(relocateLoader.getSymlinks())) {
@@ -593,7 +595,7 @@ function ncc (
       const subbuildAssets = [];
       for (const asset of Object.keys(assets)) {
         if (!asset.endsWith('.js') && !asset.endsWith('.cjs') && !asset.endsWith('.ts') && !asset.endsWith('.mjs') ||
-            asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs') || asset.endsWith('.d.ts')) {
+          asset.endsWith('.cache.js') || asset.endsWith('.cache.cjs') || asset.endsWith('.cache.ts') || asset.endsWith('.cache.mjs') || asset.endsWith('.d.ts')) {
           existingAssetNames.push(asset);
           continue;
         }
@@ -646,17 +648,17 @@ function ncc (
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
-function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
+function getFlatFiles(mfsData, output, getAssetMeta, compilerOptions, curBase = "") {
   for (const path of Object.keys(mfsData)) {
     const item = mfsData[path];
     let curPath = `${curBase}/${path}`;
     // directory
-    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, tsconfig, curPath);
+    if (item[""] === true) getFlatFiles(item, output, getAssetMeta, compilerOptions, curPath);
     // file
     else if (!curPath.endsWith("/")) {
       const meta = getAssetMeta(curPath.slice(1)) || {};
-      if(curPath.endsWith(".d.ts")) {
-        const outDir = tsconfig.compilerOptions.outDir ? pathResolve(tsconfig.compilerOptions.outDir) : pathResolve('dist');
+      if (curPath.endsWith(".d.ts")) {
+        const outDir = compilerOptions?.outDir ? pathResolve(compilerOptions.outDir) : pathResolve('dist');
         curPath = curPath
           .replace(outDir, "")
           .replace(process.cwd(), "")

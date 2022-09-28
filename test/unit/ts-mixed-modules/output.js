@@ -2,13 +2,17 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 119:
+/***/ 559:
 /***/ ((module, exports) => {
 
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 const config = {
-    routes: ['/foo']
+    routes: [
+        '/foo'
+    ]
 };
 module.exports = config;
 
@@ -57,7 +61,7 @@ module.exports = config;
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(119);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(559);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()

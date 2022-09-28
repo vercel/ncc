@@ -91,9 +91,9 @@ const external_path_namespaceObject = require("path");
 
 
 const piscina = new (external_piscina_default())({
-    filename: __nccwpck_require__.ab + "pi-bridge.js",
+    filename: __nccwpck_require__.ab + "pi-bridge.js"
 });
-(async function () {
+(async function() {
     const result = await piscina.runTask(2);
     console.log(result);
 })();

@@ -2,24 +2,28 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 668:
+/***/ 165:
 /***/ ((__unused_webpack_module, exports) => {
 
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports["default"] = {};
+Object.defineProperty(exports, "default", ({
+    enumerable: true,
+    get: ()=>_default
+}));
+const _default = {};
 
 
 /***/ }),
 
-/***/ 975:
+/***/ 344:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports["default"] = void 0;
-var dep_dep_js_1 = __nccwpck_require__(668);
-Object.defineProperty(exports, "default", ({ enumerable: true, get: function () { return dep_dep_js_1.default; } }));
+Object.defineProperty(exports, "default", ({
+    enumerable: true,
+    get: ()=>_depDepJs.default
+}));
+const _depDepJs = __nccwpck_require__(165);
 
 
 /***/ })
@@ -65,11 +69,9 @@ Object.defineProperty(exports, "default", ({ enumerable: true, get: function () 
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-var exports = __webpack_exports__;
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const dep_js_1 = __nccwpck_require__(975);
-console.log(dep_js_1.default);
+const _depJs = __nccwpck_require__(344);
+console.log(_depJs.default);
 
 })();
 

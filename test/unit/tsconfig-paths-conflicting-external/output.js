@@ -1,10 +1,10 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 17:
+/***/ 518:
 /***/ ((module) => {
 
-module.exports = eval("require")("@module");
+module.exports = eval("require")("../../../../../../../.././module");
 
 
 /***/ })
@@ -51,11 +51,9 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
-var exports = __webpack_exports__;
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const _module_1 = __nccwpck_require__(17);
-console.log(_module_1.default);
+const _module = __nccwpck_require__(518);
+console.log(_module.default);
 
 })();
 
