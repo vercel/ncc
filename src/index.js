@@ -6,13 +6,13 @@ const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
 const tsconfigPaths = require("tsconfig-paths");
-const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
 const { hasTypeModule } = require('./utils/has-type-module');
+const { loadTsconfigOptions } = require('./utils/load-tsconfig-options');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -32,7 +32,7 @@ const defaultPermissions = 0o666;
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 module.exports = ncc;
-function ncc (
+async function ncc (
   entry,
   {
     cache,
@@ -57,7 +57,8 @@ function ncc (
     production = true,
     // webpack defaults to `module` and `main`, but that's
     // not really what node.js supports, so we reset it
-    mainFields = ['main']
+    mainFields = ['main'],
+    tsconfigPath = undefined
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -108,21 +109,16 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
+  const fullTsconfig = await loadTsconfigOptions(tsconfigPath, {
+    base: process.cwd(),
+    start: dirname(entry),
+    filename: 'tsconfig.json'
+  });
   const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
-  let fullTsconfig = {};
   try {
-    const configFileAbsolutePath = walkParentDirs({
-      base: process.cwd(),
-      start: dirname(entry),
-      filename: 'tsconfig.json',
-    });
-    fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
-      compilerOptions: {}
-    };
-
     const tsconfigPathsOptions = { silent: true }
     if (fullTsconfig.compilerOptions.allowJs) {
       tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
@@ -670,26 +666,4 @@ function getFlatFiles(mfsData, output, getAssetMeta, tsconfig, curBase = "") {
       };
     }
   }
-}
-
-// Adapted from https://github.com/vercel/vercel/blob/18bec983aefbe2a77bd14eda6fca59ff7e956d8b/packages/build-utils/src/fs/run-user-scripts.ts#L289-L310
-function walkParentDirs({
-  base,
-  start,
-  filename,
-}) {
-  let parent = '';
-
-  for (let current = start; base.length <= current.length; current = parent) {
-    const fullPath = join(current, filename);
-
-    // eslint-disable-next-line no-await-in-loop
-    if (fs.existsSync(fullPath)) {
-      return fullPath;
-    }
-
-    parent = dirname(current);
-  }
-
-  return null;
 }
