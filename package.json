@@ -54,7 +54,7 @@
     "fontkit": "^1.7.7",
     "get-folder-size": "^2.0.0",
     "glob": "^8.0.3",
-    "got": "^11.8.2",
+    "got": "^12.5.2",
     "graceful-fs": "^4.1.15",
     "graphql": "^15.5.1",
     "hot-shots": "^8.5.0",
