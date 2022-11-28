@@ -24,7 +24,7 @@
     "@bugsnag/js": "^7.11.0",
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
     "@google-cloud/bigquery": "^5.7.0",
-    "@google-cloud/firestore": "^4.14.0",
+    "@google-cloud/firestore": "^6.4.1",
     "@sentry/node": "^7.17.3",
     "@slack/web-api": "^6.3.0",
     "@tensorflow/tfjs-node": "^3.12.0",
@@ -38,7 +38,7 @@
     "azure-storage": "^2.10.2",
     "browserify-middleware": "^8.1.1",
     "bytes": "^3.0.0",
-    "canvas": "^2.2.0",
+    "canvas": "^2.10.2",
     "chromeless": "^1.5.2",
     "codecov": "^3.8.3",
     "consolidate": "^0.16.0",
@@ -48,8 +48,8 @@
     "esm": "^3.2.22",
     "express": "^4.16.4",
     "fetch-h2": "^3.0.0",
-    "firebase": "^6.1.1",
-    "firebase-admin": "^11.0.0",
+    "firebase": "^7.24.0",
+    "firebase-admin": "^11.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "fontkit": "^1.7.7",
     "get-folder-size": "^2.0.0",
@@ -111,8 +111,5 @@
     "web-vitals": "^0.2.4",
     "webpack": "5.74.0",
     "when": "^3.7.8"
-  },
-  "resolutions": {
-    "grpc": "1.24.11"
   }
 }

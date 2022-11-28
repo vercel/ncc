@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [14, 16]
+        node: [14, 16, 18]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Cancel Previous Runs
