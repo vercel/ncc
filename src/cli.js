@@ -125,10 +125,22 @@ function nccError(msg, exitCode = 1) {
   throw err;
 }
 
+function showHelp() {
+  nccError(usage, 2)
+}
+
+function showVersion() {
+  process.stdout.write(require("../package.json").version + '\n');
+}
+
 async function runCmd (argv, stdout, stderr) {
   let args;
   try {
     args = require("arg")({
+      "--help": Boolean,
+      "-h": "--help",
+      "--version": Boolean,
+      "-v": "--version",
       "--asset-builds": Boolean,
       '-a': '--asset-builds',
       "--debug": Boolean,
@@ -164,6 +176,12 @@ async function runCmd (argv, stdout, stderr) {
     nccError(e.message + `\n${usage}`, 2);
   }
 
+  if (args['--help']) {
+    return showHelp();
+  } else if (args['--version']) {
+    return showVersion();
+  }
+
   if (args._.length === 0)
     nccError(`Error: No command specified\n${usage}`, 2);
 
@@ -171,6 +189,7 @@ async function runCmd (argv, stdout, stderr) {
   let outDir = args["--out"];
   const quiet = args["--quiet"];
   const statsOutFile = args["--stats-out"];
+
 
   switch (args._[0]) {
     case "cache":
@@ -357,10 +376,11 @@ async function runCmd (argv, stdout, stderr) {
       break;
 
     case "help":
-      nccError(usage, 2);
+      showHelp();
+      break;
 
     case "version":
-      stdout.write(require("../package.json").version + '\n');
+      showVersion();
       break;
 
     default:
