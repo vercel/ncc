@@ -150,4 +150,4 @@ When `watch: true` is set, the build object is not a promise, but has the follow
 
 ## Caveats
 
-- Files / assets are relocated based on a [static evaluator](https://github.com/zeit/webpack-asset-relocator-loader#how-it-works). Dynamic non-statically analyzable asset loads may not work out correctly
+- Files / assets are relocated based on a [static evaluator](https://github.com/vercel/webpack-asset-relocator-loader#how-it-works). Dynamic non-statically analyzable asset loads may not work out correctly
