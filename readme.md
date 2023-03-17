@@ -124,6 +124,7 @@ require('@vercel/ncc')('/path/to/input', {
   sourceMapRegister: true, // default
   watch: false, // default
   license: '', // default does not generate a license file
+  target: 'es2015', // default
   v8cache: false, // default
   quiet: false, // default
   debugLog: false // default
