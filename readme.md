@@ -24,7 +24,7 @@ together with all its dependencies, gcc-style.
 
 ### Installation
 ```bash
-npm i -g @vercel/ncc
+npm i --location=global @vercel/ncc
 ```
 
 ### Usage
