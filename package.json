@@ -75,7 +75,7 @@
     "mysql": "^2.16.0",
     "node-gyp": "^8.4.1",
     "npm": "^6.13.4",
-    "oracledb": "^4.2.0",
+    "oracledb": "^6.0.0",
     "passport": "^0.6.0",
     "passport-google-oauth": "^2.0.0",
     "path-platform": "^0.11.15",
