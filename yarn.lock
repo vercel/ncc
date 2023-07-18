@@ -11484,10 +11484,10 @@ options@0.0.6:
   resolved "https://registry.yarnpkg.com/options/-/options-0.0.6.tgz#ec22d312806bb53e731773e7cdaefcf1c643128f"
   integrity sha1-7CLTEoBrtT5zF3Pnza788cZDEo8=
 
-oracledb@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/oracledb/-/oracledb-4.2.0.tgz#b4d97957d206f7c2d1c2286cc80e91ff2d45fce8"
-  integrity sha512-07ZylNcUB9wknsiRa7dNqDWgGK3loP8eNWuoCjsiCOZ19PA1g8QLu+0gah7ty82VXl/MOQYFCMl5OpjD9Aqjcw==
+oracledb@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/oracledb/-/oracledb-6.0.3.tgz#118cfe1bafdfc97f0e73f328e2b369511d9a3e78"
+  integrity sha512-szsaTgEcVpmGwi5sCHLXvvpoL5ZJIE69wSOBpclsGO5XX6QMce6KRr+R+t68ihns+8MV4A0J4oeR6efCfxScrg==
 
 ordered-read-streams@^1.0.0:
   version "1.0.1"
