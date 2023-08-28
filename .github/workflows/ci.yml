@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [14, 16, 18]
+        node: [16, 18, 20]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
         node-version: ${{ matrix.node }}
         check-latest: true
     - name: Install Dependencies
-      run: yarn install
+      run: yarn install --frozen-lockfile
     - name: Build Test Binary
       run: yarn build-test-binary
     - name: Build
@@ -39,10 +39,10 @@ jobs:
     - name: Run Tests
       run: yarn test
     - name: Coverage
-      if: matrix.os == 'ubuntu-latest' && matrix.node == 14 # only run once
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 20 # only run once
       run: yarn test-coverage
     - name: Maybe Release
-      if: matrix.os == 'ubuntu-latest' && matrix.node == 18 && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 20 && github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN_ELEVATED }}
