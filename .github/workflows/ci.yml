@@ -36,7 +36,7 @@ jobs:
         node-version: ${{ matrix.node }}
         check-latest: true
     - name: Install Dependencies
-      run: yarn install --frozen-lockfile
+      run: yarn global add node-gyp && yarn install --frozen-lockfile
     - name: Build Test Binary
       run: yarn build-test-binary
     - name: Build
