@@ -21,6 +21,8 @@ dist/**/*.js
 !yarn.lock
 !.circleci
 !.github
+!.github/
+!.github/**
 !release.config.js
 !.*ignore
 !readme.md

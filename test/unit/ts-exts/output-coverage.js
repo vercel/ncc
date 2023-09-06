@@ -7,7 +7,7 @@
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = {};
+exports["default"] = {};
 
 
 /***/ }),
@@ -17,7 +17,7 @@ exports.default = {};
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = void 0;
+exports["default"] = void 0;
 var dep_dep_js_1 = __nccwpck_require__(119);
 Object.defineProperty(exports, "default", ({ enumerable: true, get: function () { return dep_dep_js_1.default; } }));
 

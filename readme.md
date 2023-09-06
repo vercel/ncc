@@ -124,6 +124,7 @@ require('@vercel/ncc')('/path/to/input', {
   sourceMapRegister: true, // default
   watch: false, // default
   license: '', // default does not generate a license file
+  target: 'es2015', // default
   v8cache: false, // default
   quiet: false, // default
   debugLog: false // default
@@ -150,4 +151,4 @@ When `watch: true` is set, the build object is not a promise, but has the follow
 
 ## Caveats
 
-- Files / assets are relocated based on a [static evaluator](https://github.com/zeit/webpack-asset-relocator-loader#how-it-works). Dynamic non-statically analyzable asset loads may not work out correctly
+- Files / assets are relocated based on a [static evaluator](https://github.com/vercel/webpack-asset-relocator-loader#how-it-works). Dynamic non-statically analyzable asset loads may not work out correctly
