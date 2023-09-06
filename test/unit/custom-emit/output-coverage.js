@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 747:
+/***/ 147:
 /***/ ((module) => {
 
 "use strict";
@@ -50,7 +50,7 @@ module.exports = require("fs");
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-const { readFileSync } = __nccwpck_require__(747);
+const { readFileSync } = __nccwpck_require__(147);
 console.log(readFileSync(__dirname + './test.json'));
 
 
