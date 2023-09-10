@@ -88,7 +88,6 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/LICENSES.txt", cliAssets["LICENSES.txt"].source);
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache", cliAssets["cli.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/index.js.cache", indexAssets["index.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/mappings.wasm", indexAssets["mappings.wasm"].source);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache", sourcemapAssets["sourcemap-register.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache", relocateLoaderAssets["relocate-loader.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache", shebangLoaderAssets["shebang-loader.js.cache"].source);

@@ -522,6 +522,9 @@ function ncc (
       }
       catch (e) {
         console.log('An error occurred while minifying. The result will not be minified.');
+        if (debugLog) {
+          console.log(e);
+        }
       }
     }
 
