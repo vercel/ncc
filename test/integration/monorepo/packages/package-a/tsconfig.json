@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "outDir": "./dist",
+    "lib": ["es2020", "dom"],
+    "module": "ES2015"
+  },
+  "include": ["src/"]
+}

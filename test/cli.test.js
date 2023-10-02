@@ -10,6 +10,7 @@ for (const cliTest of cliTests) {
     const ps = fork(join(__dirname, file), cliTest.args || [], {
       stdio: "pipe",
       env: { ...process.env, ...cliTest.env },
+      cwd: cliTest.cwd
     });
     let stderr = "", stdout = "";
     ps.stderr.on("data", chunk => stderr += chunk.toString());

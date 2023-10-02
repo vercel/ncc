@@ -1,0 +1,13 @@
+{
+  "name": "root",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+  },
+  "resolutions": {
+  },
+  "devDependencies": {
+  }
+}

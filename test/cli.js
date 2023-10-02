@@ -1,4 +1,5 @@
 const { join } = require('path')
+const fs = require("fs");
 
 module.exports = [
   {
@@ -106,7 +107,7 @@ module.exports = [
     env: {
       TYPESCRIPT_LOOKUP_PATH: '/tmp/nowhere'
     },
-    expect (code, stdout) { 
+    expect (code, stdout) {
       return code === 0 && stdout.indexOf('ncc built-in') !== -1;
     },
   },
@@ -116,5 +117,13 @@ module.exports = [
       const fs = require('fs');
       return code === 0 && fs.readFileSync(join('tmp', 'index.js'), 'utf8').toString().indexOf('export {') === -1;
     }
-  }
+  },
+  {
+    cwd: join(__dirname, "integration", "monorepo", "packages", "package-b"),
+    args: ["build", join("src", "import-binary-asset.ts"), "-o", join(__dirname, "..", "tmp", "monorepo", "package-b")],
+    expect (code, stdout) {
+      const fs = require('fs');
+      return code === 0 && fs.existsSync(join('tmp', 'monorepo', 'package-b', 'fake-binary'))
+    }
+  },
 ]

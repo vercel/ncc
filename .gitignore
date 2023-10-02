@@ -30,3 +30,5 @@ dist/**/*.js
 !examples/**
 examples/**/node_modules
 examples/**/dist
+!test/integration/monorepo
+!test/integration/monorepo/**/*
