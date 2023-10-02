@@ -9,6 +9,6 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: amannn/action-semantic-pull-request@c3cd5d1ea3580753008872425915e343e351ab54
+      - uses: amannn/action-semantic-pull-request@47b15d52c5c30e94a17ec87eb8dd51ff5221fed9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
