@@ -294,7 +294,8 @@ function ncc (
       filename: ext === '.cjs' ? filename + '.js' : filename,
       libraryTarget: esm ? 'module' : 'commonjs2',
       strictModuleExceptionHandling: true,
-      module: esm
+      module: esm,
+      devtoolModuleFilenameTemplate: sourceMapBasePrefix + '[resource-path]'
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
@@ -470,18 +471,6 @@ function ncc (
     delete assets[`${filename}${ext === '.cjs' ? '.js' : ''}.map`];
     let code = mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}`, "utf8");
     let map = sourceMap ? mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8") : null;
-
-    if (map) {
-      map = JSON.parse(map);
-      // make source map sources relative to output
-      map.sources = map.sources.map(source => {
-        // webpack://[namespace]/[resourcePath]
-        return join(
-          sourceMapBasePrefix,
-          source.replace(/^webpack:[\/]*([^\/]+\/)/, '')
-        );
-      });
-    }
 
     if (minify) {
       let result;
