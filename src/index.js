@@ -470,7 +470,7 @@ function ncc (
     delete assets[filename + (ext === '.cjs' ? '.js' : '')];
     delete assets[`${filename}${ext === '.cjs' ? '.js' : ''}.map`];
     let code = mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}`, "utf8");
-    let map = sourceMap ? mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8") : null;
+    let map = sourceMap ? JSON.parse(mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8")) : null;
 
     if (minify) {
       let result;
