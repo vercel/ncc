@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname, relative, resolve: pathResolve } = require("path");
+const { join, dirname, extname, resolve: pathResolve } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -294,7 +294,8 @@ function ncc (
       filename: ext === '.cjs' ? filename + '.js' : filename,
       libraryTarget: esm ? 'module' : 'commonjs2',
       strictModuleExceptionHandling: true,
-      module: esm
+      module: esm,
+      devtoolModuleFilenameTemplate: sourceMapBasePrefix + '[resource-path]'
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
@@ -469,30 +470,7 @@ function ncc (
     delete assets[filename + (ext === '.cjs' ? '.js' : '')];
     delete assets[`${filename}${ext === '.cjs' ? '.js' : ''}.map`];
     let code = mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}`, "utf8");
-    let map = sourceMap ? mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8") : null;
-
-    if (map) {
-      map = JSON.parse(map);
-      // make source map sources relative to output
-      map.sources = map.sources.map(source => {
-        // webpack:///webpack:/// happens too for some reason
-        while (source.startsWith('webpack:///'))
-          source = source.slice(11);
-        if (source.startsWith('//'))
-          source = source.slice(1);
-        if (source.startsWith('/'))
-          source = relative(process.cwd(), source).replace(/\\/g, '/');
-        if (source.startsWith('external '))
-          source = 'node:' + source.slice(9);
-        if (source.startsWith('./'))
-          source = source.slice(2);
-        if (source.startsWith('(webpack)'))
-          source = 'webpack' + source.slice(9);
-        if (source.startsWith('webpack/'))
-          return '/webpack/' + source.slice(8);
-        return sourceMapBasePrefix + source;
-      });
-    }
+    let map = sourceMap ? JSON.parse(mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8")) : null;
 
     if (minify) {
       let result;

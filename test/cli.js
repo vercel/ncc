@@ -1,4 +1,4 @@
-const { join } = require('path')
+const { join, resolve: pathResolve } = require('path');
 
 module.exports = [
   {
@@ -115,6 +115,30 @@ module.exports = [
     expect (code, stdout) {
       const fs = require('fs');
       return code === 0 && fs.readFileSync(join('tmp', 'index.js'), 'utf8').toString().indexOf('export {') === -1;
+    }
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/sourcemap-resource-path/index.ts", "--source-map", "--no-source-map-register"],
+    expect (code, stdout, stderr) {
+      const fs = require('fs');
+      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));   
+      const paths = map.sources.map(source=>pathResolve(join('tmp', source)));
+      function hasPath(path) {
+        return paths.includes(pathResolve(path));
+      }
+      return code === 0 && hasPath('test/fixtures/sourcemap-resource-path/index.ts') && hasPath('test/fixtures/sourcemap-resource-path/sum.ts');
+    }
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/sourcemap-resource-path/index.ts", "-m", "--source-map", "--no-source-map-register"],
+    expect (code, stdout, stderr) {
+      const fs = require('fs');
+      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));   
+      const paths = map.sources.map(source=>pathResolve(join('tmp', source)));
+      function hasPath(path) {
+        return paths.includes(pathResolve(path));
+      }
+      return code === 0 && hasPath('test/fixtures/sourcemap-resource-path/index.ts') && hasPath('test/fixtures/sourcemap-resource-path/sum.ts');
     }
   }
 ]
