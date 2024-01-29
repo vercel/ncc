@@ -128,7 +128,7 @@ require('@vercel/ncc')('/path/to/input', {
   v8cache: false, // default
   quiet: false, // default
   debugLog: false, // default
-  webpack: (config) => config // default
+  customizeConfig: (config) => config // default
 }).then(({ code, map, assets }) => {
   console.log(code);
   // Assets is an object of asset file names to { source, permissions, symlinks }
