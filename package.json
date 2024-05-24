@@ -26,7 +26,7 @@
     "@google-cloud/firestore": "^6.7.0",
     "@sentry/node": "^7.66.0",
     "@slack/web-api": "^6.9.0",
-    "@vercel/webpack-asset-relocator-loader": "1.7.3",
+    "@vercel/webpack-asset-relocator-loader": "1.7.4",
     "analytics-node": "^6.2.0",
     "apollo-server-express": "^2.2.2",
     "arg": "^5.0.2",
@@ -94,10 +94,10 @@
     "source-map-support": "^0.5.9",
     "stripe": "^8.167.0",
     "swig": "^1.4.2",
-    "terser": "^5.19.3",
+    "terser": "^5.31.0",
     "the-answer": "^1.0.0",
     "tiny-json-http": "^7.5.1",
-    "ts-loader": "^9.4.4",
+    "ts-loader": "^9.5.1",
     "tsconfig-paths": "^4.2.0",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "twilio": "^3.23.2",
@@ -106,7 +106,7 @@
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
-    "webpack": "5.76.0",
+    "webpack": "5.91.0",
     "when": "^3.7.8"
   }
 }
