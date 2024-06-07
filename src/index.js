@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname, resolve: pathResolve } = require("path");
+const { join, basename, dirname, extname, resolve: pathResolve } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -54,6 +54,7 @@ function ncc (
     transpileOnly = false,
     license = '',
     target,
+    tsconfigPath = undefined,
     production = true,
     // webpack defaults to `module` and `main`, but that's
     // not really what node.js supports, so we reset it
@@ -116,8 +117,8 @@ function ncc (
   try {
     const configFileAbsolutePath = walkParentDirs({
       base: process.cwd(),
-      start: dirname(entry),
-      filename: 'tsconfig.json',
+      start: tsconfigPath !== undefined ? dirname(tsconfigPath) : dirname(entry),
+      filename: tsconfigPath !== undefined ? basename(tsconfigPath) : 'tsconfig.json',
     });
     fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
       compilerOptions: {}
@@ -358,6 +359,7 @@ function ncc (
             loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
               transpileOnly,
+              configFile: tsconfigPath,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
                 module: 'esnext',
