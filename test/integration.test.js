@@ -13,6 +13,11 @@ const skipOnWindows = [
   'tensorflow.js',
 ]
 
+const skipOnMacOS = [
+  // https://github.com/Level/leveldown/issues/801
+  'leveldown.js'
+]
+
 let nccRun;
 if (coverage) {
   nccRun = require(__dirname + "/../src/cli.js");
@@ -43,6 +48,9 @@ for (const integrationTest of fs.readdirSync(__dirname + "/integration")) {
 
   // ignore a few tests known to fail on windows
   if (process.platform === 'win32' && skipOnWindows.includes(integrationTest)) continue;
+
+  // ignore a few tests known to fail on macOS
+  if (process.platform === 'darwin' && skipOnMacOS.includes(integrationTest)) continue;
 
   it(`should execute "ncc run ${integrationTest}"`, async () => {
     let expectedStdout;
@@ -119,4 +127,3 @@ afterAll(() => {
 process.on("unhandledRejection", e => {
   throw e;
 });
-
