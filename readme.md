@@ -85,7 +85,7 @@ $ ncc run input.js
 
 ### With TypeScript
 
-The only requirement is to point `ncc` to `.ts` or `.tsx` files. A `tsconfig.json`
+You will need to install ts-loader `npm i -D ts-loader`. Then point `ncc` to `.ts` or `.tsx` files. A `tsconfig.json`
 file is necessary. Most likely you want to indicate `es2015` support:
 
 ```json
