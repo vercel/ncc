@@ -29,6 +29,18 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
+    # https://github.com/hargasinski/node-canvas/blob/e7abe64833d13ec96449c827b1e14befbdf3105d/.github/workflows/ci.yaml#L70
+    - name: "macOS dependencies"
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        brew install pkg-config cairo pango libpng jpeg giflib librsvg
+    # https://github.com/hargasinski/node-canvas/blob/e7abe64833d13ec96449c827b1e14befbdf3105d/.github/workflows/ci.yaml#L25
+    - name: "GNU/Linux dependencies"
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v4
       with:

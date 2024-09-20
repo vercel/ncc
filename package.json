@@ -15,7 +15,7 @@
     "build": "node scripts/build.js",
     "build-test-binary": "cd test/binary && node-gyp rebuild && cp build/Release/hello.node ../integration/hello.node",
     "test": "node --expose-gc --max_old_space_size=4096 node_modules/jest/bin/jest.js",
-    "test-coverage": "node --expose-gc --max_old_space_size=4096 node_modules/jest/bin/jest.js --coverage --globals \"{\\\"coverage\\\":true}\"",
+    "test-coverage": "node --expose-gc --max_old_space_size=4096 node_modules/jest/bin/jest.js --runInBand --coverage --globals \"{\\\"coverage\\\":true}\"",
     "prepublishOnly": "node scripts/build.js --no-cache"
   },
   "devDependencies": {
@@ -36,7 +36,7 @@
     "azure-storage": "^2.10.2",
     "browserify-middleware": "^8.1.1",
     "bytes": "^3.1.2",
-    "canvas": "^2.11.2",
+    "canvas": "3.0.0-rc2",
     "chromeless": "^1.5.2",
     "consolidate": "^0.16.0",
     "copy": "^0.3.2",
@@ -108,5 +108,6 @@
     "web-vitals": "^0.2.4",
     "webpack": "5.76.0",
     "when": "^3.7.8"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
