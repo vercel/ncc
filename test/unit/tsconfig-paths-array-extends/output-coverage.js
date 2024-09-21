@@ -2,7 +2,7 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 192:
+/***/ 424:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 __nccwpck_require__.r(__webpack_exports__);
@@ -81,12 +81,12 @@ __nccwpck_require__.r(__webpack_exports__);
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it uses a non-standard name for the exports (exports).
 (() => {
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const _module_1 = __nccwpck_require__(192);
+const _module_1 = __nccwpck_require__(424);
 console.log(_module_1.default);
 
 })();
