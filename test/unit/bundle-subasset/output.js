@@ -2,7 +2,7 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 17:
+/***/ 928:
 /***/ ((module) => {
 
 module.exports = require("path");
@@ -88,10 +88,8 @@ module.exports = require("path");
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
 __nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(17);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(928);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -102,8 +100,6 @@ const obscureRequire = eval(`function obscureRequire (file) {
 }`);
 
 console.log(obscureRequire(__nccwpck_require__.ab + "pi-bridge.js"));
-
-})();
 
 module.exports = __webpack_exports__;
 /******/ })()

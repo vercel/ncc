@@ -32,7 +32,7 @@
     "arg": "^5.0.2",
     "auth0": "^2.14.0",
     "aws-sdk": "^2.1448.0",
-    "axios": "^0.21.1",
+    "axios": "^1.7.7",
     "azure-storage": "^2.10.2",
     "browserify-middleware": "^8.1.1",
     "bytes": "^3.1.2",
@@ -94,7 +94,7 @@
     "source-map-support": "^0.5.9",
     "stripe": "^8.167.0",
     "swig": "^1.4.2",
-    "terser": "^5.19.3",
+    "terser": "^5.33.0",
     "the-answer": "^1.0.0",
     "tiny-json-http": "^7.5.1",
     "ts-loader": "^9.4.4",
@@ -106,7 +106,7 @@
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
-    "webpack": "5.76.0",
+    "webpack": "5.94.0",
     "when": "^3.7.8"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
