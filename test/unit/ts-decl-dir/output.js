@@ -43,7 +43,7 @@ __nccwpck_require__.r(__webpack_exports__);
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
-  "test": () => (/* reexport */ test)
+  test: () => (/* reexport */ test)
 });
 
 ;// CONCATENATED MODULE: ./test/unit/ts-decl-dir/test.ts

@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 497:
+/***/ 580:
 /***/ ((module) => {
 
 module.exports = eval("require")("./not-foud2.js");
@@ -9,7 +9,7 @@ module.exports = eval("require")("./not-foud2.js");
 
 /***/ }),
 
-/***/ 464:
+/***/ 704:
 /***/ ((module) => {
 
 module.exports = eval("require")("./not-found.js");
@@ -56,12 +56,8 @@ module.exports = eval("require")("./not-found.js");
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
-__nccwpck_require__(464);
-__nccwpck_require__(497);
-})();
-
+__nccwpck_require__(704);
+__nccwpck_require__(580);
 module.exports = __webpack_exports__;
 /******/ })()
 ;
