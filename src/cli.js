@@ -28,6 +28,8 @@ Options:
   -m, --minify             Minify output
   -C, --no-cache           Skip build cache population
   -s, --source-map         Generate source map
+  -a, --asset-builds       Build nested JS assets recursively, useful for
+                           when code is loaded as an asset eg for workers.
   --no-source-map-register Skip source-map-register source map support
   -e, --external [mod]     Skip bundling 'mod'. Can be used many times
   -q, --quiet              Disable build summaries / non-error outputs
