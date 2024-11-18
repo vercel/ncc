@@ -27,7 +27,6 @@ jobs:
     # https://github.com/nodejs/node-gyp#installation
     - name: Use Python 3.11
       uses: actions/setup-python@v5
-      -- force ci
       with:
         python-version: '3.11'
     # https://github.com/hargasinski/node-canvas/blob/e7abe64833d13ec96449c827b1e14befbdf3105d/.github/workflows/ci.yaml#L70
