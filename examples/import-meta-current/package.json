@@ -1,0 +1,18 @@
+{
+  "name": "typescript",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ncc run index.ts",
+    "build": "ncc build index.ts -o dist"
+  },
+  "dependencies": {
+    "@sentry/node": "^8.38.0",
+    "chalk": "^2.4.1"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "latest",
+    "typescript": "^4.4.2"
+  }
+}
