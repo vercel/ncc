@@ -379,7 +379,7 @@ function ncc (
         }
       ],
       parser: {
-        javascript: { importMeta: false },
+        javascript: { importMeta: !esm },
       },
     },
     plugins
