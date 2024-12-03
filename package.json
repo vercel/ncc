@@ -70,7 +70,7 @@
     "memcached": "^2.2.2",
     "memory-fs": "^0.5.0",
     "mkdirp": "^1.0.4",
-    "mongoose": "^5.3.12",
+    "mongoose": "^8.8.3",
     "mysql": "^2.16.0",
     "node-gyp": "^9.4.0",
     "npm": "^6.13.4",
