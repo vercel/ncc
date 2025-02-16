@@ -1,15 +1,13 @@
 import { get } from "request";
 
-const url = "https://dog.ceo/api/breeds/image/random";
-
-export default () => {
-  return new Promise((resolve, reject) => {
-    get(url, { json: true }, (err, resp, body) => {
+(async () => {
+  await new Promise((resolve, reject) => {
+    get("https://example.vercel.sh", { json: false }, (err, res) => {
       if (err) return reject(err);
-      if (body.status != "success") {
-        return reject(new Error("Bad api response: " + JSON.stringify(body)));
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Bad status: ${res.statusCode}`));
       }
-      resolve('asdf');
+      resolve(true);
     });
   });
-};
+})();
