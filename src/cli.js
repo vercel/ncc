@@ -264,6 +264,7 @@ async function runCmd (argv, stdout, stderr) {
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
+          sourceMapBasePrefix: path.relative(outDir, buildFile),
           assetBuilds: args["--asset-builds"] ? true : false,
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
