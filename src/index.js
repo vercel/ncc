@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const { join, dirname, extname, resolve: pathResolve } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
-const terser = require("terser");
+const { minify: swcMinify } = require("@swc/wasm");
 const tsconfigPaths = require("tsconfig-paths");
 const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
@@ -475,7 +475,7 @@ function ncc (
     if (minify) {
       let result;
       try {
-        result = await terser.minify(code, {
+        result = await swcMinify(code, {
           module: esm,
           compress: false,
           mangle: {
