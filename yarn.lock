@@ -1693,6 +1693,11 @@
   dependencies:
     tslib "^2.4.0"
 
+"@swc/wasm@^1.11.9":
+  version "1.11.9"
+  resolved "https://registry.yarnpkg.com/@swc/wasm/-/wasm-1.11.9.tgz#fe260611b92ed795e614d86c7561ff5a0a7a94b2"
+  integrity sha512-4yoj1q4LdPqFYAJPJ3gZkDv7bL6fcOSB42jrVtbDlvgYCDQhr0Wf48LWUwQcuhsfUMYaNj1phsqB9LV2cfEQTw==
+
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.2.tgz#b1665e2c461a2cd92f4c1bbf50d5454de0d4b421"
@@ -14263,7 +14268,7 @@ terser-webpack-plugin@^5.3.10:
     serialize-javascript "^6.0.1"
     terser "^5.26.0"
 
-terser@^5.26.0, terser@^5.33.0:
+terser@^5.26.0:
   version "5.33.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-5.33.0.tgz#8f9149538c7468ffcb1246cfec603c16720d2db1"
   integrity sha512-JuPVaB7s1gdFKPKTelwUyRq5Sid2A3Gko2S0PncwdBq7kN9Ti9HPWDQ06MPsEDGsZeVESjKEnyGy68quBk1w6g==
