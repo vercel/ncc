@@ -1693,10 +1693,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@swc/wasm@^1.11.9":
-  version "1.11.9"
-  resolved "https://registry.yarnpkg.com/@swc/wasm/-/wasm-1.11.9.tgz#fe260611b92ed795e614d86c7561ff5a0a7a94b2"
-  integrity sha512-4yoj1q4LdPqFYAJPJ3gZkDv7bL6fcOSB42jrVtbDlvgYCDQhr0Wf48LWUwQcuhsfUMYaNj1phsqB9LV2cfEQTw==
+"@swc/wasm@^1.11.20":
+  version "1.11.20"
+  resolved "https://registry.yarnpkg.com/@swc/wasm/-/wasm-1.11.20.tgz#124476f92dacb3a29a77a2038c77d3d4ebebe188"
+  integrity sha512-U8GG2jCxESlGiprOHwu097e6DzN5F4v5yKVBmk9/iEEJj0TYFv/l0bf+upocEYFvy+XMnVdvNlUfWZBG/og71Q==
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
