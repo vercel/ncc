@@ -103,7 +103,7 @@
     "twilio": "^3.23.2",
     "typescript": "^5.2.2",
     "vm2": "^3.9.19",
-    "vue": "^2.5.17",
+    "vue": "^3.5.13",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
     "webpack": "5.94.0",
