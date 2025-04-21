@@ -19,6 +19,7 @@
     "prepublishOnly": "node scripts/build.js --no-cache"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.787.0",
     "@azure/cosmos": "^3.17.3",
     "@bugsnag/js": "^7.21.0",
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
@@ -31,7 +32,6 @@
     "apollo-server-express": "^2.2.2",
     "arg": "^5.0.2",
     "auth0": "^2.14.0",
-    "aws-sdk": "^2.1448.0",
     "axios": "^1.7.7",
     "azure-storage": "^2.10.2",
     "browserify-middleware": "^8.1.1",
