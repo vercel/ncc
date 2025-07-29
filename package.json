@@ -60,7 +60,7 @@
     "jest": "^27.5.1",
     "jimp": "^0.16.1",
     "jugglingdb": "2.0.1",
-    "koa": "^2.14.2",
+    "koa": "^3.0.1",
     "leveldown": "^6.0.0",
     "license-webpack-plugin": "^4.0.2",
     "lighthouse": "^8.1.0",
