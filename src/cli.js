@@ -256,6 +256,7 @@ async function runCmd (argv, stdout, stderr) {
       const buildFile = eval("require.resolve")(resolve(args._[1] || "."));
       const esm = buildFile.endsWith('.mjs') || !buildFile.endsWith('.cjs') && hasTypeModule(buildFile);
       const ext = buildFile.endsWith('.cjs') ? '.cjs' : esm && (buildFile.endsWith('.mjs') || !hasTypeModule(buildFile)) ? '.mjs' : '.js';
+      const sourceMapBasePrefix = relative(outDir, process.cwd());
       const ncc = require("./index.js")(
         buildFile,
         {
@@ -264,6 +265,7 @@ async function runCmd (argv, stdout, stderr) {
           externals: args["--external"],
           sourceMap: args["--source-map"] || run,
           sourceMapRegister: args["--no-source-map-register"] ? false : undefined,
+          sourceMapBasePrefix,
           assetBuilds: args["--asset-builds"] ? true : false,
           cache: args["--no-cache"] ? false : undefined,
           watch: args["--watch"],
