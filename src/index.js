@@ -57,7 +57,8 @@ function ncc (
     production = true,
     // webpack defaults to `module` and `main`, but that's
     // not really what node.js supports, so we reset it
-    mainFields = ['main']
+    mainFields = ['main'],
+    customizeConfig = (config) => config
   } = {}
 ) {
   // v8 cache not supported for ES modules
@@ -252,7 +253,7 @@ function ncc (
     }));
   }
 
-  const compiler = webpack({
+  const compiler = webpack(customizeConfig({
     entry,
     cache: cache === false ? undefined : {
       type: "filesystem",
@@ -383,7 +384,7 @@ function ncc (
       },
     },
     plugins
-  });
+  }));
   compiler.outputFileSystem = mfs;
   if (!watch) {
     return new Promise((resolve, reject) => {
