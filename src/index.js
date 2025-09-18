@@ -252,6 +252,12 @@ function ncc (
     }));
   }
 
+  if (!esm) {
+    plugins.push(new webpack.DefinePlugin({
+      'import.meta.url': 'require("url").pathToFileURL(__filename).href'
+    }));
+  }
+
   const compiler = webpack({
     entry,
     cache: cache === false ? undefined : {
@@ -379,7 +385,7 @@ function ncc (
         }
       ],
       parser: {
-        javascript: { importMeta: !esm },
+        javascript: { importMeta: false },
       },
     },
     plugins
