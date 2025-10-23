@@ -19,7 +19,7 @@ async function main() {
     __dirname + "/../src/cli",
     {
       filename: "cli.js",
-      externals: ["./index.js"],
+      externals: ["./index.js", "@swc/wasm"],
       license: 'LICENSES.txt',
       minify,
       cache,
@@ -32,6 +32,7 @@ async function main() {
     __dirname + "/../src/index",
     {
       filename: "index.js",
+      externals: ["@swc/wasm"],
       minify,
       cache,
       v8cache
