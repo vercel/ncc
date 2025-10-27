@@ -1,6 +1,6 @@
 # ncc
 
-[![CI Status](https://github.com/vercel/ncc/workflows/CI/badge.svg)](https://github.com/vercel/ncc/actions?workflow=CI)
+[![CI Status](https://github.com/vercel/ncc/actions/workflows/ci.yml/badge.svg)](https://github.com/vercel/ncc/actions/workflows/ci.yml)
 
 Simple CLI for compiling a Node.js module into a single file,
 together with all its dependencies, gcc-style.
