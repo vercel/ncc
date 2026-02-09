@@ -31,9 +31,6 @@ module.exports = function tsTranspileLoader(input, inputSourceMap) {
   const options = this.getOptions ? this.getOptions() : this.query || {};
   const typescript = getCompiler(options);
   const compilerOptions = Object.assign({}, options.compilerOptions);
-  if (!compilerOptions.types) {
-    compilerOptions.types = ["node"];
-  }
   if (compilerOptions.skipLibCheck === undefined) {
     compilerOptions.skipLibCheck = true;
   }
