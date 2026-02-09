@@ -2,6 +2,7 @@ const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
 const { join, dirname, extname, resolve: pathResolve, posix: pathPosix } = require("path");
+const { builtinModules } = require("module");
 const rspack = require("@rspack/core");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -30,30 +31,7 @@ const defaultPermissions = 0o666;
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
 
 const esmAssetBase = "new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\\/\\/\\/\\w:/) ? 1 : 0, -1)";
-
-function fileExistsForRequest(context, request) {
-  const cleanRequest = request.split('?')[0];
-  const resolved = pathResolve(context, cleanRequest);
-  try {
-    if (fs.existsSync(resolved) && fs.statSync(resolved).isFile()) return true;
-    if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-      for (const extension of SUPPORTED_EXTENSIONS) {
-        const indexPath = pathResolve(resolved, `index${extension}`);
-        if (fs.existsSync(indexPath)) return true;
-      }
-      return false;
-    }
-  } catch (e) {
-    return false;
-  }
-  if (!extname(cleanRequest)) {
-    for (const extension of SUPPORTED_EXTENSIONS) {
-      const candidate = `${resolved}${extension}`;
-      if (fs.existsSync(candidate)) return true;
-    }
-  }
-  return false;
-}
+const builtinModuleSet = new Set(builtinModules);
 
 function ensureAssetBaseAssignment(code, assetName, esm, outputAssetBase = '') {
   if (code.includes('__webpack_require__.ab')) {
@@ -158,7 +136,6 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
-  const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
@@ -180,32 +157,6 @@ function ncc (
       };
     }
   } catch (e) {}
-
-  resolvePlugins.push({
-    apply(resolver) {
-      const resolve = resolver.resolve;
-      resolver.resolve = function (context, path, request, resolveContext, callback) {
-        const self = this;
-        resolve.call(self, context, path, request, resolveContext, function (err, innerPath, result) {
-          if (result) return callback(null, innerPath, result);
-          if (err && !err.message.startsWith('Can\'t resolve'))
-            return callback(err);
-          // Allow .js resolutions to .tsx? from .tsx?
-          if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx'))) {
-            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function (err, innerPath, result) {
-              if (result) return callback(null, innerPath, result);
-              if (err && !err.message.startsWith('Can\'t resolve'))
-                return callback(err);
-              // make not found errors runtime errors
-              callback(null, __dirname + '/@@notfound.js?' + (externalMap.get(request) || request), request);
-            });
-          }
-          // make not found errors runtime errors
-          callback(null, __dirname + '/@@notfound.js?' + (externalMap.get(request) || request), request);
-        });
-      };
-    }
-  });
 
   const externalMap = (() => {
     const regexps = [];
@@ -266,24 +217,79 @@ function ncc (
           if (!normalModuleFactory || !normalModuleFactory.hooks || !normalModuleFactory.hooks.beforeResolve) {
             return;
           }
-          normalModuleFactory.hooks.beforeResolve.tap("ncc", resolveData => {
-            if (!resolveData || !resolveData.request) return;
-            const request = resolveData.request;
-            if (!request.startsWith('.') && !request.startsWith('/')) return;
+          const resolver = normalModuleFactory.getResolver("normal");
+          const isBuiltin = request => {
+            if (!request) return false;
+            if (builtinModuleSet.has(request)) return true;
+            if (request.startsWith('node:')) {
+              return builtinModuleSet.has(request.slice(5));
+            }
+            return false;
+          };
+          const isNotFoundError = err => err && err.message && err.message.includes('NotFound');
+          const resolveRequest = (resolveData, request, done) => {
             const issuer = resolveData.contextInfo && resolveData.contextInfo.issuer;
+            const contextInfo = resolveData.contextInfo || { issuer: '' };
             const context = resolveData.context || (issuer ? dirname(issuer) : process.cwd());
+            const resolveContext = {
+              fileDependencies: new Set(),
+              contextDependencies: new Set(),
+              missingDependencies: new Set()
+            };
+            resolver.resolve(contextInfo, context, request, resolveContext, done);
+          };
+          normalModuleFactory.hooks.beforeResolve.tapAsync("ncc", (resolveData, callback) => {
+            if (!resolveData || !resolveData.request) return callback();
+            const request = resolveData.request;
+            if (request.includes('/@@notfound.js')) return callback();
+            if (isBuiltin(request)) return callback();
+            if (externalMap.get(request)) return callback();
 
-            if (issuer && request.endsWith('.js') && (issuer.endsWith('.ts') || issuer.endsWith('.tsx'))) {
-              const tsRequest = request.slice(0, -3);
-              if (fileExistsForRequest(context, tsRequest)) {
-                resolveData.request = tsRequest;
-                return;
-              }
-            }
+            const issuer = resolveData.contextInfo && resolveData.contextInfo.issuer;
+            const isTsIssuer = issuer && (issuer.endsWith('.ts') || issuer.endsWith('.tsx'));
+            const [requestPath, requestQuery] = request.split('?', 2);
+            const hasJsExtension = requestPath.endsWith('.js');
+            const tsRequest = hasJsExtension
+              ? `${requestPath.slice(0, -3)}${requestQuery ? `?${requestQuery}` : ''}`
+              : null;
 
-            if (!fileExistsForRequest(context, request)) {
+            const handleMissing = () => {
               resolveData.request = __dirname + '/@@notfound.js?' + (externalMap.get(request) || request);
+              callback();
+            };
+
+            const handleResolution = (err, result) => {
+              if (err && !isNotFoundError(err)) {
+                return callback(err);
+              }
+              if (!err && result) {
+                return callback();
+              }
+              return handleMissing();
+            };
+
+            if (isTsIssuer && hasJsExtension) {
+              return resolveRequest(resolveData, request, (err, result) => {
+                if (err && !isNotFoundError(err)) {
+                  return callback(err);
+                }
+                if (!err && result) {
+                  return callback();
+                }
+                return resolveRequest(resolveData, tsRequest, (tsErr, tsResult) => {
+                  if (tsErr && !isNotFoundError(tsErr)) {
+                    return callback(tsErr);
+                  }
+                  if (!tsErr && tsResult) {
+                    resolveData.request = tsRequest;
+                    return callback();
+                  }
+                  return handleMissing();
+                });
+              });
             }
+
+            return resolveRequest(resolveData, request, handleResolution);
           });
         });
         compiler.hooks.watchRun.tap("ncc", () => {
@@ -410,7 +416,6 @@ function ncc (
         undefined: cjsDeps()
       },
       mainFields,
-      plugins: resolvePlugins,
       ...(resolveTsConfig ? { tsConfig: resolveTsConfig } : {})
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175

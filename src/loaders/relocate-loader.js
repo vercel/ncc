@@ -1,4 +1,5 @@
 const relocateLoader = require('@vercel/webpack-asset-relocator-loader');
+const fs = require('fs');
 
 function ensureMainTemplate(compilation) {
   if (!compilation || compilation.mainTemplate) {
@@ -19,6 +20,16 @@ function ensureMainTemplate(compilation) {
 
 function wrappedRelocateLoader(content, map) {
   ensureMainTemplate(this._compilation);
+  if (this.resourcePath && this.resourcePath.endsWith('.node')) {
+    try {
+      const fileBuffer = fs.readFileSync(this.resourcePath);
+      if (!Buffer.isBuffer(content) || content.length !== fileBuffer.length) {
+        content = fileBuffer;
+      }
+    } catch (e) {
+      // keep original content on read failure
+    }
+  }
   if (this.resourcePath && this.resourcePath.endsWith('.json') && content !== undefined && content !== null) {
     const callback = this.async();
     const result = typeof content === 'string' ? content : content.toString();

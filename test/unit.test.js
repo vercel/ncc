@@ -57,11 +57,23 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
           expect(assets['index.js.map']).toBeDefined()
         }
         const actual = normalizeForWindows(code);
-        expect(actual.length).toBeGreaterThan(0);
+        try {
+          expect(actual).toBe(expected);
+        } catch (e) {
+          // useful for updating fixtures
+          fs.writeFileSync(`${testDir}/actual.js`, actual);
+          throw e;
+        }
 
         if (map) {
           const actualSourceMap = normalizeForWindows(map);
-          expect(actualSourceMap.length).toBeGreaterThan(0);
+          try {
+            expect(actualSourceMap).toBe(expectedSourceMap);
+          } catch (e) {
+            // useful for updating fixtures
+            fs.writeFileSync(`${testDir}/actual.js.map`, actualSourceMap);
+            throw e;
+          }
         }
       }
     )
