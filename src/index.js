@@ -226,7 +226,12 @@ function ncc (
             }
             return false;
           };
-          const isNotFoundError = err => err && err.message && err.message.includes('NotFound');
+          const isNotFoundError = err => {
+            if (!err || !err.message) return false;
+            return err.message.includes('NotFound') ||
+              err.message.startsWith("Can't resolve") ||
+              err.message.startsWith("Cannot resolve");
+          };
           const resolveRequest = (resolveData, request, done) => {
             const issuer = resolveData.contextInfo && resolveData.contextInfo.issuer;
             const contextInfo = resolveData.contextInfo || { issuer: '' };
