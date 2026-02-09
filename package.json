@@ -71,7 +71,7 @@
     "mkdirp": "^1.0.4",
     "mongoose": "^8.8.3",
     "mysql": "^2.16.0",
-    "node-gyp": "^9.4.0",
+    "node-gyp": "^12.2.0",
     "npm": "^6.13.4",
     "oracledb": "^6.1.0",
     "passport": "^0.6.0",
