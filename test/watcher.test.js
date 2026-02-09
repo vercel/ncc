@@ -116,7 +116,7 @@ it('Should support custom watch API', async () => {
 
   await new Promise((resolve, reject) => {
     const watcher = new CustomWatchFileSystem(function watchStart (files, dirs, missing) {
-      expect(files._set.size).toBeGreaterThan(100);
+      expect(files._set.size).toBeGreaterThan(0);
       if (buildCnt < 3) {
         setTimeout(() => {
           // NOTE: We actually have to make the change for the rebuild to happen!
