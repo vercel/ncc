@@ -532,16 +532,29 @@ function ncc (
       };
       const originalWatch = watch.watch.bind(watch);
       watch.watch = (files, dirs, missing, startTime, options, callback, callbackUndelayed) => {
-        const adaptedCallback = (err, fileTimeInfoEntries, contextTimeInfoEntries, removedFiles) => {
-          const removed = new Set();
-          if (removedFiles) {
-            for (const file of removedFiles) removed.add(file);
-          }
-          callback(err, fileTimeInfoEntries, contextTimeInfoEntries, new Set(), removed);
+        const toSet = entries => {
+          if (!entries) return new Set();
+          if (entries instanceof Set) return new Set(entries);
+          return new Set(entries);
         };
-        const adaptedCallbackUndelayed = () => {
+        const adaptedCallback = (
+          err,
+          fileTimeInfoEntries,
+          contextTimeInfoEntries,
+          changedOrRemovedFiles,
+          removedFiles
+        ) => {
+          // Support both callback variants:
+          // - webpack/rspack: (..., changedFiles, removedFiles)
+          // - legacy/custom watchers: (..., removedFiles)
+          const hasChangedAndRemoved = removedFiles !== undefined;
+          const changed = hasChangedAndRemoved ? toSet(changedOrRemovedFiles) : new Set();
+          const removed = hasChangedAndRemoved ? toSet(removedFiles) : toSet(changedOrRemovedFiles);
+          callback(err, fileTimeInfoEntries, contextTimeInfoEntries, changed, removed);
+        };
+        const adaptedCallbackUndelayed = (fileName, changeTime) => {
           if (typeof callbackUndelayed === 'function') {
-            callbackUndelayed();
+            callbackUndelayed(fileName, changeTime);
           }
         };
         return originalWatch(
