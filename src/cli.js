@@ -373,7 +373,15 @@ async function runCmd (argv, stdout, stderr) {
         });
         return true;
       } else {
-        return ncc.then(handler);
+        return ncc.then(handler).catch(err => {
+          stderr.write(err + '\n');
+          if (api) {
+            err.silent = true;
+            err.exitCode = 1;
+            throw err;
+          }
+          process.exit(1);
+        });
       }
       break;
 
