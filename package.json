@@ -36,7 +36,7 @@
     "azure-storage": "^2.10.2",
     "browserify-middleware": "^8.1.1",
     "bytes": "^3.1.2",
-    "canvas": "3.0.0-rc2",
+    "canvas": "^3.2.1",
     "chromeless": "^1.5.2",
     "consolidate": "^0.16.0",
     "copy": "^0.3.2",
