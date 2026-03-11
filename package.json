@@ -102,7 +102,7 @@
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "twilio": "^3.23.2",
     "typescript": "^5.2.2",
-    "vm2": "^3.9.19",
+    "vm2": "^3.10.2",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17",
     "web-vitals": "^0.2.4",
