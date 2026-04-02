@@ -1,7 +1,10 @@
-
 const { Module } = require('module');
 const m = new Module('', null);
-const { quiet, typescriptLookupPath } = JSON.parse(process.env.__NCC_OPTS || '{}');
+let opts = {};
+try {
+  opts = JSON.parse(process.env.__NCC_OPTS || '{}') || {};
+} catch (e) {}
+const { quiet, typescriptLookupPath } = opts;
 m.paths = Module._nodeModulePaths(process.env.TYPESCRIPT_LOOKUP_PATH || typescriptLookupPath || (process.cwd() + '/'));
 let typescript;
 try {
