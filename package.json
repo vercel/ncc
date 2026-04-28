@@ -97,7 +97,7 @@
     "terser": "^5.33.0",
     "the-answer": "^1.0.0",
     "tiny-json-http": "^7.5.1",
-    "ts-loader": "^9.4.4",
+    "ts-loader": "^9.5.7",
     "tsconfig-paths": "^4.2.0",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "twilio": "^3.23.2",
