@@ -106,7 +106,7 @@ module.exports = [
     env: {
       TYPESCRIPT_LOOKUP_PATH: '/tmp/nowhere'
     },
-    expect (code, stdout) { 
+    expect (code, stdout) {
       return code === 0 && stdout.indexOf('ncc built-in') !== -1;
     },
   },
@@ -121,7 +121,7 @@ module.exports = [
     args: ["build", "-o", "tmp", "test/fixtures/sourcemap-resource-path/index.ts", "--source-map", "--no-source-map-register"],
     expect (code, stdout, stderr) {
       const fs = require('fs');
-      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));   
+      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));
       const paths = map.sources.map(source=>pathResolve(join('tmp', source)));
       function hasPath(path) {
         return paths.includes(pathResolve(path));
@@ -133,12 +133,34 @@ module.exports = [
     args: ["build", "-o", "tmp", "test/fixtures/sourcemap-resource-path/index.ts", "-m", "--source-map", "--no-source-map-register"],
     expect (code, stdout, stderr) {
       const fs = require('fs');
-      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));   
+      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));
       const paths = map.sources.map(source=>pathResolve(join('tmp', source)));
       function hasPath(path) {
         return paths.includes(pathResolve(path));
       }
       return code === 0 && hasPath('test/fixtures/sourcemap-resource-path/index.ts') && hasPath('test/fixtures/sourcemap-resource-path/sum.ts');
+    }
+  },
+  {
+    args: ["build", "-o", "tmp", "test/fixtures/sourcemap-base-prefix/index.js", "--source-map"],
+    expect(code) {
+      const fs = require('fs');
+      const map = JSON.parse(fs.readFileSync(join('tmp', 'index.js.map'), 'utf8'));
+      const actual = map.sources[1];
+      const expected = '../test/fixtures/sourcemap-base-prefix/index.js'
+      if (actual !== expected) console.log({ actual, expected })
+      return code === 0 && actual === expected;
+    }
+  },
+  {
+    args: ["build", "-o", "tmp/sourcemap-base-prefix", "test/fixtures/sourcemap-base-prefix/index.js", "--source-map"],
+    expect(code) {
+      const fs = require('fs');
+      const map = JSON.parse(fs.readFileSync(join('tmp', 'sourcemap-base-prefix', 'index.js.map'), 'utf8'));
+      const actual = map.sources[1];
+      const expected = '../../test/fixtures/sourcemap-base-prefix/index.js'
+      if (actual !== expected) console.log({ actual, expected })
+      return code === 0 && actual === expected;
     }
   }
 ]
