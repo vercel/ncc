@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [20, 22]
+        node: [22, 24, 26]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v5
@@ -59,10 +59,10 @@ jobs:
     - name: Run Tests
       run: pnpm test
     - name: Coverage
-      if: matrix.os == 'ubuntu-latest' && matrix.node == 20 # only run once
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 22 # only run once
       run: pnpm test-coverage
     - name: Maybe Release
-      if: matrix.os == 'ubuntu-latest' && matrix.node == 20 && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: matrix.os == 'ubuntu-latest' && matrix.node == 22 && github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN_ELEVATED }}
