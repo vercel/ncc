@@ -17,7 +17,7 @@ const { hasTypeModule } = require('./utils/has-type-module');
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
 
-const SUPPORTED_EXTENSIONS = [".js", ".json", ".node", ".mjs", ".ts", ".tsx"];
+const SUPPORTED_EXTENSIONS = [".js", ".mjs", ".ts", ".tsx", ".json", ".node"];
 
 const hashOf = name => {
   return crypto
