@@ -23,7 +23,7 @@ jobs:
         node: [20, 22]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     # https://github.com/nodejs/node-gyp#installation
     - name: Use Python 3.11
       uses: actions/setup-python@v6
