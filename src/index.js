@@ -1,7 +1,7 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname, resolve: pathResolve } = require("path");
+const { basename, dirname, extname, isAbsolute, join, resolve: pathResolve } = require("path");
 const webpack = require("webpack");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
@@ -54,6 +54,7 @@ function ncc (
     transpileOnly = false,
     license = '',
     target,
+    tsconfigPath = undefined,
     production = true,
     // webpack defaults to `module` and `main`, but that's
     // not really what node.js supports, so we reset it
@@ -109,16 +110,25 @@ function ncc (
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
   const resolvePlugins = [];
+  
+  let configFileAbsolutePath;
+  if (tsconfigPath !== undefined) {
+    configFileAbsolutePath = isAbsolute(tsconfigPath)
+    ? tsconfigPath
+    : join(process.cwd(), tsconfigPath);
+  } else {
+    configFileAbsolutePath = walkParentDirs({
+      base: process.cwd(),
+      start: dirname(entry),
+      filename: 'tsconfig.json',
+    });
+  }
+
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
   let fullTsconfig = {};
   try {
-    const configFileAbsolutePath = walkParentDirs({
-      base: process.cwd(),
-      start: dirname(entry),
-      filename: 'tsconfig.json',
-    });
     fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
       compilerOptions: {}
     };
@@ -364,6 +374,7 @@ function ncc (
             loader: eval('__dirname + "/loaders/ts-loader.js"'),
             options: {
               transpileOnly,
+              configFile: configFileAbsolutePath,
               compiler: eval('__dirname + "/typescript.js"'),
               compilerOptions: {
                 module: 'esnext',
