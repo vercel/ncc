@@ -301,7 +301,11 @@ function ncc (
       libraryTarget: esm ? 'module' : 'commonjs2',
       strictModuleExceptionHandling: true,
       module: esm,
-      devtoolModuleFilenameTemplate: sourceMapBasePrefix + '[resource-path]'
+      // if prefix is `../`, then final path results in `.././`
+      // if prefix is `../../`, then final path results results in `../.././`
+      // which ideally would have been normalized by webpack, but alas it isnt,
+      // so we need to adjust sourceMapBasePrefix
+      devtoolModuleFilenameTemplate: sourceMapBasePrefix.replace(/\/$/, '') + '[resource-path]'
     },
     resolve: {
       extensions: SUPPORTED_EXTENSIONS,
