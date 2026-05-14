@@ -86,8 +86,8 @@ function ncc (
     console.log(`ncc: Compiling file ${filename} into ${esm ? 'ESM' : 'CJS'}`);
   }
 
-  if (target && !target.startsWith('es')) {
-    throw new Error(`Invalid "target" value provided ${target}, value must be es version e.g. es2015`)
+  if (target && (!target.startsWith('es') || !target.startsWith('node'))) {
+    throw new Error(`Invalid "target" value provided ${target}, value must be "esX" or "node[[X].Y]" e.g. es2015 or node20`)
   }
 
   const resolvedEntry = resolve.sync(entry);
