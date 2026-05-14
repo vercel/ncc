@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const coverage = global.coverage;
 const ncc = coverage ? require("../src/index") : require("../");
 
@@ -79,3 +80,60 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
     )
   });
 }
+
+async function expectEsmOnlyTypeScriptBuild(compilerOptions) {
+  const testDir = fs.mkdtempSync(path.join(__dirname, "tmp-esm-ts-cjs-"));
+  const prevTsNodeProject = process.env.TS_NODE_PROJECT;
+
+  try {
+    fs.writeFileSync(`${testDir}/package.json`, JSON.stringify({
+      type: "module"
+    }));
+    fs.writeFileSync(`${testDir}/tsconfig.json`, JSON.stringify({
+      compilerOptions
+    }));
+
+    const packageDir = `${testDir}/node_modules/esm-only-condition-package`;
+    fs.mkdirSync(packageDir, { recursive: true });
+    fs.writeFileSync(`${packageDir}/package.json`, JSON.stringify({
+      name: "esm-only-condition-package",
+      type: "module",
+      exports: {
+        ".": {
+          types: "./index.d.ts",
+          import: "./index.js"
+        }
+      }
+    }));
+    fs.writeFileSync(`${packageDir}/index.js`, "export const value = 'from-esm-only-package';\n");
+    fs.writeFileSync(`${packageDir}/index.d.ts`, "export declare const value: string;\n");
+    fs.writeFileSync(
+      `${testDir}/input.ts`,
+      "import { value } from 'esm-only-condition-package';\nconsole.log(value);\n"
+    );
+
+    process.env.TS_NODE_PROJECT = `${testDir}/tsconfig.json`;
+
+    const { code } = await ncc(`${testDir}/input.ts`, {
+      cache: false,
+      quiet: true,
+      transpileOnly: true
+    });
+
+    expect(code).toContain("from-esm-only-package");
+  } finally {
+    if (prevTsNodeProject === undefined)
+      delete process.env.TS_NODE_PROJECT;
+    else
+      process.env.TS_NODE_PROJECT = prevTsNodeProject;
+
+    fs.rmSync(testDir, { recursive: true, force: true });
+  }
+}
+
+it("preserves TypeScript imports for ESM builds when tsconfig emits CommonJS", async () => {
+  await expectEsmOnlyTypeScriptBuild({
+    module: "CommonJS",
+    target: "ES2020"
+  });
+});
