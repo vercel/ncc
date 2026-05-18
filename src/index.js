@@ -650,7 +650,7 @@ function emitsNonEsmModule(moduleKind) {
 
   // Values match TypeScript's ModuleKind enum:
   // CommonJS=1, AMD=2, UMD=3, System=4.
-  // https://github.com/microsoft/TypeScript/blob/v5.2.2/src/compiler/types.ts#L213
+  // https://github.com/microsoft/TypeScript/blob/v5.2.2/src/compiler/types.ts#L7255-L7260
   return moduleKind >= 1 && moduleKind <= 4;
 }
 
