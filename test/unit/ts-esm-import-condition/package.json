@@ -1,0 +1,10 @@
+{
+  "name": "esm-only-condition-package",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}
