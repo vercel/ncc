@@ -267,9 +267,9 @@ function ncc (
     outDir: '//'
   };
 
-  if (esm && isCommonJsModule(tsCompilerOptions.module)) {
+  if (esm && emitsNonEsmModule(tsCompilerOptions.module)) {
     // ESM builds need TypeScript to preserve imports so webpack can resolve
-    // dependencies with import conditions instead of CommonJS conditions.
+    // dependencies with "import" conditions instead of "require" conditions.
     tsCompilerOptions.module = 'esnext';
   }
 
@@ -643,12 +643,15 @@ function ncc (
   }
 }
 
-function isCommonJsModule(module) {
-  if (typeof module === 'string') {
-    return ['commonjs', 'amd', 'umd', 'system'].includes(module.toLowerCase());
+function emitsNonEsmModule(moduleKind) {
+  if (typeof moduleKind === 'string') {
+    return ['commonjs', 'amd', 'umd', 'system'].includes(moduleKind.toLowerCase());
   }
 
-  return module >= 1 && module <= 4;
+  // Values match TypeScript's ModuleKind enum:
+  // CommonJS=1, AMD=2, UMD=3, System=4.
+  // https://github.com/microsoft/TypeScript/blob/v5.2.2/src/compiler/types.ts#L213
+  return moduleKind >= 1 && moduleKind <= 4;
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
