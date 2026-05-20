@@ -41,14 +41,15 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
+    - uses: pnpm/action-setup@v4
+      with:
+        run_install: false
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v6
       with:
         cache: pnpm
         node-version: ${{ matrix.node }}
         check-latest: true
-    - name: Enable Corepack
-      run: corepack enable
     - name: Install Dependencies
       run: pnpm add --global node-gyp && pnpm install --frozen-lockfile
     - name: Build Test Binary
