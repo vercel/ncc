@@ -206,6 +206,9 @@ importers:
       request:
         specifier: ^2.88.0
         version: 2.88.2
+      resolve:
+        specifier: ^1.22.12
+        version: 1.22.12
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
