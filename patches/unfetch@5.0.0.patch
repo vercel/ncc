@@ -1,0 +1,15 @@
+diff --git a/package.json b/package.json
+index ec47dc2e37ea4f522f5f618955f3a7971a8f30d7..c9613f9fdc17dedfb2de174263454889fcfe13f2 100644
+--- a/package.json
++++ b/package.json
+@@ -15,8 +15,8 @@
+   },
+   "exports": {
+     ".": {
+-      "import": "./index.mjs",
+-      "default": "./index.js"
++      "import": "./dist/unfetch.mjs",
++      "default": "./dist/unfetch.js"
+     },
+     "./polyfill": {
+       "default": "./polyfill/index.js"

@@ -20,6 +20,8 @@ dist/**/*.js
 !package.json
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
+!patches/
+!patches/**
 !.circleci
 !.github
 !.github/

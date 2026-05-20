@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  unfetch@5.0.0:
+    hash: 5ba8c4508eee556ee571a8923ccb909856add8b2e765e3c674012930fab75c1c
+    path: patches/unfetch@5.0.0.patch
+
 importers:
 
   .:
@@ -32,6 +37,9 @@ importers:
       '@slack/web-api':
         specifier: ^6.9.0
         version: 6.13.0
+      '@types/node':
+        specifier: ^25.9.0
+        version: 25.9.0
       '@vercel/webpack-asset-relocator-loader':
         specifier: 1.7.3
         version: 1.7.3
@@ -13502,7 +13510,7 @@ snapshots:
   isomorphic-unfetch@4.0.2:
     dependencies:
       node-fetch: 3.3.2
-      unfetch: 5.0.0
+      unfetch: 5.0.0(patch_hash=5ba8c4508eee556ee571a8923ccb909856add8b2e765e3c674012930fab75c1c)
 
   isstream@0.1.2: {}
 
@@ -17228,7 +17236,7 @@ snapshots:
 
   undici-types@7.24.6: {}
 
-  unfetch@5.0.0: {}
+  unfetch@5.0.0(patch_hash=5ba8c4508eee556ee571a8923ccb909856add8b2e765e3c674012930fab75c1c): {}
 
   unicode-properties@1.4.1:
     dependencies:
