@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-yarn run build
+pnpm run build
 
 node_modules/.bin/jest test/unit
 
