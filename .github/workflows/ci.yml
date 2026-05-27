@@ -41,23 +41,26 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
+    - uses: pnpm/action-setup@v4
+      with:
+        run_install: false
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v6
       with:
-        cache: yarn
+        cache: pnpm
         node-version: ${{ matrix.node }}
         check-latest: true
     - name: Install Dependencies
-      run: yarn global add node-gyp && yarn install --frozen-lockfile
+      run: pnpm add --global node-gyp && pnpm install --frozen-lockfile
     - name: Build Test Binary
-      run: yarn build-test-binary
+      run: pnpm build-test-binary
     - name: Build
-      run: yarn build
+      run: pnpm build
     - name: Run Tests
-      run: yarn test
+      run: pnpm test
     - name: Coverage
       if: matrix.os == 'ubuntu-latest' && matrix.node == 20 # only run once
-      run: yarn test-coverage
+      run: pnpm test-coverage
     - name: Maybe Release
       if: matrix.os == 'ubuntu-latest' && matrix.node == 20 && github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:

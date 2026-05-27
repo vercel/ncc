@@ -1,0 +1,8 @@
+minimumReleaseAge: 2880
+
+onlyBuiltDependencies:
+  - canvas
+  - nan
+  - sharp
+patchedDependencies:
+  unfetch@5.0.0: patches/unfetch@5.0.0.patch
