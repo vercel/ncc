@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 30
     env:
       COREPACK_DEFAULT_TO_LATEST: '0'
+      COREPACK_ENABLE_STRICT: '0'
     strategy:
       fail-fast: false
       matrix:
@@ -57,7 +58,7 @@ jobs:
         node-version: ${{ matrix.node }}
         check-latest: true
     - name: Install Dependencies
-      run: pnpm add --global node-gyp && pnpm install --frozen-lockfile
+      run: npm i -g node-gyp && pnpm install --frozen-lockfile
     - name: Build Test Binary
       run: pnpm build-test-binary
     - name: Build
@@ -71,5 +72,4 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.node == 24 && github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COREPACK_ENABLE_STRICT: '0'
       run: pnpm --dir publish install --ignore-workspace --frozen-lockfile && ./publish/node_modules/.bin/semantic-release
