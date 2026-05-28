@@ -9,7 +9,7 @@
   "license": "MIT",
   "main": "./dist/ncc/index.js",
   "bin": {
-    "ncc": "./dist/ncc/cli.js"
+    "ncc": "dist/ncc/cli.js"
   },
   "files": [
     "dist"
