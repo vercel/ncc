@@ -22,6 +22,9 @@ dist/**/*.js
 !pnpm-workspace.yaml
 !patches/
 !patches/**
+!publish/
+!publish/**
+publish/node_modules/**
 !.circleci
 !.github
 !.github/
