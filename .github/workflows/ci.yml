@@ -33,10 +33,10 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     # https://github.com/nodejs/node-gyp#installation
-    - name: Use Python 3.12
+    - name: Use Python
       uses: actions/setup-python@v6
       with:
-        python-version: '3.12'
+        python-version: '3.14'
     # https://github.com/hargasinski/node-canvas/blob/e7abe64833d13ec96449c827b1e14befbdf3105d/.github/workflows/ci.yaml#L70
     - name: "macOS dependencies"
       if: matrix.os == 'macos-latest'
