@@ -272,7 +272,7 @@ importers:
         specifier: ^5.2.2
         version: 5.9.3
       vm2:
-        specifier: ^3.10.3
+        specifier: ^3.11.5
         version: 3.11.5
       vue:
         specifier: ^2.5.17
