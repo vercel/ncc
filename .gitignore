@@ -18,7 +18,13 @@ dist/**/*.js
 !dist/ncc/
 !dist/buildin/
 !package.json
-!yarn.lock
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!patches/
+!patches/**
+!publish/
+!publish/**
+publish/node_modules/**
 !.circleci
 !.github
 !.github/

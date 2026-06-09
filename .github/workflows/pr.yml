@@ -2,8 +2,9 @@ name: PR
 on:
   pull_request:
     types: [opened, edited, synchronize]
-  pull_request_target:
-    types: [opened, edited, synchronize]
+
+permissions:
+  pull-requests: read
 
 jobs:
   lint:
