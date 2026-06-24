@@ -258,6 +258,21 @@ function ncc (
     }));
   }
 
+  const tsCompilerOptions = {
+    module: 'esnext',
+    target: 'esnext',
+    ...fullTsconfig.compilerOptions,
+    allowSyntheticDefaultImports: true,
+    noEmit: false,
+    outDir: '//'
+  };
+
+  if (esm && emitsCommonJsModule(tsCompilerOptions.module)) {
+    // ESM builds need TypeScript to preserve imports so webpack can resolve
+    // dependencies with "import" conditions instead of "require" conditions.
+    tsCompilerOptions.module = 'esnext';
+  }
+
   const compiler = webpack({
     entry,
     cache: cache === false ? undefined : {
@@ -365,14 +380,7 @@ function ncc (
             options: {
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
-              compilerOptions: {
-                module: 'esnext',
-                target: 'esnext',
-                ...fullTsconfig.compilerOptions,
-                allowSyntheticDefaultImports: true,
-                noEmit: false,
-                outDir: '//'
-              }
+              compilerOptions: tsCompilerOptions
             }
           }]
         },
@@ -633,6 +641,10 @@ function ncc (
 
     return { code, map: map ? JSON.stringify(map) : undefined, assets, symlinks, stats };
   }
+}
+
+function emitsCommonJsModule(moduleKind) {
+  return typeof moduleKind === 'string' && moduleKind.toLowerCase() === 'commonjs';
 }
 
 // this could be rewritten with actual FS apis / globs, but this is simpler
