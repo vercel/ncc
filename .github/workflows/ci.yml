@@ -34,7 +34,7 @@ jobs:
     - uses: actions/checkout@v7
     # https://github.com/nodejs/node-gyp#installation
     - name: Use Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.14'
     # https://github.com/hargasinski/node-canvas/blob/e7abe64833d13ec96449c827b1e14befbdf3105d/.github/workflows/ci.yaml#L70
