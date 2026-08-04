@@ -8,6 +8,7 @@
   },
   "license": "MIT",
   "main": "./dist/ncc/index.js",
+  "types": "./dist/ncc/index.d.ts",
   "bin": {
     "ncc": "dist/ncc/cli.js"
   },
@@ -18,6 +19,7 @@
     "build": "node scripts/build.js",
     "build-test-binary": "cd test/binary && node-gyp rebuild && cp build/Release/hello.node ../integration/hello.node",
     "test": "node --expose-gc --max_old_space_size=4096 node_modules/jest/bin/jest.js",
+    "test-types": "tsc --noEmit -p test/types",
     "test-coverage": "node --expose-gc --max_old_space_size=4096 node_modules/jest/bin/jest.js --runInBand --coverage --globals \"{\\\"coverage\\\":true}\"",
     "prepublishOnly": "node scripts/build.js --no-cache"
   },
