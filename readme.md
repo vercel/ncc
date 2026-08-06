@@ -75,6 +75,15 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   -d, --debug              Show debug logs
 ```
 
+### V8 Compile Cache
+
+The `--v8-cache` option emits a CommonJS build with V8's compiled code cache.
+This can reduce startup time by avoiding some parsing and compilation work.
+The output includes the loader, the bundled source, and a `.cache` file, so it
+uses more disk space than a regular build. Cached data is not loaded on Windows
+or when running inside a packaged executable, and this option is not supported
+for ES modules.
+
 ### Execution Testing
 
 For testing and debugging, a file can be built into a temporary directory and executed with full source maps support with the command:
