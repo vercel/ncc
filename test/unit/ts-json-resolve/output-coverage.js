@@ -2,7 +2,7 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 827:
+/***/ 990:
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -48,8 +48,7 @@ function greet() {
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat */
-/******/ 	
+/******/ 	/* webpack/runtime/asset-relocator-loader */
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
@@ -59,7 +58,7 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const dep_1 = __nccwpck_require__(827);
+const dep_1 = __nccwpck_require__(990);
 console.log((0, dep_1.greet)());
 
 })();

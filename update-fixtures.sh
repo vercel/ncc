@@ -2,7 +2,7 @@
 
 pnpm run build
 
-node_modules/.bin/jest test/unit
+node node_modules/jest/bin/jest.js test/unit
 
 for f in test/unit/*; do
     if [ -e "${f}/actual.js" ]; then
@@ -16,7 +16,7 @@ for f in test/unit/*; do
     fi
 done
 
-node --expose-gc node_modules/.bin/jest --coverage --globals "{\"coverage\":true}" test/unit
+node --expose-gc node_modules/jest/bin/jest.js --coverage --globals "{\"coverage\":true}" test/unit
 
 for f in test/unit/*; do
     if [ -e "${f}/actual.js" ]; then

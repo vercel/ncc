@@ -1,2 +1,2 @@
-(()=>{if(typeof __nccwpck_require__!=="undefined")__nccwpck_require__.ab=__dirname+"/";var e={};(()=>{var _=e;const o="qux";console.log?.("hello");_.foobar=o})();module.exports=e})();
+(()=>{var o={};(()=>{var l=o;const e="qux";console.log?.("hello");l.foobar=e})();module.exports=o})();
 //# sourceMappingURL=index.js.map
