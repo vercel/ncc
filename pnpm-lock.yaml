@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  '@vercel/webpack-asset-relocator-loader@1.10.2':
-    hash: 84387f6f9c688a681c13acaf39c99532aaa101134b8baf57dd7c7550f37577c3
-    path: patches/@vercel__webpack-asset-relocator-loader@1.10.2.patch
   unfetch@5.0.0:
     hash: 5ba8c4508eee556ee571a8923ccb909856add8b2e765e3c674012930fab75c1c
     path: patches/unfetch@5.0.0.patch
@@ -44,8 +41,8 @@ importers:
         specifier: ^25.9.0
         version: 25.9.0
       '@vercel/webpack-asset-relocator-loader':
-        specifier: 1.10.2
-        version: 1.10.2(patch_hash=84387f6f9c688a681c13acaf39c99532aaa101134b8baf57dd7c7550f37577c3)(encoding@0.1.13)
+        specifier: 1.10.3
+        version: 1.10.3(encoding@0.1.13)
       analytics-node:
         specifier: ^6.2.0
         version: 6.2.0
@@ -1520,8 +1517,8 @@ packages:
     resolution: {integrity: sha512-yURCknZhvywvQItHMMmFSo+fq5arCUIyz/CVk7jD89MSai7dkaX8ufjCWp3NttLojoTVbcE72ri+be/TnEbMHw==}
     engines: {node: '>=20.0.0'}
 
-  '@vercel/webpack-asset-relocator-loader@1.10.2':
-    resolution: {integrity: sha512-GtzU3rPATGTJmu07uK0JcPP0Pwi+aHBlx/C/m2VWACZJx5IZL37okDXwrMhHMQ+coFy7b0D1kJPHL9qaG67Oxg==}
+  '@vercel/webpack-asset-relocator-loader@1.10.3':
+    resolution: {integrity: sha512-G8jCqUKGsgvzHA1R9SAh2pzMT/Cea5BKmx1C3ng18ykLWj58o9PXWt9Fj8fO4b5GRwezR1Btib1DbQ6pByxb5g==}
 
   '@vue/compiler-sfc@2.7.16':
     resolution: {integrity: sha512-KWhJ9k5nXuNtygPU7+t1rX6baZeqOYLEforUPjgNDBnLicfHCoi48H87Q8XyLZOrNNsmhuwKqtpDQWjEFe6Ekg==}
@@ -9692,7 +9689,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vercel/webpack-asset-relocator-loader@1.10.2(patch_hash=84387f6f9c688a681c13acaf39c99532aaa101134b8baf57dd7c7550f37577c3)(encoding@0.1.13)':
+  '@vercel/webpack-asset-relocator-loader@1.10.3(encoding@0.1.13)':
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3(encoding@0.1.13)
       acorn: 8.16.0
