@@ -26,11 +26,13 @@ for (const unitTest of fs.readdirSync(`${__dirname}/unit`)) {
       opts = JSON.parse(opts);
     } catch (_) {}
 
-    // set env variable so tsconfig-paths can find the config
-    process.env.TS_NODE_PROJECT = `${testDir}/tsconfig.json`;
     // find the name of the input file (e.g input.ts)
-    const inputFile = fs.readdirSync(testDir).find(file => file.includes("input"));
-    await ncc(`${testDir}/${inputFile}`, Object.assign({
+    const rootInput = fs.readdirSync(testDir).find(file => file.includes("input"));
+    const inputDir = rootInput ? testDir : `${testDir}/app`;
+    const inputFile = rootInput || fs.readdirSync(inputDir).find(file => file.includes("input"));
+    // set env variable so tsconfig-paths can find the config
+    process.env.TS_NODE_PROJECT = `${inputDir}/tsconfig.json`;
+    await ncc(`${inputDir}/${inputFile}`, Object.assign({
       assetBuilds: true,
       transpileOnly: true,
       customEmit (path) {

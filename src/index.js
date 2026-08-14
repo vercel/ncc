@@ -369,6 +369,9 @@ function ncc (
                 module: 'esnext',
                 target: 'esnext',
                 ...fullTsconfig.compilerOptions,
+                // ncc bundles the root project and its dependencies as one compilation.
+                // Disable composite's implicit rootDir so referenced sources are included.
+                composite: false,
                 allowSyntheticDefaultImports: true,
                 noEmit: false,
                 outDir: '//'
