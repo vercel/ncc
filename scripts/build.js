@@ -38,7 +38,7 @@ async function main() {
     }
   );
   checkUnknownAssets('index', Object.keys(indexAssets).filter(asset =>
-    !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js' && asset !== 'minify.js'
+    !asset.startsWith('locales/') && asset !== 'worker.js' && asset !== 'index1.js' && asset !== 'minify.js' && !asset.endsWith('.d.ts')
   ));
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
@@ -104,6 +104,10 @@ async function main() {
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js", cli, { mode: 0o777 });
   writeFileSync(__dirname + "/../dist/ncc/index.js", index);
+  writeFileSync(
+    __dirname + "/../dist/ncc/index.d.ts",
+    readFileSync(__dirname + "/../src/index.d.ts")
+  );
   writeFileSync(__dirname + "/../dist/ncc/typescript.js", readFileSync(__dirname + "/../src/typescript.js"));
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js", sourcemapSupport);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js", relocateLoader);

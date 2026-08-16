@@ -3,7 +3,10 @@ dist/**/*.js
 !scripts
 !src
 !src/*.js
+!src/*.d.ts
 !test
+!test/types/
+!test/types/**
 !test/integration
 !test/integration/*.json
 !test/integration/*.js
