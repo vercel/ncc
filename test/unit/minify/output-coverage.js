@@ -1,2 +1,2 @@
-(()=>{var o={};(()=>{var l=o;const e="qux";console.log?.("hello");l.foobar=e})();module.exports=o})();
+(()=>{if(typeof __nccwpck_require__!=="undefined")__nccwpck_require__.ab=__dirname+"/";var e={};(()=>{var _=e;const o="qux";console.log?.("hello");_.foobar=o})();module.exports=e})();
 //# sourceMappingURL=index.js.map

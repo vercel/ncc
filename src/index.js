@@ -1,18 +1,20 @@
 const resolve = require("resolve");
 const fs = require("graceful-fs");
 const crypto = require("crypto");
-const { join, dirname, extname, resolve: pathResolve } = require("path");
-const webpack = require("webpack");
+const { join, dirname, extname, parse: pathParse, resolve: pathResolve, posix: pathPosix } = require("path");
+const { builtinModules } = require("module");
+const rspack = require("@rspack/core");
 const MemoryFS = require("memory-fs");
 const terser = require("terser");
-const tsconfigPaths = require("tsconfig-paths");
 const { loadTsconfig } = require("tsconfig-paths/lib/tsconfig-loader");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const shebangRegEx = require('./utils/shebang');
 const nccCacheDir = require("./utils/ncc-cache-dir");
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 const { version: nccVersion } = require('../package.json');
 const { hasTypeModule } = require('./utils/has-type-module');
+const formatCompilationErrors = require('./utils/format-compilation-errors');
+const isResolverNotFoundError = require('./utils/is-resolver-not-found-error');
+const missingDependencyPaths = require('./utils/missing-dependency-paths');
 
 // support glob graceful-fs
 fs.gracefulify(require("fs"));
@@ -30,6 +32,53 @@ const hashOf = name => {
 const defaultPermissions = 0o666;
 
 const relocateLoader = eval('require(__dirname + "/loaders/relocate-loader.js")');
+
+const esmAssetBase = "decodeURIComponent(new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\\/\\/\\/\\w:/) ? 1 : 0, -1))";
+const builtinModuleSet = new Set(builtinModules);
+
+function ensureAssetBaseAssignment(code, assetName, esm, outputAssetBase = '') {
+  const assetBase = outputAssetBase
+    ? outputAssetBase.endsWith('/') || outputAssetBase.endsWith('\\')
+      ? outputAssetBase
+      : `${outputAssetBase}/`
+    : '';
+  const dirName = pathPosix.dirname(assetName);
+  const relBaseValue = pathPosix.relative(dirName, '.');
+  const relBase = relBaseValue && relBaseValue !== '.' ? `/${relBaseValue}` : '';
+  const baseSuffix = `${relBase}/${assetBase}`;
+  const runtimeBase = esm ? esmAssetBase : '__dirname';
+  const webpackRequire = '__webpack_require__';
+  const assetBaseProperty = 'ab';
+  const injection = `if (typeof ${webpackRequire} !== 'undefined') ${webpackRequire}.${assetBaseProperty} = ${runtimeBase} + ${JSON.stringify(baseSuffix)};`;
+  const existingAssignment = /if \(typeof __webpack_require__ !== 'undefined'\) __webpack_require__\.ab = [^;]+;/;
+  if (existingAssignment.test(code)) {
+    return code.replace(existingAssignment, injection);
+  }
+  const exportIndex = code.indexOf('var __webpack_exports__');
+  if (exportIndex !== -1) {
+    return code.slice(0, exportIndex) + injection + code.slice(exportIndex);
+  }
+  const runtimeIndex = code.indexOf('__webpack_require__.m');
+  if (runtimeIndex !== -1) {
+    return code.slice(0, runtimeIndex) + injection + code.slice(runtimeIndex);
+  }
+  return `${injection}${code}`;
+}
+
+function ensureModuleExceptionHandling(code) {
+  const requireRuntime =
+    /\/\/ The module cache\nvar __webpack_module_cache__ = \{\};\n\n\/\/ The require function\nfunction __webpack_require__\(moduleId\) \{[\s\S]*?\/\/ Return the exports of the module[\s\S]*?return module\.exports;/g;
+  return code.replace(requireRuntime, runtime => runtime
+    .replace(
+      /if \(cachedModule\.error !== undefined\) throw cachedModule\.error;/,
+      "// ncc retries failed CommonJS modules on the next require."
+    )
+    .replace(
+      /module\.error = e;\n(\s*)throw e;/,
+      "delete __webpack_module_cache__[moduleId];\n$1throw e;"
+    )
+  );
+}
 
 module.exports = ncc;
 function ncc (
@@ -108,63 +157,43 @@ function ncc (
     existingAssetNames.push(`${filename}.cache`);
     existingAssetNames.push(`${filename}.cache${ext}`);
   }
-  const resolvePlugins = [];
   // add TsconfigPathsPlugin to support `paths` resolution in tsconfig
   // we need to catch here because the plugin will
   // error if there's no tsconfig in the working directory
   let fullTsconfig = {};
+  let resolveTsConfig;
+  let tsconfigDirectory = dirname(resolvedEntry);
+  let configFileAbsolutePath;
   try {
-    const configFileAbsolutePath = walkParentDirs({
-      base: process.cwd(),
-      start: dirname(entry),
-      filename: 'tsconfig.json',
-    });
+    if (process.env.TS_NODE_PROJECT) {
+      const configuredPath = pathResolve(process.env.TS_NODE_PROJECT);
+      configFileAbsolutePath = fs.statSync(configuredPath).isDirectory()
+        ? join(configuredPath, "tsconfig.json")
+        : configuredPath;
+    } else {
+      configFileAbsolutePath = walkParentDirs({
+        base: pathParse(resolvedEntry).root,
+        start: dirname(resolvedEntry),
+        filename: 'tsconfig.json',
+      });
+    }
     fullTsconfig = loadTsconfig(configFileAbsolutePath) || {
       compilerOptions: {}
     };
-
-    const tsconfigPathsOptions = { silent: true }
-    if (fullTsconfig.compilerOptions.allowJs) {
-      tsconfigPathsOptions.extensions = SUPPORTED_EXTENSIONS
-    }
-    resolvePlugins.push(new TsconfigPathsPlugin(tsconfigPathsOptions));
-
-    const tsconfig = tsconfigPaths.loadConfig();
-    if (tsconfig.resultType === "success") {
-      tsconfigMatchPath = tsconfigPaths.createMatchPath(tsconfig.absoluteBaseUrl, tsconfig.paths);
-    }
-  } catch (e) {}
-
-  resolvePlugins.push({
-    apply(resolver) {
-      const resolve = resolver.resolve;
-      resolver.resolve = function (context, path, request, resolveContext, callback) {
-        const self = this;
-        resolve.call(self, context, path, request, resolveContext, function (err, innerPath, result) {
-          if (result) return callback(null, innerPath, result);
-          if (err && !err.message.startsWith('Can\'t resolve'))
-            return callback(err);
-          // Allow .js resolutions to .tsx? from .tsx?
-          if (request.endsWith('.js') && context.issuer && (context.issuer.endsWith('.ts') || context.issuer.endsWith('.tsx'))) {
-            return resolve.call(self, context, path, request.slice(0, -3), resolveContext, function (err, innerPath, result) {
-              if (result) return callback(null, innerPath, result);
-              if (err && !err.message.startsWith('Can\'t resolve'))
-                return callback(err);
-              // make not found errors runtime errors
-              callback(null, __dirname + '/@@notfound.js?' + (externalMap.get(request) || request), request);
-            });
-          }
-          // make not found errors runtime errors
-          callback(null, __dirname + '/@@notfound.js?' + (externalMap.get(request) || request), request);
-        });
+    if (configFileAbsolutePath) {
+      tsconfigDirectory = dirname(configFileAbsolutePath);
+      resolveTsConfig = {
+        configFile: configFileAbsolutePath,
+        references: 'auto'
       };
     }
-  });
+  } catch (e) {}
 
   const externalMap = (() => {
     const regexps = [];
     const aliasMap = new Map();
     const regexCache = new Map();
+    const noRegexMatch = Symbol("no regex match");
 
     function set(key, value) {
       if (key instanceof RegExp)
@@ -174,7 +203,10 @@ function ncc (
 
     function get(key) {
       if (aliasMap.has(key)) return aliasMap.get(key);
-      if (regexCache.has(key)) return regexCache.get(key);
+      if (regexCache.has(key)) {
+        const result = regexCache.get(key);
+        return result === noRegexMatch ? null : result;
+      }
 
       for (const regex of regexps) {
         const matches = key.match(regex)
@@ -194,6 +226,7 @@ function ncc (
           return result
         }
       }
+      regexCache.set(key, noRegexMatch);
       return null;
     }
 
@@ -216,30 +249,175 @@ function ncc (
           compilationStack.push(compilation);
           relocateLoader.initAssetCache(compilation);
         });
+        compiler.hooks.compilation.tap("ncc", (compilation, { normalModuleFactory }) => {
+          if (!normalModuleFactory || !normalModuleFactory.hooks || !normalModuleFactory.hooks.beforeResolve) {
+            return;
+          }
+          const resolvers = new Map();
+          const dependencyTypes = new Map();
+          const getDependencyTypes = resolveData => {
+            if (resolveData.dependencyType) return [resolveData.dependencyType];
+            const issuer = resolveData.contextInfo && resolveData.contextInfo.issuer;
+            const source = issuer || resolveData.request;
+            if (dependencyTypes.has(source)) return dependencyTypes.get(source);
+            const sourcePath = source.split('?', 1)[0];
+            let primaryType;
+            if (/\.(?:mjs|mts|ts|tsx)$/.test(sourcePath)) {
+              primaryType = 'esm';
+            } else if (/\.(?:cjs|cts)$/.test(sourcePath)) {
+              primaryType = 'commonjs';
+            } else {
+              primaryType = hasTypeModule(sourcePath) || esm ? 'esm' : 'commonjs';
+            }
+            const types = [
+              primaryType,
+              primaryType === 'esm' ? 'commonjs' : 'esm',
+              'url',
+              'worker'
+            ];
+            dependencyTypes.set(source, types);
+            return types;
+          };
+          const getResolver = dependencyType => {
+            const key = dependencyType || 'undefined';
+            if (!resolvers.has(key)) {
+              resolvers.set(key, normalModuleFactory.getResolver("normal", { dependencyType }));
+            }
+            return resolvers.get(key);
+          };
+          const isBuiltin = request => {
+            if (!request) return false;
+            if (builtinModuleSet.has(request)) return true;
+            if (request.startsWith('node:')) {
+              return builtinModuleSet.has(request.slice(5));
+            }
+            return false;
+          };
+          const missingDependencyCache = new Map();
+          const registeredMissingRequests = new Set();
+          // A rewritten request is never resolved by rspack, so the paths that
+          // would satisfy it are only watched if ncc registers them itself.
+          const registerMissingDependencies = (request, context) => {
+            const missingDependencies = compilation.missingDependencies;
+            const fileDependencies = compilation.fileDependencies;
+            if (!missingDependencies || typeof missingDependencies.add !== 'function') return;
+            const key = `${context}\0${request}`;
+            if (registeredMissingRequests.has(key)) return;
+            registeredMissingRequests.add(key);
+            for (const path of missingDependencyPaths(
+              request,
+              context,
+              SUPPORTED_EXTENSIONS,
+              missingDependencyCache,
+              mainFields
+            )) {
+              const stats = missingDependencyCache.get(path);
+              const isFile = stats ? stats.isFile() : false;
+              if (
+                isFile &&
+                fileDependencies &&
+                typeof fileDependencies.add === 'function'
+              ) {
+                fileDependencies.add(path);
+              } else {
+                missingDependencies.add(path);
+              }
+            }
+          };
+          const resolveRequest = (resolveData, context, request, done) => {
+            const contextInfo = resolveData.contextInfo || { issuer: '' };
+            const types = getDependencyTypes(resolveData);
+            let index = 0;
+            let lastError;
+            let shouldDefer = false;
+            const tryResolve = () => {
+              // A probe that resolves is resolved again by rspack, and a probe
+              // that misses reports no paths, so its resolve context is unused.
+              getResolver(types[index++]).resolve(contextInfo, context, request, {}, (err, result) => {
+                if (result) return done(null, result, false);
+                if (err) {
+                  lastError = err;
+                  if (!isResolverNotFoundError(err)) shouldDefer = true;
+                }
+                if (index < types.length) return tryResolve();
+                done(lastError, undefined, shouldDefer);
+              });
+            };
+            tryResolve();
+          };
+          // Rspack does not currently expose a JS hook for recovering after a
+          // failed normal-module resolution (see web-infra-dev/rspack#14640),
+          // so ncc preserves runtime notfound semantics by probing here.
+          normalModuleFactory.hooks.beforeResolve.tapAsync("ncc", (resolveData, callback) => {
+            if (!resolveData || !resolveData.request) return callback();
+            const request = resolveData.request;
+            if (request.includes('/@@notfound.js')) return callback();
+            if (isBuiltin(request)) return callback();
+            const external = externalMap.get(request);
+            if (external) return callback();
+
+            const issuer = resolveData.contextInfo && resolveData.contextInfo.issuer;
+            const context = resolveData.context || (issuer ? dirname(issuer) : process.cwd());
+            const isTsIssuer = issuer && (issuer.endsWith('.ts') || issuer.endsWith('.tsx'));
+            const [requestPath, requestQuery] = request.split('?', 2);
+            const hasJsExtension = requestPath.endsWith('.js');
+            const tsRequest = hasJsExtension
+              ? `${requestPath.slice(0, -3)}${requestQuery ? `?${requestQuery}` : ''}`
+              : null;
+
+            const handleMissing = () => {
+              registerMissingDependencies(request, context);
+              if (tsRequest) registerMissingDependencies(tsRequest, context);
+              resolveData.request = __dirname + '/@@notfound.js?' + (external || request);
+              callback();
+            };
+
+            const handleResolution = (err, result, shouldDefer) => {
+              if (shouldDefer) {
+                return callback();
+              }
+              if (err && !isResolverNotFoundError(err)) {
+                return callback(err);
+              }
+              if (!err && result) {
+                return callback();
+              }
+              return handleMissing();
+            };
+
+            if (isTsIssuer && hasJsExtension) {
+              return resolveRequest(resolveData, context, request, (err, result, shouldDefer) => {
+                if (shouldDefer) {
+                  return callback();
+                }
+                if (err && !isResolverNotFoundError(err)) {
+                  return callback(err);
+                }
+                if (!err && result) {
+                  return callback();
+                }
+                return resolveRequest(resolveData, context, tsRequest, (tsErr, tsResult, shouldDeferTs) => {
+                  if (shouldDeferTs) {
+                    return callback();
+                  }
+                  if (tsErr && !isResolverNotFoundError(tsErr)) {
+                    return callback(tsErr);
+                  }
+                  if (!tsErr && tsResult) {
+                    resolveData.request = tsRequest;
+                    return callback();
+                  }
+                  return handleMissing();
+                });
+              });
+            }
+
+            return resolveRequest(resolveData, context, request, handleResolution);
+          });
+        });
         compiler.hooks.watchRun.tap("ncc", () => {
           if (rebuildHandler)
             rebuildHandler();
-        });
-        compiler.hooks.normalModuleFactory.tap("ncc", NormalModuleFactory => {
-          function handler(parser) {
-            parser.hooks.assign.for("require").intercept({
-              register: tapInfo => {
-                if (tapInfo.name !== "CommonJsPlugin") {
-                  return tapInfo;
-                }
-                tapInfo.fn = () => {};
-                return tapInfo;
-              }
-            });
-          }
-          NormalModuleFactory.hooks.parser
-            .for("javascript/auto")
-            .tap("ncc", handler);
-          NormalModuleFactory.hooks.parser
-            .for("javascript/dynamic")
-            .tap("ncc", handler);
-
-          return NormalModuleFactory;
         });
       }
     }
@@ -253,28 +431,36 @@ function ncc (
   }
 
   if (!esm) {
-    plugins.push(new webpack.DefinePlugin({
+    plugins.push(new rspack.DefinePlugin({
       'import.meta.url': 'require("url").pathToFileURL(__filename).href'
     }));
   }
 
-  const compiler = webpack({
+  const cacheEnabled = cache !== false;
+  const cacheDirectory = typeof cache === 'string' ? cache : nccCacheDir;
+  const experiments = {
+    topLevelAwait: true,
+    outputModule: esm
+  };
+  if (cacheEnabled) {
+    experiments.cache = {
+      type: 'persistent',
+      version: `ncc_${hashOf(entry)}_${nccVersion}`,
+      snapshot: {
+        managedPaths: []
+      },
+      storage: {
+        type: 'filesystem',
+        directory: cacheDirectory
+      }
+    };
+  }
+
+  const compiler = rspack({
     entry,
-    cache: cache === false ? undefined : {
-      type: "filesystem",
-      cacheDirectory: typeof cache === 'string' ? cache : nccCacheDir,
-      name: `ncc_${hashOf(entry)}`,
-      version: nccVersion
-    },
-    snapshot: {
-      managedPaths: [],
-      module: { hash: true }
-    },
+    cache: cacheEnabled,
     amd: false,
-    experiments: {
-      topLevelAwait: true,
-      outputModule: esm
-    },
+    experiments,
     optimization: {
       nodeEnv: false,
       minimize: false,
@@ -298,7 +484,9 @@ function ncc (
       path: "/",
       // Webpack only emits sourcemaps for files ending in .js
       filename: ext === '.cjs' ? filename + '.js' : filename,
-      libraryTarget: esm ? 'module' : 'commonjs2',
+      library: {
+        type: esm ? 'module' : 'commonjs2'
+      },
       strictModuleExceptionHandling: true,
       module: esm,
       devtoolModuleFilenameTemplate: sourceMapBasePrefix + '[resource-path]'
@@ -322,7 +510,7 @@ function ncc (
         undefined: cjsDeps()
       },
       mainFields,
-      plugins: resolvePlugins
+      ...(resolveTsConfig ? { tsConfig: resolveTsConfig } : {})
     },
     // https://github.com/vercel/ncc/pull/29#pullrequestreview-177152175
     node: false,
@@ -365,6 +553,8 @@ function ncc (
             options: {
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
+              configFilePath: configFileAbsolutePath,
+              configFileDirectory: tsconfigDirectory,
               compilerOptions: {
                 module: 'esnext',
                 target: 'esnext',
@@ -401,8 +591,10 @@ function ncc (
         compiler.close(err => {
           if (err) return reject(err);
           if (stats.hasErrors()) {
-            const errLog = [...stats.compilation.errors].map(err => err.message).join('\n');
-            return reject(new Error(errLog));
+            const errLog = formatCompilationErrors([...stats.compilation.errors]);
+            const compilationError = new Error(errLog);
+            compilationError.nccError = true;
+            return reject(compilationError);
           }
           resolve(stats);
         });
@@ -417,11 +609,61 @@ function ncc (
     if (typeof watch === 'object') {
       if (!watch.watch)
         throw new Error('Watcher class must be a valid Webpack WatchFileSystem class instance (https://github.com/webpack/webpack/blob/master/lib/node/NodeWatchFileSystem.js)');
+      const wrapDependencySet = entries => {
+        if (!entries || entries._set) return entries;
+        const set = entries instanceof Set ? entries : new Set(entries);
+        return {
+          _set: set,
+          [Symbol.iterator]: () => set[Symbol.iterator]()
+        };
+      };
+      const originalWatch = watch.watch.bind(watch);
+      watch.watch = (files, dirs, missing, startTime, options, callback, callbackUndelayed) => {
+        const toSet = entries => {
+          if (!entries) return new Set();
+          if (entries instanceof Set) return new Set(entries);
+          return new Set(entries);
+        };
+        const adaptedCallback = (
+          err,
+          fileTimeInfoEntries,
+          contextTimeInfoEntries,
+          changedOrRemovedFiles,
+          removedFiles
+        ) => {
+          // Support both callback variants:
+          // - webpack/rspack: (..., changedFiles, removedFiles)
+          // - legacy/custom watchers: (..., removedFiles)
+          const hasChangedAndRemoved = removedFiles !== undefined;
+          const changed = hasChangedAndRemoved ? toSet(changedOrRemovedFiles) : new Set();
+          const removed = hasChangedAndRemoved ? toSet(removedFiles) : toSet(changedOrRemovedFiles);
+          callback(err, fileTimeInfoEntries, contextTimeInfoEntries, changed, removed);
+        };
+        const adaptedCallbackUndelayed = (fileName, changeTime) => {
+          if (typeof callbackUndelayed === 'function') {
+            callbackUndelayed(fileName, changeTime);
+          }
+        };
+        return originalWatch(
+          wrapDependencySet(files),
+          wrapDependencySet(dirs),
+          wrapDependencySet(missing),
+          startTime,
+          options,
+          adaptedCallback,
+          adaptedCallbackUndelayed
+        );
+      };
       compiler.watchFileSystem = watch;
       watch.inputFileSystem = compiler.inputFileSystem;
+      if (watch.inputFileSystem && !watch.inputFileSystem.purge) {
+        watch.inputFileSystem.purge = () => {};
+      }
     }
     let cachedResult;
-    watcher = compiler.watch({}, async (err, stats) => {
+    // ncc bundles dependency source, so a change inside node_modules changes
+    // the output. Rspack ignores node_modules by default.
+    watcher = compiler.watch({ ignored: [] }, async (err, stats) => {
       if (err) {
         compilationStack.pop();
         return watchHandler({ err });
@@ -480,6 +722,8 @@ function ncc (
     delete assets[`${filename}${ext === '.cjs' ? '.js' : ''}.map`];
     let code = mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}`, "utf8");
     let map = sourceMap ? JSON.parse(mfs.readFileSync(`/${filename}${ext === '.cjs' ? '.js' : ''}.map`, "utf8")) : null;
+    code = ensureAssetBaseAssignment(code, filename, esm);
+    code = ensureModuleExceptionHandling(code);
 
     if (minify) {
       let result;
@@ -679,6 +923,9 @@ function walkParentDirs({
     }
 
     parent = dirname(current);
+    if (parent === current) {
+      break;
+    }
   }
 
   return null;

@@ -32,6 +32,7 @@ async function main() {
     __dirname + "/../src/index",
     {
       filename: "index.js",
+      externals: ["@rspack/core"],
       minify,
       cache,
       v8cache
@@ -43,7 +44,15 @@ async function main() {
 
   const { code: relocateLoader, assets: relocateLoaderAssets } = await ncc(
     __dirname + "/../src/loaders/relocate-loader",
-    { filename: "relocate-loader.js", minify, cache, v8cache }
+    {
+      filename: "relocate-loader.js",
+      minify,
+      cache,
+      v8cache,
+      // Keep the asset relocator package external to this wrapper loader so the
+      // runtime dependency remains installed and loaded directly from node_modules.
+      externals: ["@vercel/webpack-asset-relocator-loader"]
+    }
   );
   checkUnknownAssets('relocate-loader', Object.keys(relocateLoaderAssets));
 
