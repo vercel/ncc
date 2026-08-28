@@ -365,12 +365,18 @@ function ncc (
             options: {
               transpileOnly,
               compiler: eval('__dirname + "/typescript.js"'),
+              // ncc emits JS, so noEmit is forced off. TS5096 then fires if the
+              // project enabled allowImportingTsExtensions; ignore that config error.
+              ignoreDiagnostics: (fullTsconfig.compilerOptions || {}).allowImportingTsExtensions
+                ? [5096]
+                : [],
               compilerOptions: {
                 module: 'esnext',
                 target: 'esnext',
                 ...fullTsconfig.compilerOptions,
                 allowSyntheticDefaultImports: true,
                 noEmit: false,
+                emitDeclarationOnly: false,
                 outDir: '//'
               }
             }
