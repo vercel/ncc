@@ -71,6 +71,13 @@ module.exports = [
     expect: { code: 0 }
   },
   {
+    args: ["build", "-o", "tmp", "test/fixtures/ts-allow-importing-ts-extensions/input.ts"],
+    expect (code, stdout, stderr) {
+      const fs = require('fs');
+      return code === 0 && fs.readFileSync(join('tmp', 'index.js'), 'utf8').indexOf('value') !== -1;
+    }
+  },
+  {
     args: ["build", "-o", "tmp", "test/fixtures/test.cjs"],
     expect (code, stdout, stderr) {
       return stdout.toString().indexOf(join('tmp', 'index.cjs')) !== -1;
