@@ -69,7 +69,11 @@ function ncc (
     extensions: SUPPORTED_EXTENSIONS,
     exportsFields: ["exports"],
     importsFields: ["imports"],
-    conditionNames: ["require", "node", production ? "production" : "development"]
+    // Include "import" so ESM-only packages (exports.import without
+    // require/default) still resolve under CJS resolution. "require"
+    // stays first so dual packages keep their CJS entry.
+    // https://github.com/vercel/ncc/issues/1311
+    conditionNames: ["require", "import", "node", production ? "production" : "development"]
   });
   const esmDeps = () => ({
     mainFields,
