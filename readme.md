@@ -75,6 +75,26 @@ Outputs the Node.js compact build of `input.js` into `dist/index.js`.
   -d, --debug              Show debug logs
 ```
 
+### V8 Compile Cache
+
+The `--v8-cache` option emits a CommonJS build with V8's compiled code cache.
+This can reduce startup time by reusing parsing and compilation work, at the
+cost of additional output files and disk space.
+
+For the default `index.js` output, the build emits three files:
+
+- `index.js`: a loader that runs the bundled source with `vm.Script`
+- `index.js.cache.js`: the bundled source
+- `index.js.cache`: the V8 cached data
+
+Deploy all three files together. The source file is still required because the
+cache is an optimization, not a standalone executable. Cached data is not
+loaded on Windows or when running inside a packaged executable detected by
+`process.pkg`.
+
+V8 compile caching is not supported for ES module output. When the input is an
+ES module, ncc ignores this option and emits a regular ES module build.
+
 ### Execution Testing
 
 For testing and debugging, a file can be built into a temporary directory and executed with full source maps support with the command:
