@@ -9,7 +9,7 @@ try {
   if (!quiet) console.log("ncc: Using typescript@" + typescript.version + " (local user-provided)");
 }
 catch (e) {
-  typescript = require('typescript');
+  typescript = require('./loaders/ts-loader.js').typescript;
   if (!quiet) console.log("ncc: Using typescript@" + typescript.version + " (ncc built-in)");
 }
 module.exports = typescript;

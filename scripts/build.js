@@ -115,10 +115,11 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/notfound-loader.js", readFileSync(__dirname + "/../src/loaders/notfound-loader.js"));
   writeFileSync(__dirname + "/../dist/ncc/@@notfound.js", readFileSync(__dirname + "/../src/@@notfound.js"));
 
-  // copy typescript types
+  // copy typescript types next to the ts-loader bundle,
+  // where the built-in typescript looks for its default libs
   await copy(
     __dirname + "/../node_modules/typescript/lib/*.ts",
-    __dirname + "/../dist/ncc/loaders/typescript/lib/"
+    __dirname + "/../dist/ncc/loaders/"
   );
 
   for (const file of await glob(__dirname + "/../dist/**/*.js")) {
