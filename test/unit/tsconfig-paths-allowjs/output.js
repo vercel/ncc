@@ -1,7 +1,7 @@
 (() => {
 "use strict";
 var __webpack_modules__ = ({
-739(__unused_rspack_module, __webpack_exports__, __nccwpck_require__) {
+220(__unused_rspack_module, __webpack_exports__, __nccwpck_require__) {
 __nccwpck_require__.r(__webpack_exports__);
 __nccwpck_require__.d(__webpack_exports__, {
   "default": () => (__rspack_default_export)
@@ -73,7 +73,7 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const _module_1 = __nccwpck_require__(739);
+const _module_1 = __nccwpck_require__(220);
 console.log(_module_1.default);
 
 })();

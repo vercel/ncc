@@ -1,11 +1,11 @@
 (() => {
 var __webpack_modules__ = ({
-727(module) {
+643(module) {
 module.exports = eval("require")("./not-foud2.js");
 
 
 },
-207(module) {
+875(module) {
 module.exports = eval("require")("./not-found.js");
 
 
@@ -46,8 +46,8 @@ return module.exports;
 if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
-__nccwpck_require__(207);
-__nccwpck_require__(727);
+__nccwpck_require__(875);
+__nccwpck_require__(643);
 })();
 
 module.exports = __webpack_exports__;

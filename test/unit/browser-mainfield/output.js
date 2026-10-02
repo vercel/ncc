@@ -1,6 +1,6 @@
 (() => {
 var __webpack_modules__ = ({
-336() {
+267() {
 console.log('browser file!!')
 
 },
@@ -78,7 +78,7 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 __nccwpck_require__.r(__webpack_exports__);
-/* import */ var crypto_browser__rspack_import_0 = __nccwpck_require__(336);
+/* import */ var crypto_browser__rspack_import_0 = __nccwpck_require__(267);
 /* import */ var crypto_browser__rspack_import_0_default = /*#__PURE__*/__nccwpck_require__.n(crypto_browser__rspack_import_0);
 
 console.log('main file')

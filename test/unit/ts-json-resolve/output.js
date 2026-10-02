@@ -1,7 +1,7 @@
 (() => {
 "use strict";
 var __webpack_modules__ = ({
-770(__unused_rspack_module, exports) {
+827(__unused_rspack_module, exports) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.greet = greet;
@@ -50,7 +50,7 @@ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirna
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const dep_1 = __nccwpck_require__(770);
+const dep_1 = __nccwpck_require__(827);
 console.log((0, dep_1.greet)());
 
 })();

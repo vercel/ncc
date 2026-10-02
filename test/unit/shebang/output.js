@@ -1,8 +1,7 @@
 #!/bin/user/env node
 (() => {
 var __webpack_modules__ = ({
-446(module) {
-//#!/bin/user/env node
+321(module) {
 module.exports = 'asdf';
 
 },
@@ -41,7 +40,7 @@ return module.exports;
 // startup
 // Load entry module and return exports
 // This entry module is referenced by other modules so it can't be inlined
-if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";var __webpack_exports__ = __nccwpck_require__(446);
+if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";var __webpack_exports__ = __nccwpck_require__(321);
 module.exports = __webpack_exports__;
 })()
 ;
