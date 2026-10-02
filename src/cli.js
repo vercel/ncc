@@ -7,6 +7,7 @@ const rimraf = require("rimraf");
 const crypto = require("crypto");
 const { writeFileSync, unlink, existsSync, symlinkSync } = require("fs");
 const { hasTypeModule } = require('./utils/has-type-module');
+const nodeModulesCandidates = require('./utils/node-modules-candidates');
 const mkdirp = require("mkdirp");
 const { version: nccVersion } = require('../package.json');
 
@@ -328,16 +329,8 @@ async function runCmd (argv, stdout, stderr) {
 
         if (run) {
           // find node_modules
-          const root = resolve('/node_modules');
-          let nodeModulesDir = dirname(buildFile) + "/node_modules";
-          do {
-            if (nodeModulesDir === root) {
-              nodeModulesDir = undefined;
-              break;
-            }
-            if (existsSync(nodeModulesDir))
-              break;
-          } while (nodeModulesDir = resolve(nodeModulesDir, "../../node_modules"));
+          const nodeModulesDir = nodeModulesCandidates(dirname(buildFile))
+            .find(candidate => existsSync(candidate));
           if (nodeModulesDir)
             symlinkSync(nodeModulesDir, outDir + "/node_modules", "junction");
           ps = require("child_process").fork(`${outDir}/index${ext}`, {
