@@ -35,7 +35,9 @@ async function main() {
       externals: ["@rspack/core"],
       minify,
       cache,
-      v8cache
+      // Rspack checks RegExp instances in the caller's realm. A vm.Script
+      // wrapper moves ncc's rules into another realm when loaded through Jest.
+      v8cache: false
     }
   );
   checkUnknownAssets('index', Object.keys(indexAssets).filter(asset =>
@@ -96,7 +98,6 @@ async function main() {
 
   writeFileSync(__dirname + "/../dist/ncc/LICENSES.txt", cliAssets["LICENSES.txt"].source);
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache", cliAssets["cli.js.cache"].source);
-  writeFileSync(__dirname + "/../dist/ncc/index.js.cache", indexAssets["index.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache", sourcemapAssets["sourcemap-register.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache", relocateLoaderAssets["relocate-loader.js.cache"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache", shebangLoaderAssets["shebang-loader.js.cache"].source);
@@ -104,7 +105,6 @@ async function main() {
   writeFileSync(__dirname + "/../dist/ncc/loaders/stringify-loader.js.cache", stringifyLoaderAssets["stringify-loader.js.cache"].source);
 
   writeFileSync(__dirname + "/../dist/ncc/cli.js.cache.js", cliAssets["cli.js.cache.js"].source);
-  writeFileSync(__dirname + "/../dist/ncc/index.js.cache.js", indexAssets["index.js.cache.js"].source);
   writeFileSync(__dirname + "/../dist/ncc/sourcemap-register.js.cache.js", sourcemapAssets["sourcemap-register.js.cache.js"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/relocate-loader.js.cache.js", relocateLoaderAssets["relocate-loader.js.cache.js"].source);
   writeFileSync(__dirname + "/../dist/ncc/loaders/shebang-loader.js.cache.js", shebangLoaderAssets["shebang-loader.js.cache.js"].source);

@@ -12,16 +12,6 @@ function wrappedRelocateLoader(content, map) {
       // keep original content on read failure
     }
   }
-  // Guard the pinned relocator's JSON TDZ bug at asset-relocator.js:410.
-  if (this.resourcePath && this.resourcePath.endsWith('.json') && content !== undefined && content !== null) {
-    const callback = this.async();
-    const result = typeof content === 'string' ? content : content.toString();
-    if (callback) {
-      callback(null, result, map);
-      return;
-    }
-    return result;
-  }
   if (content === undefined || content === null) {
     const callback = this.async();
     if (callback) {
@@ -30,7 +20,20 @@ function wrappedRelocateLoader(content, map) {
     }
     return content;
   }
-  return relocateLoader.call(this, content, map);
+  const context = Object.create(this);
+  context.emitFile = (...args) => {
+    // Rspack's persistent cache cannot restore the relocator's JS metadata and name allocator.
+    this.cacheable(false);
+    this.emitFile(...args);
+  };
+  context.callback = (...args) => {
+    // Symlinks are compilation side effects, not emitted assets that Rspack caches.
+    if (Object.keys(relocateLoader.getSymlinks(this._compilation)).length) {
+      this.cacheable(false);
+    }
+    this.callback(...args);
+  };
+  return relocateLoader.call(context, content, map);
 }
 
 wrappedRelocateLoader.raw = relocateLoader.raw;

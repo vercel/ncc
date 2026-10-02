@@ -1,4 +1,6 @@
 const path = require("path");
+const compilationDiagnostics = new WeakMap();
+const typeCheckStates = new WeakMap();
 
 function getCompiler(options) {
   if (options && options.compiler) {
@@ -27,8 +29,10 @@ function formatDiagnostics(typescript, diagnostics) {
 
 function dedupeDiagnostics(compilation, typescript, diagnostics) {
   if (!compilation || !diagnostics || diagnostics.length === 0) return diagnostics;
-  if (!compilation.__nccTsLoaderDiagnostics) {
-    compilation.__nccTsLoaderDiagnostics = new Set();
+  let seen = compilationDiagnostics.get(compilation);
+  if (seen === undefined) {
+    seen = new Set();
+    compilationDiagnostics.set(compilation, seen);
   }
   return diagnostics.filter(diagnostic => {
     const message = typescript.flattenDiagnosticMessageText
@@ -43,8 +47,8 @@ function dedupeDiagnostics(compilation, typescript, diagnostics) {
       diagnostic.length,
       message
     ].join("\0");
-    if (compilation.__nccTsLoaderDiagnostics.has(key)) return false;
-    compilation.__nccTsLoaderDiagnostics.add(key);
+    if (seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
@@ -79,12 +83,13 @@ function getTypeCheckState(loaderContext, typescript, parsedOptions) {
     return null;
   }
   const stateKey = JSON.stringify(parsedOptions);
-  if (!compilation.__nccTsLoaderState) {
-    compilation.__nccTsLoaderState = new Map();
+  let states = typeCheckStates.get(compilation);
+  if (states === undefined) {
+    states = new Map();
+    typeCheckStates.set(compilation, states);
   }
-  if (compilation.__nccTsLoaderState.has(stateKey)) {
-    return compilation.__nccTsLoaderState.get(stateKey);
-  }
+  const existingState = states.get(stateKey);
+  if (existingState !== undefined) return existingState;
   const state = {
     files: new Set(),
     host: typescript.createCompilerHost(parsedOptions),
@@ -94,12 +99,17 @@ function getTypeCheckState(loaderContext, typescript, parsedOptions) {
       ? compilation.emitAsset.bind(compilation)
       : null
   };
-  compilation.__nccTsLoaderState.set(stateKey, state);
+  states.set(stateKey, state);
   compilation.hooks.finishModules.tap("ncc-ts-loader", () => {
     const program = state.program;
     let diagnostics = state.emitDiagnostics.concat(
       typescript.getPreEmitDiagnostics(program)
     );
+    if (compilation.fileDependencies) {
+      for (const sourceFile of program.getSourceFiles()) {
+        compilation.fileDependencies.add(sourceFile.fileName);
+      }
+    }
     if (
       state.emitAsset &&
       !parsedOptions.noEmit &&

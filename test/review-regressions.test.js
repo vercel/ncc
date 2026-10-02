@@ -10,7 +10,6 @@ const formatCompilationErrors = require("../src/utils/format-compilation-errors"
 const isResolverNotFoundError = require("../src/utils/is-resolver-not-found-error");
 const missingDependencyPaths = require("../src/utils/missing-dependency-paths");
 const nodeModulesCandidates = require("../src/utils/node-modules-candidates");
-const relocateLoader = require("../src/loaders/relocate-loader");
 const tsLoader = require("../src/loaders/ts-loader");
 
 jest.setTimeout(20000);
@@ -33,19 +32,19 @@ class StoreStream extends Writable {
   }
 }
 
-function createWatchFileSystem(onWatch) {
+function createWatchFileSystem(onWatch, getInfo = () => ({
+  changes: new Set(),
+  removals: new Set(),
+  fileTimeInfoEntries: new Map(),
+  contextTimeInfoEntries: new Map()
+})) {
   return {
     watch(...args) {
       onWatch(...args);
       return {
         close() {},
         pause() {},
-        getInfo: () => ({
-          changes: new Set(),
-          removals: new Set(),
-          fileTimeInfoEntries: new Map(),
-          contextTimeInfoEntries: new Map()
-        })
+        getInfo
       };
     }
   };
@@ -490,20 +489,129 @@ describe("review regressions", () => {
     expect(formatCompilationErrors([{ message: "useful message\n    at first" }])).toBe("useful message");
   });
 
-  it("passes JSON through before the relocator reads its uninitialized code variable", async () => {
-    const result = await new Promise((resolve, reject) => {
-      relocateLoader.call({
-        resourcePath: path.join(tmpDir, "data.json"),
-        async() {
-          return (err, content, map) => err ? reject(err) : resolve({ content, map });
-        }
-      }, Buffer.from('{"value":true}'), { version: 3 });
-    });
+  it.each([["source", ncc], ["built", require("../")]])("bundles JSON through the %s API", async (_name, build) => {
+    const input = path.join(tmpDir, "entry.js");
+    fs.writeFileSync(input, "module.exports = require('./data.json');");
+    fs.writeFileSync(path.join(tmpDir, "data.json"), '{"value":true}');
 
-    expect(result).toEqual({
-      content: '{"value":true}',
-      map: { version: 3 }
+    const { code } = await build(input, { cache: false, quiet: true });
+    const output = path.join(tmpDir, "output.js");
+    fs.writeFileSync(output, code);
+    fs.unlinkSync(path.join(tmpDir, "data.json"));
+
+    expect(require(output)).toEqual({ value: true });
+  });
+
+  it("preserves RegExp conditions when loading the built API", () => {
+    const input = path.join(tmpDir, "entry.js");
+    fs.writeFileSync(input, "module.exports = 1;");
+    const stopped = new Error("Configuration captured");
+    const compile = jest.fn(() => { throw stopped; });
+    jest.isolateModules(() => {
+      jest.doMock("@rspack/core", () => Object.assign(compile, jest.requireActual("@rspack/core")));
+      try {
+        expect(() => require("../")(input, { quiet: true })).toThrow(stopped);
+      } finally {
+        jest.dontMock("@rspack/core");
+      }
     });
+    const rules = compile.mock.calls[0][0].module.rules;
+    for (const rule of rules) {
+      if (rule.test) expect(rule.test).toBeInstanceOf(RegExp);
+      if (rule.exclude) expect(rule.exclude).toBeInstanceOf(RegExp);
+    }
+  });
+
+  it("preserves relocated asset metadata across persistent-cache builds", async () => {
+    const input = path.join(tmpDir, "entry.js");
+    const worker = path.join(tmpDir, "worker.js");
+    fs.writeFileSync(input, [
+      "const file = require('path').resolve(__dirname, 'worker.js');",
+      "const obscureRequire = eval('function obscureRequire(file) { require(file); }');",
+      "console.log(obscureRequire(file));"
+    ].join("\n"));
+    fs.writeFileSync(worker, "module.exports = require('./value');");
+    fs.writeFileSync(path.join(tmpDir, "value.js"), "module.exports = 42;");
+    fs.chmodSync(worker, 0o755);
+    const options = { cache: path.join(tmpDir, "cache"), quiet: true, assetBuilds: true, filterAssetBase: tmpDir };
+    const cold = await ncc(input, options);
+    const warm = await ncc(input, options);
+
+    expect(cold.assets["worker.js"].source.toString()).toContain("42");
+    expect(warm.assets["worker.js"].source.toString()).toBe(cold.assets["worker.js"].source.toString());
+    expect(warm.assets["worker.js"].permissions).toBe(fs.statSync(worker).mode);
+  });
+
+  (process.platform === "win32" ? it.skip : it)("preserves relocated symlinks across persistent-cache builds", async () => {
+    const input = path.join(tmpDir, "entry.js");
+    const data = path.join(tmpDir, "data");
+    fs.mkdirSync(data);
+    fs.writeFileSync(path.join(data, "value.txt"), "hello");
+    fs.symlinkSync("value.txt", path.join(data, "link.txt"));
+    fs.writeFileSync(input, "console.log(require('fs').readFileSync(require('path').join(__dirname, 'data', process.argv[2]), 'utf8'));");
+    const options = { cache: path.join(tmpDir, "cache"), quiet: true, filterAssetBase: tmpDir };
+    const cold = await ncc(input, options);
+    const warm = await ncc(input, options);
+
+    expect(cold.symlinks).toEqual({ "data/link.txt": "value.txt" });
+    expect(warm.symlinks).toEqual(cold.symlinks);
+    expect(warm.assets["data/value.txt"].source.toString()).toBe("hello");
+  });
+
+  it("rechecks types when a declaration-only dependency changes", async () => {
+    const input = path.join(tmpDir, "entry.ts");
+    const declaration = path.join(tmpDir, "types.d.ts");
+    fs.writeFileSync(input, [
+      "import type { Value } from './types';",
+      "const value: Value = 1;",
+      "export default value;"
+    ].join("\n"));
+    fs.writeFileSync(declaration, "export type Value = number;");
+    const info = {
+      changes: new Set(),
+      removals: new Set(),
+      fileTimeInfoEntries: new Map(),
+      contextTimeInfoEntries: new Map()
+    };
+    let changed = false;
+    let changeDeclaration;
+    const watch = createWatchFileSystem((files, _dirs, _missing, _start, _options, callback, callbackUndelayed) => {
+      if (changed) return;
+      changed = true;
+      setImmediate(() => changeDeclaration(files, callback, callbackUndelayed));
+    }, () => info);
+    const watcher = ncc(input, { cache: false, quiet: true, watch });
+    try {
+      await new Promise((resolve, reject) => {
+        changeDeclaration = (files, callback, callbackUndelayed) => {
+          if (!new Set(files).has(declaration)) {
+            return reject(new Error("Type-only declarations must be watched"));
+          }
+          fs.writeFileSync(declaration, "export type Value = string;");
+          watch.inputFileSystem.purge(declaration);
+          const now = Date.now();
+          info.changes.add(declaration);
+          info.fileTimeInfoEntries.set(declaration, { timestamp: now, safeTime: now + 10 });
+          callbackUndelayed(declaration, now);
+          callback(null, info.fileTimeInfoEntries, info.contextTimeInfoEntries, info.changes, info.removals);
+        };
+        let builds = 0;
+        watcher.handler(result => {
+          if (++builds === 1) {
+            if (result.err) reject(result.err);
+          } else {
+            try {
+              expect(String(result.err)).toContain("TS2322");
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          }
+        });
+      });
+    } finally {
+      watcher.close();
+    }
   });
 
   it("reports a TypeScript config diagnostic once per compilation", async () => {
@@ -679,7 +787,6 @@ describe("review regressions", () => {
 
   it("shares one TypeScript type-check program across source directories", async () => {
     const finishModules = [];
-    const programs = [];
     const compilation = {
       errors: [],
       hooks: {
@@ -690,57 +797,26 @@ describe("review regressions", () => {
         }
       }
     };
-    const typescript = {
-      sys: { newLine: "\n" },
-      convertCompilerOptionsFromJson(options, basePath) {
-        return {
-          options: {
-            ...options,
-            baseUrl: path.resolve(basePath, options.baseUrl)
-          },
-          errors: []
-        };
-      },
-      transpileModule() {
-        return { outputText: "", diagnostics: [] };
-      },
-      createCompilerHost() {
-        return {};
-      },
-      createProgram(files, options) {
-        programs.push({ files, options });
-        return {
-          getSourceFile(fileName) {
-            return { fileName };
-          },
-          emit(sourceFile, writeFile) {
-            writeFile(
-              sourceFile.fileName.replace(/\.tsx?$/, ".js.map"),
-              JSON.stringify({ tag: "javascript" })
-            );
-            writeFile(
-              sourceFile.fileName.replace(/\.tsx?$/, ".d.ts.map"),
-              JSON.stringify({ tag: "declaration" })
-            );
-            writeFile(sourceFile.fileName.replace(/\.tsx?$/, ".js"), "");
-            return { diagnostics: [] };
-          }
-        };
-      },
-      getPreEmitDiagnostics() {
-        return [];
-      }
-    };
+    Object.preventExtensions(compilation);
+    const compiler = require("typescript");
+    const createProgram = jest.fn((...args) => compiler.createProgram(...args));
+    const getPreEmitDiagnostics = jest.fn(program => compiler.getPreEmitDiagnostics(program));
+    const typescript = { ...compiler, createProgram, getPreEmitDiagnostics };
+    const firstFile = path.join(tmpDir, "src", "a.ts");
+    const secondFile = path.join(tmpDir, "src", "nested", "b.ts");
+    fs.mkdirSync(path.dirname(secondFile), { recursive: true });
+    fs.writeFileSync(firstFile, "export { value } from './nested/b';");
+    fs.writeFileSync(secondFile, "export const value = 1;");
     const load = resourcePath => new Promise((resolve, reject) => {
       tsLoader.call({
         _compilation: compilation,
         resourcePath,
-        sourceMap: false,
+        sourceMap: true,
         cacheable() {},
         getOptions() {
           return {
             compiler: typescript,
-            compilerOptions: { baseUrl: "." },
+            compilerOptions: { baseUrl: ".", declaration: true },
             configFileDirectory: tmpDir
           };
         },
@@ -748,17 +824,19 @@ describe("review regressions", () => {
           return (err, _output, map) => err ? reject(err) : resolve(map);
         },
         emitError: reject
-      }, Buffer.from("export default 1;"));
+      }, fs.readFileSync(resourcePath));
     });
 
-    const firstMap = await load(path.join(tmpDir, "src", "a.ts"));
-    const secondMap = await load(path.join(tmpDir, "src", "nested", "b.ts"));
+    const firstMap = await load(firstFile);
+    const secondMap = await load(secondFile);
 
     expect(finishModules).toHaveLength(1);
     finishModules[0]();
-    expect(programs).toHaveLength(1);
-    expect(programs[0].files).toEqual([path.join(tmpDir, "src", "a.ts")]);
-    expect(firstMap.tag).toBe("javascript");
-    expect(secondMap.tag).toBe("javascript");
+    expect(createProgram).toHaveBeenCalledTimes(1);
+    expect(getPreEmitDiagnostics).toHaveBeenCalledTimes(1);
+    expect(createProgram.mock.calls[0][0]).toEqual([firstFile]);
+    expect(compilation.errors).toHaveLength(0);
+    expect(firstMap.sources).toEqual([firstFile]);
+    expect(secondMap.sources).toEqual([secondFile]);
   });
 });
