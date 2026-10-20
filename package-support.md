@@ -18,6 +18,19 @@ const db = new Sequelize({
 
 The important part here is defining `dialectModule`.
 
+### `ngrok`
+
+ncc relocates `path.join(__dirname, …)` asset paths. `ngrok` exports that path
+as object-literal shorthand (`{ defaultDir }`), which used to become invalid JS
+after relocate. ncc expands those shorthands before relocate so
+
+```js
+import ngrok from "ngrok";
+await ngrok.connect({ port: 8080 });
+```
+
+compiles. The ngrok binary is still emitted as an asset next to the bundle.
+
 ### `@google-cloud/vision`
 
 Add `google-proto-files` in your `package.json` dependencies.
