@@ -97,7 +97,7 @@
     "sharp": "^0.32.5",
     "shebang-loader": "^0.0.1",
     "socket.io": "^4.7.2",
-    "source-map-support": "^0.5.9",
+    "source-map-support": "npm:@stackline/source-map-support@1.0.4",
     "stripe": "^8.167.0",
     "swig": "^1.4.2",
     "terser": "^5.33.0",

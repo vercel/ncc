@@ -2,6 +2,13 @@ const { join, resolve: pathResolve } = require('path');
 
 module.exports = [
   {
+    args: ["run", "test/fixtures/error-cause.js"],
+    expect (code, stdout, stderr) {
+      return code === 1 && stderr.includes("[cause]: Error: inner failure") &&
+        stderr.includes("error-cause.js:1:1");
+    },
+  },
+  {
     args: ["run", "test/fixtures/ts-interop/interop.ts"],
     expect: { code: 0 }
   },
